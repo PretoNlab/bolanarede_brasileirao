@@ -1,4 +1,14 @@
 
+
+export interface PlayerHistoryEvent {
+  id: string;
+  round: number;
+  season: number;
+  type: 'GOAL' | 'ASSIST' | 'YELLOW_CARD' | 'RED_CARD' | 'INJURY' | 'TRANSFER' | 'CONTRACT' | 'AWARD';
+  description: string;
+  icon?: string; // Optional icon override
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -20,6 +30,35 @@ export interface Player {
   isForSale?: boolean;
   isListedForLoan?: boolean;
   valueTrend?: 'up' | 'down' | 'stable';
+
+  // New Fields
+  history: PlayerHistoryEvent[];
+  seasonStats: {
+    yellowCards: number;
+    redCards: number;
+    matchesSuspended: number;
+  };
+  injuryType?: 'LEVE' | 'MEDIA' | 'GRAVE';
+  injuryDuration?: number;
+
+  // New Detailed Attributes
+  stats: {
+    pace: number;
+    shooting: number;
+    passing: number;
+    dribbling: number;
+    defending: number;
+    physical: number;
+    keeping: number; // For GOL
+  };
+}
+
+export interface Coach {
+  name: string;
+  style: 'Motivador' | 'Tático' | 'Negociador' | 'Disciplinador';
+  bonusDescription: string;
+  personalFunds: number; // Salário acumulado
+  items: string[]; // Carro, Casa, Relógio...
 }
 
 export interface NewsChoice {
@@ -63,9 +102,10 @@ export interface Team {
   ga: number;
   points: number;
   moral: number;
-  division: 1 | 2;
+  division: 0 | 1 | 2;
   prestige?: number;
   stadiumCapacity: number;
+  rivalId?: string;
 }
 
 export interface MatchResult {
@@ -92,6 +132,7 @@ export interface MatchEvent {
   type: 'goal' | 'whistle' | 'card_yellow' | 'card_red' | 'injury' | 'commentary';
   teamId?: string;
   playerName?: string;
+  assistName?: string;
   description: string;
 }
 
@@ -118,4 +159,15 @@ export interface TransferLog {
 export type FormationType = '4-4-2' | '4-3-3' | '3-5-2' | '5-4-1' | '4-5-1' | '5-3-2';
 export type PlayingStyle = 'Ultra-Defensivo' | 'Defensivo' | 'Equilibrado' | 'Ofensivo' | 'Tudo-ou-Nada';
 
-export type ScreenState = 'SPLASH' | 'TEAM_SELECT' | 'DASHBOARD' | 'SQUAD' | 'TACTICS' | 'MATCH' | 'MARKET' | 'FINANCE' | 'CALENDAR' | 'LEAGUE' | 'NEWS' | 'SETTINGS' | 'CHAMPION' | 'GAME_OVER';
+export type ScreenState = 'SPLASH' | 'PRE_MATCH' | 'COACH_SETUP' | 'TEAM_SELECT' | 'DASHBOARD' | 'SQUAD' | 'TACTICS' | 'MATCH' | 'MARKET' | 'FINANCE' | 'CALENDAR' | 'LEAGUE' | 'NEWS' | 'STATS' | 'SETTINGS' | 'CHAMPION' | 'GAME_OVER' | 'PROFILE';
+
+export interface SeasonHistory {
+  year: number;
+  championId: string;
+  championName: string;
+  runnerUpId: string;
+  runnerUpName: string;
+  userFinishPosition: number;
+  userDivision: 1 | 2;
+  topScorer: { name: string; goals: number; teamShort: string };
+}

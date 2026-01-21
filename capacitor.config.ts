@@ -1,32 +1,18 @@
-
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.bolanarede.manager.premium',
-  appName: 'Bolanarede Manager 2026',
-  webDir: '.',
+  appId: 'com.bolanarede.manager',
+  appName: 'Bolanarede Manager',
+  webDir: 'dist', // Alterado para dist para usar a build do Vite
   server: {
-    androidScheme: 'https',
-    allowNavigation: ['*']
+    androidScheme: 'https'
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 3000,
+      launchShowDuration: 2000,
       backgroundColor: "#0f172a",
-      showSpinner: true,
+      showSpinner: false,
       androidScaleType: "CENTER_CROP",
-      splashFullScreen: true,
-      splashImmersive: true
-    },
-    Keyboard: {
-      resize: 'body',
-      style: 'dark',
-      resizeOnFullScreen: true
-    }
-  },
-  android: {
-    buildOptions: {
-      releaseType: 'AAB'
     }
   }
 };

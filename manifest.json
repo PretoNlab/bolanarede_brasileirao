@@ -1,27 +1,22 @@
 
 {
   "short_name": "Bolanarede",
-  "name": "Bolanarede Manager 2026: Gestão de Futebol",
-  "description": "Assuma o comando dos maiores clubes da Bahia e leve seu time à glória no simulador definitivo de gestão de futebol inspirado no clássico Elifoot.",
+  "name": "Bolanarede Manager 2026",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/53/53283.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/53/53283.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ],
   "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#0f172a",
   "background_color": "#0f172a",
-  "orientation": "portrait",
-  "categories": ["games", "sports"],
-  "lang": "pt-BR"
+  "orientation": "portrait"
 }
