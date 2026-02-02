@@ -66,128 +66,146 @@ export default function DashboardScreen({
    const unreadNewsCount = useMemo(() => news.filter(n => !n.isRead || n.choices).length, [news]);
 
    return (
-      <div className="flex flex-col h-screen bg-background text-white relative">
-         <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-white/5 p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-               <TeamLogo team={team} size="w-10 h-10" />
-               <div>
-                  <h1 className="text-sm font-bold leading-none mb-1">{team.name}</h1>
-                  <span className={`text-[9px] font-black uppercase flex items-center gap-1 ${isWindowOpen ? 'text-emerald-500' : 'text-rose-500'}`}>
-                     {isWindowOpen ? <Unlock size={8} /> : <Lock size={8} />}
+      <div className="flex flex-col h-screen bg-background text-white relative font-sans">
+         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-2xl border-b border-white/5 p-5 flex items-center justify-between pt-safe">
+            <div className="flex items-center gap-4">
+               <TeamLogo team={team} size="w-11 h-11" />
+               <div className="flex flex-col">
+                  <h1 className="text-sm font-black italic tracking-tighter leading-none mb-1 uppercase text-white/90">{team.name}</h1>
+                  <span className={clsx("text-[9px] font-black uppercase flex items-center gap-1.5", isWindowOpen ? 'text-emerald-400' : 'text-rose-400')}>
+                     {isWindowOpen ? <Unlock size={10} /> : <Lock size={10} />}
                      Janela {isWindowOpen ? 'Aberta' : 'Fechada'}
                   </span>
                </div>
             </div>
             <div className="flex items-center gap-2">
-               <button onClick={onSimulate} className="bg-primary px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 shadow-xl shadow-primary/20 active:scale-95 transition-all">
+               <button
+                  onClick={onSimulate}
+                  className="bg-primary px-5 py-2.5 rounded-2xl text-[11px] font-black flex items-center gap-2.5 shadow-xl shadow-primary/30 active:scale-95 transition-all uppercase tracking-widest border border-white/10"
+               >
                   <Play size={14} fill="currentColor" /> JOGAR
                </button>
             </div>
          </header>
 
-         <main className="flex-1 overflow-y-auto p-4 space-y-4 pb-24 no-scrollbar">
+         <main className="flex-1 overflow-y-auto p-6 space-y-6 pb-28 no-scrollbar">
             {/* Fan Reaction Ticker */}
-            <div className="bg-surface/50 border border-white/5 p-3 rounded-2xl flex items-center gap-3 overflow-hidden">
-               <div className="bg-primary/20 p-2 rounded-lg text-primary shrink-0">
-                  <MessageSquare size={16} />
+            <div className="bg-surface/40 border border-white/5 p-4 rounded-3xl flex items-center gap-4 overflow-hidden backdrop-blur-sm">
+               <div className="bg-primary/20 p-2.5 rounded-xl text-primary shrink-0 shadow-inner">
+                  <MessageSquare size={18} />
                </div>
-               <p className="text-[10px] font-bold text-secondary italic animate-in fade-in slide-in-from-right duration-500 truncate" key={currentReactionIdx}>
+               <p className="text-xs font-bold text-secondary italic animate-in fade-in slide-in-from-right duration-500 truncate mt-0.5" key={currentReactionIdx}>
                   "{fanReactions[currentReactionIdx]}"
                </p>
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-2 gap-3">
-               <div className="bg-surface border border-white/5 rounded-2xl p-4 flex flex-col gap-1 shadow-inner">
-                  <p className="text-[8px] font-black text-secondary uppercase tracking-widest">Saldo Atual</p>
-                  <p className={clsx("text-lg font-black", funds < 0 ? "text-rose-500" : "text-emerald-400")}>R$ {(funds / 1000).toFixed(0)}k</p>
+            <div className="grid grid-cols-2 gap-4">
+               <div className="bg-surface/60 border border-white/5 rounded-3xl p-5 flex flex-col gap-1.5 shadow-inner">
+                  <p className="text-[10px] font-black text-secondary uppercase tracking-[0.2em]">Saldo Atual</p>
+                  <p className={clsx("text-2xl font-black tabular-nums tracking-tighter", funds < 0 ? "text-rose-500" : "text-emerald-400")}>
+                     R$ {(funds / 1000).toFixed(0)}k
+                  </p>
                </div>
-               <div className="bg-surface border border-white/5 rounded-2xl p-4 flex flex-col gap-1 shadow-inner">
-                  <p className="text-[8px] font-black text-secondary uppercase tracking-widest">Confiança</p>
-                  <div className="flex items-center gap-2">
-                     <Heart size={14} className={clsx(team.moral > 70 ? "text-primary" : "text-rose-500")} fill="currentColor" />
-                     <p className="text-lg font-black">{team.moral}%</p>
+               <div className="bg-surface/60 border border-white/5 rounded-3xl p-5 flex flex-col gap-1.5 shadow-inner">
+                  <p className="text-[10px] font-black text-secondary uppercase tracking-[0.2em]">Confiança</p>
+                  <div className="flex items-center gap-2.5">
+                     <Heart size={18} className={clsx(team.moral > 70 ? "text-primary" : "text-rose-500")} fill="currentColor" />
+                     <p className="text-2xl font-black">{team.moral}%</p>
                   </div>
                </div>
             </div>
 
-            {/* Next Match Focus */}
-            <div className="bg-gradient-to-br from-surface to-background border border-white/10 rounded-[32px] p-6 shadow-2xl relative overflow-hidden group">
-               <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/10 blur-3xl rounded-full group-hover:bg-primary/20 transition-all"></div>
-               <div className="flex justify-between items-center mb-6">
-                  <span className="text-[10px] font-black text-secondary uppercase tracking-widest">Rodada {round}</span>
-                  <div className="px-2 py-1 bg-primary/10 rounded-lg text-[8px] font-black text-primary uppercase">Mando de Campo</div>
+            {/* Next Match Focus - Enhanced Hero Card */}
+            <div className="bg-gradient-to-br from-surface to-[#111111] border border-white/10 rounded-[40px] p-8 shadow-2xl relative overflow-hidden group">
+               <div className="absolute -right-8 -top-8 w-40 h-40 bg-primary/10 blur-[60px] rounded-full group-hover:bg-primary/20 transition-all duration-1000"></div>
+               <div className="flex justify-between items-center mb-8">
+                  <span className="text-[10px] font-black text-secondary uppercase tracking-[0.3em]">PROXIMA RODADA ({round})</span>
+                  <div className="px-3 py-1 bg-white/5 border border-white/5 rounded-full text-[9px] font-black text-white/50 uppercase tracking-widest">
+                     MANDO DE CAMPO
+                  </div>
                </div>
-               <div className="flex items-center justify-around">
-                  <div className="flex flex-col items-center">
-                     <div className="mb-3">
-                        <TeamLogo team={team} size="w-16 h-16" />
+               <div className="flex items-center justify-between px-2">
+                  <div className="flex flex-col items-center gap-3">
+                     <div className="p-1 bg-white/5 rounded-full shadow-2xl">
+                        <TeamLogo team={team} size="w-20 h-20" />
                      </div>
-                     <span className="text-[10px] font-black uppercase text-center">{team.name}</span>
+                     <span className="text-[11px] font-black uppercase tracking-wider text-white/90">{team.shortName}</span>
                   </div>
-                  <div className="flex flex-col items-center">
-                     <span className="text-2xl font-black italic text-white/10">VS</span>
+
+                  <div className="flex flex-col items-center gap-1">
+                     <span className="text-4xl font-black italic text-white/5 tracking-tighter select-none">VS</span>
+                     <div className="h-0.5 w-6 bg-white/10 rounded-full" />
                   </div>
-                  <div className="flex flex-col items-center">
-                     <div className="mb-3 opacity-60">
-                        <TeamLogo team={nextOpponent} size="w-16 h-16" />
+
+                  <div className="flex flex-col items-center gap-3">
+                     <div className="p-1 bg-white/5 rounded-full shadow-2xl opacity-80">
+                        <TeamLogo team={nextOpponent} size="w-20 h-20" />
                      </div>
-                     <span className="text-[10px] font-black uppercase text-center">{nextOpponent.name}</span>
+                     <span className="text-[11px] font-black uppercase tracking-wider text-white/60">{nextOpponent.shortName}</span>
                   </div>
                </div>
             </div>
 
-            {/* Grid Options */}
-            <div className="grid grid-cols-2 gap-3">
-               <button onClick={onOpenTactics} className="bg-surface/80 border border-white/5 p-5 rounded-3xl flex flex-col gap-3 group active:scale-95 transition-all">
-                  <Target className="text-primary group-hover:rotate-45 transition-transform" size={24} />
-                  <span className="text-sm font-black uppercase tracking-tighter">Tática</span>
+            {/* Grid Options - Full Width Symmetry */}
+            <div className="grid grid-cols-2 gap-4">
+               <button onClick={onOpenTactics} className="bg-surface/50 border border-white/5 p-6 rounded-[32px] flex flex-col gap-4 group active:scale-95 transition-all hover:bg-surface/80">
+                  <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                     <Target className="text-primary" size={24} />
+                  </div>
+                  <span className="text-sm font-black uppercase tracking-tight">Tática</span>
                </button>
-               <button onClick={onOpenSquad} className="bg-surface/80 border border-white/5 p-5 rounded-3xl flex flex-col gap-3 group active:scale-95 transition-all">
-                  <Users className="text-blue-400 group-hover:scale-110 transition-transform" size={24} />
-                  <span className="text-sm font-black uppercase tracking-tighter">Elenco</span>
+               <button onClick={onOpenSquad} className="bg-surface/50 border border-white/5 p-6 rounded-[32px] flex flex-col gap-4 group active:scale-95 transition-all hover:bg-surface/80">
+                  <div className="bg-blue-400/10 w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                     <Users className="text-blue-400" size={24} />
+                  </div>
+                  <span className="text-sm font-black uppercase tracking-tight">Elenco</span>
                </button>
-               <button onClick={onOpenMarket} className="bg-surface/80 border border-white/5 p-5 rounded-3xl flex flex-col gap-3 group active:scale-95 transition-all relative">
-                  <ArrowLeftRight className={clsx("transition-all", isWindowOpen ? "text-emerald-400" : "text-rose-500")} size={24} />
-                  <span className="text-sm font-black uppercase tracking-tighter">Mercado</span>
-                  {offers.length > 0 && <div className="absolute top-4 right-4 w-2 h-2 bg-rose-500 rounded-full animate-ping"></div>}
+               <button onClick={onOpenMarket} className="bg-surface/50 border border-white/5 p-6 rounded-[32px] flex flex-col gap-4 group active:scale-95 transition-all relative hover:bg-surface/80">
+                  <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center transition-all", isWindowOpen ? "bg-emerald-400/10" : "bg-rose-500/10")}>
+                     <ArrowLeftRight className={isWindowOpen ? "text-emerald-400" : "text-rose-500"} size={24} />
+                  </div>
+                  <span className="text-sm font-black uppercase tracking-tight">Mercado</span>
+                  {offers.length > 0 && <div className="absolute top-6 right-8 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse border-2 border-surface"></div>}
                </button>
-               <button onClick={onOpenFinance} className="bg-surface/80 border border-white/5 p-5 rounded-3xl flex flex-col gap-3 group active:scale-95 transition-all">
-                  <Wallet className="text-amber-400 group-hover:translate-y-[-2px] transition-transform" size={24} />
-                  <span className="text-sm font-black uppercase tracking-tighter">Finanças</span>
+               <button onClick={onOpenFinance} className="bg-surface/50 border border-white/5 p-6 rounded-[32px] flex flex-col gap-4 group active:scale-95 transition-all hover:bg-surface/80">
+                  <div className="bg-amber-400/10 w-12 h-12 rounded-2xl flex items-center justify-center group-hover:translate-y-[-4px] transition-transform">
+                     <Wallet className="text-amber-400" size={24} />
+                  </div>
+                  <span className="text-sm font-black uppercase tracking-tight">Finanças</span>
                </button>
             </div>
          </main>
 
-         <nav className="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-xl border-t border-white/5 h-20 flex justify-around items-center px-6 pb-safe z-50">
-            <button onClick={() => { }} className="flex flex-col items-center gap-1 text-primary">
+         <nav className="fixed bottom-0 left-0 w-full bg-background/60 backdrop-blur-3xl border-t border-white/5 h-24 flex justify-around items-center px-4 pb-safe z-50">
+            <button onClick={() => { }} className="flex-1 flex flex-col items-center gap-1.5 text-primary active:opacity-60 transition-all py-2">
                <LayoutDashboard size={20} />
-               <span className="text-[9px] font-black uppercase">Home</span>
+               <span className="text-[8px] font-black uppercase tracking-widest">Home</span>
             </button>
-            <button onClick={onOpenLeague} className="flex flex-col items-center gap-1 text-secondary">
+            <button onClick={onOpenLeague} className="flex-1 flex flex-col items-center gap-1.5 text-secondary active:opacity-60 transition-all py-2">
                <Trophy size={20} />
-               <span className="text-[9px] font-black uppercase">Liga</span>
+               <span className="text-[8px] font-black uppercase tracking-widest">Liga</span>
             </button>
-            <button onClick={onOpenStats} className="flex flex-col items-center gap-1 text-secondary">
+            <button onClick={onOpenStats} className="flex-1 flex flex-col items-center gap-1.5 text-secondary active:opacity-60 transition-all py-2">
                <BarChart3 size={20} />
-               <span className="text-[9px] font-black uppercase">Stats</span>
+               <span className="text-[8px] font-black uppercase tracking-widest">Stats</span>
             </button>
-            <button onClick={onOpenNews} className="flex flex-col items-center gap-1 text-secondary relative">
+            <button onClick={onOpenNews} className="flex-1 flex flex-col items-center gap-1.5 text-secondary relative active:opacity-60 transition-all py-2">
                <Newspaper size={20} />
-               <span className="text-[9px] font-black uppercase">Notícias</span>
+               <span className="text-[8px] font-black uppercase tracking-widest">Notícias</span>
                {unreadNewsCount > 0 && (
-                  <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-black text-white">
+                  <div className="absolute top-1 right-[20%] flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-[7px] font-black text-white border border-background shadow-lg">
                      {unreadNewsCount}
                   </div>
                )}
             </button>
-            <button onClick={onOpenProfile} className="flex flex-col items-center gap-1 text-secondary">
+            <button onClick={onOpenProfile} className="flex-1 flex flex-col items-center gap-1.5 text-secondary active:opacity-60 transition-all py-2">
                <Users size={20} />
-               <span className="text-[9px] font-black uppercase">Perfil</span>
+               <span className="text-[8px] font-black uppercase tracking-widest">Perfil</span>
             </button>
-            <button onClick={onOpenSettings} className="flex flex-col items-center gap-1 text-secondary">
+            <button onClick={onOpenSettings} className="flex-1 flex flex-col items-center gap-1.5 text-secondary active:opacity-60 transition-all py-2">
                <Settings size={20} />
-               <span className="text-[9px] font-black uppercase">Ajustes</span>
+               <span className="text-[8px] font-black uppercase tracking-widest">Ajustes</span>
             </button>
          </nav>
       </div>

@@ -44,6 +44,7 @@ export default function App() {
   const [playerStats, setPlayerStats] = useState<Record<string, PlayerSeasonStats>>({});
   const [coach, setCoach] = useState<Coach | null>(null);
   const [pastSeasons, setPastSeasons] = useState<SeasonHistory[]>([]);
+  const [ddaFactor, setDdaFactor] = useState(1.0);
 
   const [activeSlot, setActiveSlot] = useState<SaveSlotId>(1);
   const [lastScreen, setLastScreen] = useState<ScreenState>('DASHBOARD');
@@ -67,9 +68,10 @@ export default function App() {
       news,
       playerStats,
       coach,
-      pastSeasons
+      pastSeasons,
+      ddaFactor
     };
-  }, [season, currentRound, funds, ticketPrice, teams, userTeamId, matchHistory, fixtures, news, playerStats, coach, pastSeasons]);
+  }, [season, currentRound, funds, ticketPrice, teams, userTeamId, matchHistory, fixtures, news, playerStats, coach, pastSeasons, ddaFactor]);
 
   const applySave = useCallback((save: SaveGame) => {
     setSeason(save.season);
@@ -83,6 +85,7 @@ export default function App() {
     setPlayerStats(save.playerStats ?? {});
     setCoach(save.coach ?? null);
     setPastSeasons(save.pastSeasons || []);
+    setDdaFactor(save.ddaFactor ?? 1.0);
 
     // MIGRATION: Ensure Free Agents team exists for old saves
     const loadedTeams = save.teams as Team[];
@@ -299,6 +302,44 @@ export default function App() {
       }
     }
 
+    // 4) Transfer Sagas (AI Offers) - NEW
+    if (isWindowOpen && Math.random() > 0.82 && userTeam) {
+      const star = pickUserStar();
+      if (star) {
+        // Find wealthy AI clubs
+        const wealthyClubs = teams.filter(t => t.id !== userTeamId && (t.financeStatus === 'Rico' || t.division === 1));
+        const buyer = wealthyClubs[Math.floor(Math.random() * wealthyClubs.length)];
+        const offerValue = Math.round((star.marketValue * (1.2 + Math.random() * 0.4)) / 1000) * 1000;
+
+        newsList.push({
+          id: Math.random().toString(36),
+          round,
+          title: `OFERTA OFICIAL: ${star.name}`,
+          body: `O ${buyer.name} enviou uma proposta de ${formatCurrency(offerValue)} por ${star.name}. A diretoria está sob pressão: vender o craque ou manter o projeto?`,
+          category: 'MARKET',
+          isRead: false,
+          choices: [
+            {
+              label: `Vender (${formatCurrency(offerValue)})`,
+              impact: {
+                playerId: star.id,
+                sellValue: offerValue,
+                moral: -8,
+                newsText: `Negócio fechado. ${star.name} deixa o clube. A torcida está furiosa, mas o caixa está reforçado.`
+              }
+            },
+            {
+              label: 'Recusar Proposta',
+              impact: {
+                moral: 4,
+                newsText: `Proposta rejeitada! "Dinheiro não compra tudo", diz a nota oficial. A torcida ovaciona a diretoria.`
+              }
+            },
+          ],
+        });
+      }
+    }
+
     // 4) Abertura/fechamento da janela (quando acontecer)
     if (round === 1 || round === 6 || round === 10 || round === 15) {
       const openNow = (round >= 1 && round <= 5) || (round >= 10 && round <= 14);
@@ -340,6 +381,22 @@ export default function App() {
     if (impact.moral && userTeamId) {
       setTeams(prev => prev.map(t => t.id === userTeamId ? { ...t, moral: Math.min(100, Math.max(0, t.moral + impact.moral)) } : t));
     }
+
+    // Transfer Saga: Sell Player
+    if (impact.sellValue && impact.playerId && userTeamId) {
+      const player = userTeam?.roster.find(p => p.id === impact.playerId);
+      if (player) {
+        setTeams(prev => prev.map(t => {
+          if (t.id === userTeamId) {
+            return { ...t, roster: t.roster.filter(p => p.id !== impact.playerId) };
+          }
+          return t;
+        }));
+        setFunds(f => f + impact.sellValue);
+        toast.success(`${player.name} vendido!`, { icon: '💰' });
+      }
+    }
+
     setNews(prev => prev.map(n => n.id === newsId ? { ...n, isRead: true, choices: undefined, body: impact.newsText || n.body } : n));
     toast.success("Decisão tomada!");
   };
@@ -469,11 +526,19 @@ export default function App() {
           const aPower = aAtt - hDef + (Math.random() * 20 - 10) * tension;
 
           // 4. Conversão em gols (Poisson-ish approach simplificado)
-          // Base goal expectance: 1.3 per team
+          // Base goal expectance: 1.25 per team
           // Delta power: cada 10 pontos de diferença = +/- 0.5 gols
           const baseGoals = 1.25;
-          const hExpected = Math.max(0, baseGoals + (hPower * 0.05));
-          const aExpected = Math.max(0, baseGoals + (aPower * 0.05));
+          let hExpected = Math.max(0, baseGoals + (hPower * 0.05));
+          let aExpected = Math.max(0, baseGoals + (aPower * 0.05));
+
+          // APPLY DDA: If user is the away team, home AI gets buffed by ddaFactor.
+          // If user is home team, away AI gets buffed by ddaFactor.
+          if (fix.homeTeamId === userTeamId) {
+            aExpected *= ddaFactor;
+          } else if (fix.awayTeamId === userTeamId) {
+            hExpected *= ddaFactor;
+          }
 
           // Função para gerar gols com base na expect
           const simulateGoals = (expect: number) => {
@@ -511,6 +576,38 @@ export default function App() {
         });
       }
     });
+
+    // --- RECALCULATE DDA FACTOR ---
+    // Look at last 5 user matches in history
+    const recentMatches = [...matchHistory, ...roundResults]
+      .filter(m => m.isUserMatch)
+      .slice(-5);
+
+    let wins = 0;
+    let losses = 0;
+    recentMatches.forEach(m => {
+      const isHome = m.homeTeamName === userTeam.name;
+      const userScored = isHome ? m.homeScore : m.awayScore;
+      const opponentScored = isHome ? m.awayScore : m.homeScore;
+      if (userScored > opponentScored) wins++;
+      else if (userScored < opponentScored) losses++;
+    });
+
+    // DDA Rule:
+    // 5 wins -> +0.20 (1.20)
+    // 4 wins -> +0.10 (1.10)
+    // 3 wins -> +0.05 (1.05)
+    // 3 losses -> -0.05 (0.95)
+    // 4 losses -> -0.10 (0.90)
+    // 5 losses -> -0.20 (0.80)
+    let newDda = 1.0;
+    if (wins === 5) newDda = 1.20;
+    else if (wins === 4) newDda = 1.12;
+    else if (wins === 3) newDda = 1.06;
+    else if (losses === 3) newDda = 0.94;
+    else if (losses === 4) newDda = 0.88;
+    else if (losses === 5) newDda = 0.80;
+    setDdaFactor(newDda);
 
     // Atualizar स्टेट 'teams' e 'playerStats' de uma só vez
     const newTeams = teams.map(team => {
@@ -1066,7 +1163,7 @@ export default function App() {
         />
       )}
 
-      {userTeam && currentScreen === 'MATCH' && nextOpponent && <MatchScreen homeTeam={userTeam} awayTeam={nextOpponent} round={currentRound} onFinish={handleMatchFinished} />}
+      {userTeam && currentScreen === 'MATCH' && nextOpponent && <MatchScreen homeTeam={userTeam} awayTeam={nextOpponent} round={currentRound} ddaFactor={ddaFactor} onFinish={handleMatchFinished} />}
       {currentScreen === 'NEWS' && <NewsScreen news={news} onBack={() => setCurrentScreen('DASHBOARD')} onRead={(id) => setNews(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n))} onChoice={handleNewsChoice} />}
       {currentScreen === 'STATS' && (
         <StatsScreen

@@ -1,6 +1,7 @@
 {
   "name": "bolanarede-manager",
   "version": "1.0.0",
+  "type": "module",
   "description": "Football Manager game based on Elifoot",
   "main": "index.html",
   "scripts": {
@@ -14,6 +15,7 @@
     "@capacitor/android": "^6.0.0",
     "@capacitor/cli": "^6.0.0",
     "@capacitor/core": "^6.0.0",
+    "@capacitor/haptics": "^6.0.3",
     "@supabase/supabase-js": "^2.90.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.462.0",
@@ -22,8 +24,12 @@
     "react-hot-toast": "^2.4.1"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
     "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
     "serve": "^14.2.0",
+    "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite": "^5.0.0"
   },

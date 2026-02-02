@@ -87,75 +87,87 @@ export default function MarketScreen({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white relative">
-      <header className="p-4 bg-surface/50 border-b border-white/5 space-y-4">
-        <div className="flex items-center justify-between">
-          <button onClick={onBack} className="p-2 bg-background rounded-full"><ArrowLeft size={20} /></button>
+    <div className="flex flex-col h-screen bg-background text-white relative font-sans">
+      <header className="fixed top-0 left-0 w-full z-40 bg-background/90 backdrop-blur-xl border-b border-white/5 pt-safe">
+        <div className="p-6 flex items-center justify-between">
+          <button onClick={onBack} className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center active:scale-95 transition-all">
+            <ArrowLeft size={20} />
+          </button>
           <div className="flex flex-col items-center">
-            <h1 className="text-xs font-black uppercase tracking-widest text-secondary">Mercado Global</h1>
-            <span className="text-lg font-black text-emerald-400">{formatMoney(funds)}</span>
+            <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary mb-1">Mercado Global</h1>
+            <span className="text-xl font-black text-emerald-400 tabular-nums tracking-tighter">{formatMoney(funds)}</span>
           </div>
-          <div className="w-10"></div>
+          <div className="w-12"></div>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        <div className="px-6 pb-6 flex gap-3 overflow-x-auto no-scrollbar">
           {[
-            { id: 'EXPLORE', label: 'Explorar', icon: <Search size={14} /> },
-            { id: 'OFFERS', label: 'Propostas', icon: <Tags size={14} />, badge: offers.length },
-            { id: 'HISTORY', label: 'Histórico', icon: <History size={14} /> },
-            { id: 'LISTED', label: 'Meu Time', icon: <Briefcase size={14} /> }
+            { id: 'EXPLORE', label: 'Explorar', icon: <Search size={16} /> },
+            { id: 'OFFERS', label: 'Propostas', icon: <Tags size={16} />, badge: offers.length },
+            { id: 'HISTORY', label: 'Histórico', icon: <History size={16} /> },
+            { id: 'LISTED', label: 'Meu Time', icon: <Briefcase size={16} /> }
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={clsx(
-                "flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all shrink-0",
-                activeTab === tab.id ? "bg-primary text-white" : "bg-white/5 text-secondary"
+                "flex items-center gap-3 px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shrink-0",
+                activeTab === tab.id ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-secondary border border-white/5"
               )}
             >
               {tab.icon} {tab.label}
-              {tab.badge ? <span className="bg-rose-500 text-white px-1.5 rounded-full">{tab.badge}</span> : null}
+              {tab.badge ? <span className="bg-rose-500 text-white px-2 py-0.5 rounded-full text-[9px] ml-1">{tab.badge}</span> : null}
             </button>
           ))}
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-4 no-scrollbar">
+      <main className="flex-1 overflow-y-auto px-6 pt-[180px] pb-28 space-y-6 no-scrollbar">
         {activeTab === 'EXPLORE' && (
-          <div className="space-y-3">
-            <div className="flex gap-2">
-              <input
-                type="text" placeholder="Buscar jogador ou time..."
-                className="flex-1 bg-surface border border-white/5 p-4 rounded-2xl text-sm outline-none focus:ring-1 ring-primary"
-                value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-              />
+          <div className="space-y-6">
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary" size={18} />
+                <input
+                  type="text" placeholder="Buscar jogador ou time..."
+                  className="w-full bg-white/5 border border-white/5 pl-12 pr-4 py-4 rounded-[20px] text-sm outline-none focus:ring-2 ring-primary/50 transition-all font-medium"
+                  value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
               <button
                 onClick={() => setOnlyFreeAgents(!onlyFreeAgents)}
-                className={clsx("px-4 rounded-2xl border font-black text-[10px] uppercase transition-all", onlyFreeAgents ? "bg-emerald-500 border-emerald-500 text-white" : "bg-surface border-white/5 text-secondary")}
+                className={clsx("px-6 rounded-[20px] border font-black text-[10px] uppercase tracking-widest transition-all", onlyFreeAgents ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "bg-white/5 border-white/5 text-secondary")}
               >
                 Livres
               </button>
             </div>
-            <div className="space-y-2">
-              {availablePlayers.slice(0, 100).map(({ p, t }) => (
-                <div key={p.id} className="bg-surface p-4 rounded-2xl border border-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-background rounded-lg flex items-center justify-center font-black text-xs text-primary">{p.position}</div>
-                    <TeamLogo team={t} size="w-8 h-8" />
-                    <div>
-                      <p className="text-sm font-bold">{p.name}</p>
-                      <p className="text-[10px] text-secondary">OVR {p.overall} • {t.shortName}</p>
+
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black uppercase text-secondary/60 tracking-[0.2em] px-2 flex items-center justify-between">
+                <span>Jogadores Disponíveis</span>
+                <span className="bg-white/5 px-2 py-1 rounded text-white/30">{availablePlayers.length} Resultados</span>
+              </h3>
+              <div className="space-y-3">
+                {availablePlayers.slice(0, 100).map(({ p, t }) => (
+                  <div key={p.id} className="bg-surface/60 backdrop-blur-sm p-4 rounded-[24px] border border-white/5 flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-background rounded-xl flex items-center justify-center font-black text-xs text-primary shadow-inner border border-white/5">{p.position}</div>
+                      <TeamLogo team={t} size="w-10 h-10" />
+                      <div>
+                        <p className="text-base font-black tracking-tight">{p.name}</p>
+                        <p className="text-[10px] font-bold text-secondary uppercase tracking-widest">OVR {p.overall} • {t.shortName}</p>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => handleStartNegotiation(p, t)}
+                      disabled={!isWindowOpen}
+                      className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-20"
+                    >
+                      NEGOCIAR
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleStartNegotiation(p, t)}
-                    disabled={!isWindowOpen}
-                    className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl text-[10px] font-black disabled:opacity-30"
-                  >
-                    NEGOCIAR
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         )}

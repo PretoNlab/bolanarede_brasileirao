@@ -29,6 +29,12 @@ const generatePlayer = (position: Player['position'], baseRating: number): Playe
     assists: 0,
     potential,
     contractRounds: Math.floor(Math.random() * 20) + 15,
+    history: [],
+    seasonStats: {
+      yellowCards: 0,
+      redCards: 0,
+      matchesSuspended: 0
+    },
     stats: generateStats(position, overall, age)
   };
 };
@@ -78,52 +84,450 @@ const generateRoster = (teamRating: number): Player[] => {
 };
 
 export const INITIAL_TEAMS: Team[] = [
-  // SÉRIE A 2026 (Atualizado com Promoções de 2025: Santos, Mirassol, Sport, Ceará)
-  { id: 'botafogo', name: 'Botafogo', shortName: 'BOT', city: 'Rio de Janeiro', logoColor1: 'from-gray-900', logoColor2: 'to-white', attack: 94, defense: 92, roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 98, division: 1, stadiumCapacity: 46000, rivalId: 'flamengo' },
-  { id: 'palmeiras', name: 'Palmeiras', shortName: 'PAL', city: 'São Paulo', logoColor1: 'from-green-700', logoColor2: 'to-white', attack: 92, defense: 91, roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 95, division: 1, stadiumCapacity: 43000, rivalId: 'corinthians' },
-  { id: 'flamengo', name: 'Flamengo', shortName: 'FLA', city: 'Rio de Janeiro', logoColor1: 'from-red-600', logoColor2: 'to-black', attack: 91, defense: 89, roster: [], lineup: [], formation: '4-4-2', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 90, division: 1, stadiumCapacity: 78000, rivalId: 'vasco' },
-  { id: 'fortaleza', name: 'Fortaleza', shortName: 'FOR', city: 'Fortaleza', logoColor1: 'from-blue-600', logoColor2: 'to-red-600', attack: 89, defense: 88, roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 90, division: 1, stadiumCapacity: 63000, rivalId: 'ceara' },
-  { id: 'internacional', name: 'Internacional', shortName: 'INT', city: 'Porto Alegre', logoColor1: 'from-red-600', logoColor2: 'to-white', attack: 87, defense: 86, roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 85, division: 1, stadiumCapacity: 50000, rivalId: 'gremio' },
-  { id: 'saopaulo', name: 'São Paulo', shortName: 'SAO', city: 'São Paulo', logoColor1: 'from-red-600', logoColor2: 'to-black', attack: 86, defense: 85, roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 85, division: 1, stadiumCapacity: 66000, rivalId: 'corinthians' },
-  { id: 'santos', name: 'Santos', shortName: 'SAN', city: 'Santos', logoColor1: 'from-white', logoColor2: 'to-black', attack: 82, defense: 80, roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 90, division: 1, stadiumCapacity: 16000, rivalId: 'corinthians' },
-  { id: 'bahia', name: 'Bahia', shortName: 'BAH', city: 'Salvador', logoColor1: 'from-blue-600', logoColor2: 'to-red-600', attack: 85, defense: 84, roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 85, division: 1, stadiumCapacity: 48000, rivalId: 'vitoria' },
-  { id: 'cruzeiro', name: 'Cruzeiro', shortName: 'CRU', city: 'Belo Horizonte', logoColor1: 'from-blue-700', logoColor2: 'to-white', attack: 85, defense: 84, roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 85, division: 1, stadiumCapacity: 62000, rivalId: 'atletico_mg' },
-  { id: 'corinthians', name: 'Corinthians', shortName: 'COR', city: 'São Paulo', logoColor1: 'from-gray-900', logoColor2: 'to-white', attack: 84, defense: 83, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 80, division: 1, stadiumCapacity: 49000, rivalId: 'palmeiras' },
-  { id: 'atletico_mg', name: 'Atlético-MG', shortName: 'CAM', city: 'Belo Horizonte', logoColor1: 'from-gray-900', logoColor2: 'to-white', attack: 84, defense: 83, roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 80, division: 1, stadiumCapacity: 46000, rivalId: 'cruzeiro' },
-  { id: 'vasco', name: 'Vasco da Gama', shortName: 'VAS', city: 'Rio de Janeiro', logoColor1: 'from-gray-900', logoColor2: 'to-white', attack: 82, defense: 81, roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 80, division: 1, stadiumCapacity: 21000, rivalId: 'flamengo' },
-  { id: 'gremio', name: 'Grêmio', shortName: 'GRE', city: 'Porto Alegre', logoColor1: 'from-blue-500', logoColor2: 'to-black', attack: 82, defense: 81, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 80, division: 1, stadiumCapacity: 55000, rivalId: 'internacional' },
-  { id: 'fluminense', name: 'Fluminense', shortName: 'FLU', city: 'Rio de Janeiro', logoColor1: 'from-green-700', logoColor2: 'to-red-700', attack: 81, defense: 80, roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 75, division: 1, stadiumCapacity: 78000, rivalId: 'flamengo' },
-  { id: 'sport', name: 'Sport', shortName: 'SPT', city: 'Recife', logoColor1: 'from-red-600', logoColor2: 'to-black', attack: 79, defense: 78, roster: [], lineup: [], formation: '4-3-3', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 85, division: 1, stadiumCapacity: 30000, rivalId: 'nautico' },
-  { id: 'bragantino', name: 'RB Bragantino', shortName: 'RBB', city: 'Bragança Paulista', logoColor1: 'from-white', logoColor2: 'to-red-600', attack: 78, defense: 77, roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 75, division: 1, stadiumCapacity: 17000 },
-  { id: 'ceara', name: 'Ceará', shortName: 'CEA', city: 'Fortaleza', logoColor1: 'from-gray-900', logoColor2: 'to-white', attack: 80, defense: 79, roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 85, division: 1, stadiumCapacity: 63000, rivalId: 'fortaleza' },
-  { id: 'mirassol', name: 'Mirassol', shortName: 'MIR', city: 'Mirassol', logoColor1: 'from-yellow-400', logoColor2: 'to-green-600', attack: 76, defense: 75, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 85, division: 1, stadiumCapacity: 15000 },
-  { id: 'vitoria', name: 'Vitória', shortName: 'VIT', city: 'Salvador', logoColor1: 'from-red-600', logoColor2: 'to-black', attack: 77, defense: 76, roster: [], lineup: [], formation: '4-3-3', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70, division: 1, stadiumCapacity: 30000, rivalId: 'bahia' },
-  { id: 'coritiba', name: 'Coritiba', shortName: 'CFC', city: 'Curitiba', logoColor1: 'from-green-700', logoColor2: 'to-white', attack: 77, defense: 76, roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70, division: 1, stadiumCapacity: 40000, rivalId: 'athletico_pr' },
+  // 🇧🇷 SÉRIE A 2026 – 20 clubes (Baseado em dados reais 2025)
 
-  // SÉRIE B 2026 (Rebaixados 2024: Athletico, Atlético-GO, Cuiabá, Criciúma + Remanescentes)
-  { id: 'athletico_pr', name: 'Athletico-PR', shortName: 'CAP', city: 'Curitiba', logoColor1: 'from-red-600', logoColor2: 'to-black', attack: 82, defense: 81, roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 50, division: 2, stadiumCapacity: 42000, rivalId: 'coritiba' },
-  { id: 'atletico_go', name: 'Atlético-GO', shortName: 'ACG', city: 'Goiânia', logoColor1: 'from-red-600', logoColor2: 'to-black', attack: 78, defense: 77, roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 50, division: 2, stadiumCapacity: 12000, rivalId: 'goias' },
-  { id: 'cuiaba', name: 'Cuiabá', shortName: 'CUI', city: 'Cuiabá', logoColor1: 'from-green-600', logoColor2: 'to-yellow-400', attack: 78, defense: 77, roster: [], lineup: [], formation: '5-4-1', style: 'Ultra-Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 50, division: 2, stadiumCapacity: 44000 },
-  { id: 'criciuma', name: 'Criciúma', shortName: 'CRI', city: 'Criciúma', logoColor1: 'from-yellow-400', logoColor2: 'to-black', attack: 78, defense: 77, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 50, division: 2, stadiumCapacity: 19000, rivalId: 'avai' },
-  { id: 'juventude', name: 'Juventude', shortName: 'JUV', city: 'Caxias do Sul', logoColor1: 'from-green-600', logoColor2: 'to-white', attack: 76, defense: 75, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 60, division: 2, stadiumCapacity: 19000, rivalId: 'caxias' },
-  { id: 'america_mg', name: 'América-MG', shortName: 'AMG', city: 'Belo Horizonte', logoColor1: 'from-green-600', logoColor2: 'to-black', attack: 75, defense: 74, roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70, division: 2, stadiumCapacity: 23000 },
-  { id: 'goias', name: 'Goiás', shortName: 'GOI', city: 'Goiânia', logoColor1: 'from-green-600', logoColor2: 'to-white', attack: 75, defense: 74, roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70, division: 2, stadiumCapacity: 14000, rivalId: 'atletico_go' },
-  { id: 'avai', name: 'Avaí', shortName: 'AVA', city: 'Florianópolis', logoColor1: 'from-blue-500', logoColor2: 'to-white', attack: 74, defense: 73, roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 65, division: 2, stadiumCapacity: 17000, rivalId: 'figueirense' },
-  { id: 'vila_nova', name: 'Vila Nova', shortName: 'VIL', city: 'Goiânia', logoColor1: 'from-red-600', logoColor2: 'to-white', attack: 73, defense: 72, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 65, division: 2, stadiumCapacity: 11000, rivalId: 'goias' },
-  { id: 'ponte_preta', name: 'Ponte Preta', shortName: 'PON', city: 'Campinas', logoColor1: 'from-gray-900', logoColor2: 'to-white', attack: 72, defense: 71, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70, division: 2, stadiumCapacity: 10000, rivalId: 'guarani' },
-  { id: 'chapecoense', name: 'Chapecoense', shortName: 'CHA', city: 'Chapecó', logoColor1: 'from-green-600', logoColor2: 'to-white', attack: 73, defense: 72, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70, division: 2, stadiumCapacity: 22000 },
-  { id: 'operario', name: 'Operário-PR', shortName: 'OPE', city: 'Ponta Grossa', logoColor1: 'from-gray-900', logoColor2: 'to-white', attack: 71, defense: 70, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 60, division: 2, stadiumCapacity: 10000 },
-  { id: 'crb', name: 'CRB', shortName: 'CRB', city: 'Maceió', logoColor1: 'from-red-600', logoColor2: 'to-white', attack: 71, defense: 70, roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 60, division: 2, stadiumCapacity: 17000 },
-  { id: 'botafogo_sp', name: 'Botafogo-SP', shortName: 'BSP', city: 'Ribeirão Preto', logoColor1: 'from-red-600', logoColor2: 'to-white', attack: 69, defense: 68, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 55, division: 2, stadiumCapacity: 29000 },
-  { id: 'novorizontino', name: 'Novorizontino', shortName: 'NOV', city: 'Novo Horizonte', logoColor1: 'from-yellow-400', logoColor2: 'to-black', attack: 72, defense: 71, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 65, division: 2, stadiumCapacity: 12000 },
-  { id: 'londrina', name: 'Londrina', shortName: 'LEC', city: 'Londrina', logoColor1: 'from-blue-400', logoColor2: 'to-white', attack: 68, defense: 67, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70, division: 2, stadiumCapacity: 30000 },
-  { id: 'nautico', name: 'Náutico', shortName: 'NAU', city: 'Recife', logoColor1: 'from-red-600', logoColor2: 'to-white', attack: 69, defense: 68, roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70, division: 2, stadiumCapacity: 20000, rivalId: 'sport' },
-  { id: 'sao_bernardo', name: 'São Bernardo', shortName: 'SBE', city: 'São Bernardo', logoColor1: 'from-yellow-400', logoColor2: 'to-black', attack: 68, defense: 67, roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70, division: 2, stadiumCapacity: 15000 },
-  { id: 'remo', name: 'Remo', shortName: 'REM', city: 'Belém', logoColor1: 'from-blue-900', logoColor2: 'to-white', attack: 70, defense: 69, roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 85, division: 2, stadiumCapacity: 13000 },
-  { id: 'athletic', name: 'Athletic', shortName: 'ATH', city: 'São João del-Rei', logoColor1: 'from-gray-900', logoColor2: 'to-white', attack: 68, defense: 67, roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 65, division: 2, stadiumCapacity: 4000 },
+  // 🔥 Topo (Título / Libertadores)
+  {
+    id: 'flamengo', name: 'Flamengo', shortName: 'FLA', city: 'Rio de Janeiro',
+    logoColor1: 'from-red-600', logoColor2: 'to-black',
+    attack: 94, defense: 92,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 98,
+    division: 1, stadiumCapacity: 78000, stadiumName: 'Maracanã', socioCount: 150000,
+    rivalId: 'vasco',
+    description: 'Campeão brasileiro de 2025 e favorito absoluto em 2026.',
+    financeStatus: 'Rico',
+    seasonExpectation: 'Campeão'
+  },
+  {
+    id: 'palmeiras', name: 'Palmeiras', shortName: 'PAL', city: 'São Paulo',
+    logoColor1: 'from-green-700', logoColor2: 'to-white',
+    attack: 93, defense: 91,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 95,
+    division: 1, stadiumCapacity: 43000, stadiumName: 'Allianz Parque', socioCount: 140000,
+    rivalId: 'corinthians',
+    description: 'Vice-campeão com elenco competitivo e pressão por título.',
+    financeStatus: 'Rico',
+    seasonExpectation: 'Campeão'
+  },
+
+  // 🏆 Alto Nível
+  {
+    id: 'cruzeiro', name: 'Cruzeiro', shortName: 'CRU', city: 'Belo Horizonte',
+    logoColor1: 'from-blue-700', logoColor2: 'to-white',
+    attack: 89, defense: 88,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 90,
+    division: 1, stadiumCapacity: 62000, stadiumName: 'Mineirão', socioCount: 95000,
+    rivalId: 'atletico_mg',
+    description: 'Campanha sólida em 2025, mira estabilidade no topo.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'G4'
+  },
+  {
+    id: 'mirassol', name: 'Mirassol', shortName: 'MIR', city: 'Mirassol',
+    logoColor1: 'from-yellow-400', logoColor2: 'to-green-600',
+    attack: 87, defense: 86,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 88,
+    division: 1, stadiumCapacity: 15000, stadiumName: 'José Maria de Campos Maia', socioCount: 8000,
+    description: 'Surpresa de 2025, chega confiante em 2026.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'G6'
+  },
+
+  // 🟢 Meia Tabela Forte
+  {
+    id: 'fluminense', name: 'Fluminense', shortName: 'FLU', city: 'Rio de Janeiro',
+    logoColor1: 'from-green-700', logoColor2: 'to-red-700',
+    attack: 88, defense: 87,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 85,
+    division: 1, stadiumCapacity: 78000, stadiumName: 'Maracanã', socioCount: 75000,
+    rivalId: 'flamengo',
+    description: 'Tradicional carioca busca retomar protagonismo.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'G6'
+  },
+  {
+    id: 'botafogo', name: 'Botafogo', shortName: 'BOT', city: 'Rio de Janeiro',
+    logoColor1: 'from-gray-900', logoColor2: 'to-white',
+    attack: 86, defense: 85,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 83,
+    division: 1, stadiumCapacity: 46000, stadiumName: 'Nilton Santos', socioCount: 65000,
+    rivalId: 'flamengo',
+    description: 'Alvinegro carioca com investimento e ambição.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'G6'
+  },
+  {
+    id: 'bahia', name: 'Bahia', shortName: 'BAH', city: 'Salvador',
+    logoColor1: 'from-blue-600', logoColor2: 'to-red-600',
+    attack: 85, defense: 84,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 82,
+    division: 1, stadiumCapacity: 48000, stadiumName: 'Arena Fonte Nova', socioCount: 55000,
+    rivalId: 'vitoria',
+    description: 'Tricolor baiano em ascensão.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'Meio'
+  },
+
+  // ⚖️ Meio de Tabela
+  {
+    id: 'saopaulo', name: 'São Paulo', shortName: 'SAO', city: 'São Paulo',
+    logoColor1: 'from-red-600', logoColor2: 'to-black',
+    attack: 85, defense: 85,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 80,
+    division: 1, stadiumCapacity: 66000, stadiumName: 'Morumbi', socioCount: 110000,
+    rivalId: 'corinthians',
+    description: 'Gigante paulista busca reconstrução.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'Meio'
+  },
+  {
+    id: 'gremio', name: 'Grêmio', shortName: 'GRE', city: 'Porto Alegre',
+    logoColor1: 'from-blue-500', logoColor2: 'to-black',
+    attack: 84, defense: 84,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 78,
+    division: 1, stadiumCapacity: 55000, stadiumName: 'Arena do Grêmio', socioCount: 85000,
+    rivalId: 'internacional',
+    description: 'Tricolor gaúcho em fase de transição.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'Meio'
+  },
+  {
+    id: 'bragantino', name: 'RB Bragantino', shortName: 'RBB', city: 'Bragança Paulista',
+    logoColor1: 'from-white', logoColor2: 'to-red-600',
+    attack: 84, defense: 84,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 77,
+    division: 1, stadiumCapacity: 17000, stadiumName: 'Nabi Abi Chedid', socioCount: 12000,
+    description: 'Projeto Red Bull consolidado.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'Meio'
+  },
+  {
+    id: 'atletico_mg', name: 'Atlético-MG', shortName: 'CAM', city: 'Belo Horizonte',
+    logoColor1: 'from-gray-900', logoColor2: 'to-white',
+    attack: 86, defense: 85,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 75,
+    division: 1, stadiumCapacity: 46000, stadiumName: 'Arena MRV', socioCount: 120000,
+    rivalId: 'cruzeiro',
+    description: 'Força alta, mas campanha 11º em 2025 gera pressão.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'G6'
+  },
+  {
+    id: 'santos', name: 'Santos', shortName: 'SAN', city: 'Santos',
+    logoColor1: 'from-white', logoColor2: 'to-black',
+    attack: 84, defense: 84,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 82,
+    division: 1, stadiumCapacity: 16000, stadiumName: 'Vila Belmiro', socioCount: 70000,
+    rivalId: 'corinthians',
+    description: 'Peixe retorna à elite após acesso.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'Meio'
+  },
+  {
+    id: 'corinthians', name: 'Corinthians', shortName: 'COR', city: 'São Paulo',
+    logoColor1: 'from-gray-900', logoColor2: 'to-white',
+    attack: 83, defense: 83,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 76,
+    division: 1, stadiumCapacity: 49000, stadiumName: 'Neo Química Arena', socioCount: 130000,
+    rivalId: 'palmeiras',
+    description: 'Timão em reconstrução financeira.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'Meio'
+  },
+  {
+    id: 'vasco', name: 'Vasco da Gama', shortName: 'VAS', city: 'Rio de Janeiro',
+    logoColor1: 'from-gray-900', logoColor2: 'to-white',
+    attack: 83, defense: 82,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 74,
+    division: 1, stadiumCapacity: 21000, stadiumName: 'São Januário', socioCount: 80000,
+    rivalId: 'flamengo',
+    description: 'Gigante da Colina luta para se estabilizar.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'Evitar Z4'
+  },
+
+  // ⚠️ Zona de Risco
+  {
+    id: 'vitoria', name: 'EC Vitória', shortName: 'VIT', city: 'Salvador',
+    logoColor1: 'from-red-600', logoColor2: 'to-black',
+    attack: 81, defense: 81,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70,
+    division: 1, stadiumCapacity: 30000, stadiumName: 'Barradão', socioCount: 35000,
+    rivalId: 'bahia',
+    description: 'Leão baiano luta contra o rebaixamento.',
+    financeStatus: 'Limitada',
+    seasonExpectation: 'Evitar Z4'
+  },
+  {
+    id: 'internacional', name: 'Internacional', shortName: 'INT', city: 'Porto Alegre',
+    logoColor1: 'from-red-600', logoColor2: 'to-white',
+    attack: 83, defense: 83,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 72,
+    division: 1, stadiumCapacity: 50000, stadiumName: 'Beira-Rio', socioCount: 100000,
+    rivalId: 'gremio',
+    description: 'Colorado em recuperação após campanha 16º.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'Meio'
+  },
+
+  // 🚨 Rebaixados para Série B 2026
+  {
+    id: 'ceara', name: 'Ceará SC', shortName: 'CEA', city: 'Fortaleza',
+    logoColor1: 'from-gray-900', logoColor2: 'to-white',
+    attack: 82, defense: 81,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 65,
+    division: 2, stadiumCapacity: 63000, stadiumName: 'Castelão', socioCount: 45000,
+    rivalId: 'fortaleza',
+    description: 'Vozão busca retorno imediato à elite.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'Acesso'
+  },
+  {
+    id: 'fortaleza', name: 'Fortaleza', shortName: 'FOR', city: 'Fortaleza',
+    logoColor1: 'from-blue-600', logoColor2: 'to-red-600',
+    attack: 83, defense: 82,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 68,
+    division: 2, stadiumCapacity: 63000, stadiumName: 'Castelão', socioCount: 50000,
+    rivalId: 'ceara',
+    description: 'Leão do Pici quer voltar rapidamente.',
+    financeStatus: 'Boa',
+    seasonExpectation: 'Acesso'
+  },
+  {
+    id: 'juventude', name: 'Juventude', shortName: 'JUV', city: 'Caxias do Sul',
+    logoColor1: 'from-green-600', logoColor2: 'to-white',
+    attack: 79, defense: 78,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 60,
+    division: 2, stadiumCapacity: 19000, stadiumName: 'Alfredo Jaconi', socioCount: 15000,
+    description: 'Jaconero mira G8 na Série B.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'G8'
+  },
+  {
+    id: 'sport', name: 'Sport Recife', shortName: 'SPT', city: 'Recife',
+    logoColor1: 'from-red-600', logoColor2: 'to-black',
+    attack: 78, defense: 77,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 62,
+    division: 2, stadiumCapacity: 30000, stadiumName: 'Ilha do Retiro', socioCount: 40000,
+    rivalId: 'nautico',
+    description: 'Leão da Ilha busca acesso.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'Acesso'
+  },
+
+  // 🇧🇷 SÉRIE B 2026 – Restante dos 20 clubes
+  {
+    id: 'america_mg', name: 'América Mineiro', shortName: 'AMG', city: 'Belo Horizonte',
+    logoColor1: 'from-green-600', logoColor2: 'to-black',
+    attack: 75, defense: 74,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70,
+    division: 2, stadiumCapacity: 23000, stadiumName: 'Independência', socioCount: 25000,
+    description: 'Coelho mineiro em busca de acesso.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'G8'
+  },
+  {
+    id: 'athletic', name: 'Athletic', shortName: 'ATH', city: 'São João del-Rei',
+    logoColor1: 'from-gray-900', logoColor2: 'to-white',
+    attack: 68, defense: 67,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 65,
+    division: 2, stadiumCapacity: 4000, stadiumName: 'Estádio Mário Helênio', socioCount: 3000,
+    description: 'Time mineiro em consolidação.',
+    financeStatus: 'Limitada',
+    seasonExpectation: 'Meio'
+  },
+  {
+    id: 'atletico_go', name: 'Atlético Goianiense', shortName: 'ACG', city: 'Goiânia',
+    logoColor1: 'from-red-600', logoColor2: 'to-black',
+    attack: 78, defense: 77,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 68,
+    division: 2, stadiumCapacity: 12000, stadiumName: 'Antônio Accioly', socioCount: 18000,
+    rivalId: 'goias',
+    description: 'Dragão goiano quer retornar à elite.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'Acesso'
+  },
+  {
+    id: 'avai', name: 'Avaí', shortName: 'AVA', city: 'Florianópolis',
+    logoColor1: 'from-blue-500', logoColor2: 'to-white',
+    attack: 74, defense: 73,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 67,
+    division: 2, stadiumCapacity: 17000, stadiumName: 'Ressacada', socioCount: 22000,
+    description: 'Leão da Ilha catarinense.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'G8'
+  },
+  {
+    id: 'botafogo_sp', name: 'Botafogo-SP', shortName: 'BSP', city: 'Ribeirão Preto',
+    logoColor1: 'from-red-600', logoColor2: 'to-white',
+    attack: 69, defense: 68,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 64,
+    division: 2, stadiumCapacity: 29000, stadiumName: 'Santa Cruz', socioCount: 15000,
+    description: 'Pantera paulista tradicional.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'Meio'
+  },
+  {
+    id: 'crb', name: 'CRB', shortName: 'CRB', city: 'Maceió',
+    logoColor1: 'from-red-600', logoColor2: 'to-white',
+    attack: 71, defense: 70,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 66,
+    division: 2, stadiumCapacity: 17000, stadiumName: 'Rei Pelé', socioCount: 12000,
+    description: 'Galo alagoano competitivo.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'G8'
+  },
+  {
+    id: 'criciuma', name: 'Criciúma', shortName: 'CRI', city: 'Criciúma',
+    logoColor1: 'from-yellow-400', logoColor2: 'to-black',
+    attack: 78, defense: 77,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 69,
+    division: 2, stadiumCapacity: 19000, stadiumName: 'Heriberto Hülse', socioCount: 16000,
+    rivalId: 'avai',
+    description: 'Tigre catarinense busca acesso.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'Acesso'
+  },
+  {
+    id: 'cuiaba', name: 'Cuiabá', shortName: 'CUI', city: 'Cuiabá',
+    logoColor1: 'from-green-600', logoColor2: 'to-yellow-400',
+    attack: 78, defense: 77,
+    roster: [], lineup: [], formation: '5-4-1', style: 'Ultra-Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 68,
+    division: 2, stadiumCapacity: 44000, stadiumName: 'Arena Pantanal', socioCount: 20000,
+    description: 'Dourado mato-grossense.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'Acesso'
+  },
+  {
+    id: 'goias', name: 'Goiás', shortName: 'GOI', city: 'Goiânia',
+    logoColor1: 'from-green-600', logoColor2: 'to-white',
+    attack: 75, defense: 74,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 70,
+    division: 2, stadiumCapacity: 14000, stadiumName: 'Serrinha', socioCount: 25000,
+    rivalId: 'atletico_go',
+    description: 'Esmeraldino goiano tradicional.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'Acesso'
+  },
+  {
+    id: 'londrina', name: 'Londrina', shortName: 'LEC', city: 'Londrina',
+    logoColor1: 'from-blue-400', logoColor2: 'to-white',
+    attack: 68, defense: 67,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 65,
+    division: 2, stadiumCapacity: 30000, stadiumName: 'Estádio do Café', socioCount: 18000,
+    description: 'Tubarão paranaense.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'Meio'
+  },
+  {
+    id: 'nautico', name: 'Náutico', shortName: 'NAU', city: 'Recife',
+    logoColor1: 'from-red-600', logoColor2: 'to-white',
+    attack: 69, defense: 68,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Ofensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 66,
+    division: 2, stadiumCapacity: 20000, stadiumName: 'Aflitos', socioCount: 28000,
+    rivalId: 'sport',
+    description: 'Timbu pernambucano tradicional.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'G8'
+  },
+  {
+    id: 'novorizontino', name: 'Novorizontino', shortName: 'NOV', city: 'Novo Horizonte',
+    logoColor1: 'from-yellow-400', logoColor2: 'to-black',
+    attack: 72, defense: 71,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 68,
+    division: 2, stadiumCapacity: 12000, stadiumName: 'Jorge Ismael de Biasi', socioCount: 8000,
+    description: 'Tigre do Vale paulista.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'G8'
+  },
+  {
+    id: 'operario', name: 'Operário-PR', shortName: 'OPE', city: 'Ponta Grossa',
+    logoColor1: 'from-gray-900', logoColor2: 'to-white',
+    attack: 71, defense: 70,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 64,
+    division: 2, stadiumCapacity: 10000, stadiumName: 'Germano Krüger', socioCount: 7000,
+    description: 'Fantasma paranaense.',
+    financeStatus: 'Limitada',
+    seasonExpectation: 'Meio'
+  },
+  {
+    id: 'ponte_preta', name: 'Ponte Preta', shortName: 'PON', city: 'Campinas',
+    logoColor1: 'from-gray-900', logoColor2: 'to-white',
+    attack: 72, defense: 71,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 67,
+    division: 2, stadiumCapacity: 10000, stadiumName: 'Moisés Lucarelli', socioCount: 20000,
+    description: 'Macaca campineira tradicional.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'G8'
+  },
+  {
+    id: 'sao_bernardo', name: 'São Bernardo', shortName: 'SBE', city: 'São Bernardo',
+    logoColor1: 'from-yellow-400', logoColor2: 'to-black',
+    attack: 68, defense: 67,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 63,
+    division: 2, stadiumCapacity: 15000, stadiumName: '1º de Maio', socioCount: 10000,
+    description: 'Tigre do ABC paulista.',
+    financeStatus: 'Limitada',
+    seasonExpectation: 'Meio'
+  },
+  {
+    id: 'vila_nova', name: 'Vila Nova', shortName: 'VIL', city: 'Goiânia',
+    logoColor1: 'from-red-600', logoColor2: 'to-white',
+    attack: 73, defense: 72,
+    roster: [], lineup: [], formation: '4-4-2', style: 'Defensivo',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 66,
+    division: 2, stadiumCapacity: 11000, stadiumName: 'Onésio Brasileiro Alvarenga', socioCount: 12000,
+    rivalId: 'goias',
+    description: 'Tigre goiano competitivo.',
+    financeStatus: 'Controlada',
+    seasonExpectation: 'G8'
+  },
 
   // FREE AGENTS
-  { id: 'free_agent', name: 'Sem Clube', shortName: 'LIV', city: 'Mundo', logoColor1: 'from-gray-500', logoColor2: 'to-gray-700', attack: 70, defense: 70, roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado', played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 50, division: 0, stadiumCapacity: 0 }
+  {
+    id: 'free_agent', name: 'Sem Clube', shortName: 'LIV', city: 'Mundo',
+    logoColor1: 'from-gray-500', logoColor2: 'to-gray-700',
+    attack: 70, defense: 70,
+    roster: [], lineup: [], formation: '4-3-3', style: 'Equilibrado',
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 50,
+    division: 0, stadiumCapacity: 0,
+    description: 'Jogadores sem clube disponíveis no mercado.'
+  }
 ];
 
 INITIAL_TEAMS.forEach(team => {

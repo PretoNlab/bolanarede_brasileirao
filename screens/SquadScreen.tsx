@@ -41,51 +41,51 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
    const playerHistory = selectedPlayer ? transferLogs.filter(log => log.playerName === selectedPlayer.name) : [];
 
    return (
-      <div className="flex flex-col h-screen bg-background text-white relative">
-         <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-white/5 p-4 flex items-center justify-between">
-            <button onClick={onBack} className="w-10 h-10 rounded-full hover:bg-surface flex items-center justify-center">
+      <div className="flex flex-col h-screen bg-background text-white relative font-sans">
+         <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-white/5 p-6 flex items-center justify-between pt-safe">
+            <button onClick={onBack} className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center active:scale-95 transition-all">
                <ArrowLeft size={20} />
             </button>
-            <h1 className="text-lg font-bold">Elenco Profissional</h1>
-            <div className="w-10"></div>
+            <h1 className="text-base font-black italic tracking-tighter uppercase">Elenco Profissional</h1>
+            <div className="w-12"></div>
          </header>
 
-         <div className="px-4 py-4 overflow-x-auto no-scrollbar flex gap-2">
+         <div className="px-6 py-5 overflow-x-auto no-scrollbar flex gap-3 bg-background/60 backdrop-blur-xl sticky top-[80px] z-30 border-b border-white/5">
             {['ALL', 'GOL', 'DEF', 'MID', 'ATT'].map((tab) => (
-               <button key={tab} onClick={() => setFilter(tab as any)} className={clsx("px-4 py-2 rounded-full text-xs font-bold transition-all", filter === tab ? "bg-primary text-white" : "bg-surface text-secondary")}>
+               <button key={tab} onClick={() => setFilter(tab as any)} className={clsx("px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap min-w-[70px]", filter === tab ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-secondary border border-white/5")}>
                   {tab === 'ALL' ? 'Todos' : tab}
                </button>
             ))}
          </div>
 
-         <div className="flex-1 overflow-y-auto px-4 pb-20 space-y-3 no-scrollbar">
+         <div className="flex-1 overflow-y-auto px-6 pb-28 space-y-4 no-scrollbar">
             {filteredPlayers.map((player) => (
                <div
                   key={player.id}
                   onClick={() => { setSelectedPlayer(player); setModalTab('STATS'); }}
-                  className="bg-surface rounded-2xl p-4 border border-white/5 relative overflow-hidden active:scale-[0.98] transition-transform cursor-pointer"
+                  className="bg-surface/60 backdrop-blur-sm rounded-[32px] p-6 border border-white/5 relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer group hover:bg-surface/80 shadow-inner"
                >
                   {player.isSuspended && (
-                     <div className="absolute top-0 right-0 p-2 bg-rose-600 text-[8px] font-black uppercase rounded-bl-lg flex items-center gap-1">
+                     <div className="absolute top-0 right-0 px-4 py-1.5 bg-rose-600 text-[8px] font-black uppercase rounded-bl-2xl flex items-center gap-1.5 shadow-lg">
                         <AlertCircle size={10} /> Suspenso
                      </div>
                   )}
 
-                  <div className="flex items-center justify-between mb-3">
-                     <div className="flex items-center gap-3">
-                        <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center border font-black text-xs", POS_COLORS[player.position])}>
+                  <div className="flex items-center justify-between mb-4">
+                     <div className="flex items-center gap-4">
+                        <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center border-2 font-black text-xs shadow-inner transition-transform group-hover:scale-105", POS_COLORS[player.position])}>
                            {player.position}
                         </div>
                         <div className="flex flex-col">
-                           <span className="text-sm font-bold">{player.name}</span>
-                           <span className="text-[10px] text-secondary">OVR {player.overall} • {player.age} anos</span>
+                           <span className="text-base font-black tracking-tight">{player.name}</span>
+                           <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">OVR {player.overall} • {player.age} anos</span>
                         </div>
                      </div>
-                     <div className="flex flex-col items-end">
-                        <div className="flex items-center gap-1 text-[10px] font-black uppercase text-emerald-400">
+                     <div className="flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-emerald-400">
                            <Zap size={10} fill="currentColor" /> {player.energy}%
                         </div>
-                        <span className="text-[9px] text-secondary uppercase font-bold">Contrato: {player.contractRounds} rod.</span>
+                        <span className="text-[9px] text-secondary/60 uppercase font-black tracking-widest">Contrato: {player.contractRounds} rod.</span>
                      </div>
                   </div>
 
@@ -115,10 +115,10 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
 
          {/* Detalhes do Jogador (Modal) */}
          {selectedPlayer && (
-            <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl animate-in fade-in duration-300 flex flex-col pt-safe">
-               <header className="p-4 flex items-center justify-between border-b border-white/5">
-                  <button onClick={() => setSelectedPlayer(null)} className="p-2 bg-surface rounded-full"><X size={20} /></button>
-                  <h2 className="text-sm font-black uppercase tracking-widest italic">Perfil do Atleta</h2>
+            <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 flex flex-col">
+               <header className="p-5 flex items-center justify-between border-b border-white/5 pt-safe bg-background/80 backdrop-blur-xl">
+                  <button onClick={() => setSelectedPlayer(null)} className="w-10 h-10 bg-surface rounded-2xl flex items-center justify-center active:scale-90 transition-all border border-white/10"><X size={20} /></button>
+                  <h2 className="text-xs font-black uppercase tracking-[0.2em] italic text-white/70">Perfil do Atleta</h2>
                   <div className="w-10"></div>
                </header>
 
@@ -306,12 +306,12 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                   )}
                </main>
 
-               <div className="p-6 bg-surface border-t border-white/5 pb-safe">
+               <div className="p-6 bg-surface/80 backdrop-blur-3xl border-t border-white/5 pb-safe">
                   <button
                      onClick={() => onRenew(selectedPlayer.id)}
-                     className="w-full py-4 bg-primary text-white font-black rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl shadow-primary/20"
+                     className="w-full py-4.5 bg-primary text-white font-black rounded-3xl flex items-center justify-center gap-2.5 active:scale-95 transition-all shadow-2xl shadow-primary/30 border border-white/10 uppercase tracking-widest text-[11px]"
                   >
-                     <PencilLine size={18} /> RENOVAR CONTRATO
+                     <PencilLine size={16} /> RENOVAR CONTRATO
                   </button>
                </div>
             </div>

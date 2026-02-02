@@ -25,6 +25,7 @@ export interface SaveGame {
   playerStats?: Record<string, PlayerSeasonStats>;
   coach?: any; // Coach
   pastSeasons?: any[]; // SeasonHistory[]
+  ddaFactor?: number;
 }
 
 const KEY_PREFIX = 'bolanarede_save_slot_';

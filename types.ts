@@ -1,5 +1,4 @@
 
-
 export interface PlayerHistoryEvent {
   id: string;
   round: number;
@@ -67,8 +66,9 @@ export interface NewsChoice {
     funds?: number;
     moral?: number;
     newsText?: string;
+    [key: string]: any;
   };
-}
+};
 
 export interface NewsItem {
   id: string;
@@ -105,7 +105,12 @@ export interface Team {
   division: 0 | 1 | 2;
   prestige?: number;
   stadiumCapacity: number;
+  stadiumName?: string;
+  socioCount?: number;
   rivalId?: string;
+  description?: string;
+  financeStatus?: string;
+  seasonExpectation?: string;
 }
 
 export interface MatchResult {
