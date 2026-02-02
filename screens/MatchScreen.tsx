@@ -277,6 +277,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                   setIsFinished(true);
                   setIsPaused(true);
                   addNarration("APITA O ÁRBITRO! FINAL DE PARTIDA.", 'event');
+                  try { Haptics.notification({ type: NotificationType.Warning }); } catch { }
                   return 90;
                }
 
@@ -331,187 +332,198 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
       <div className="flex flex-col h-screen bg-background text-white relative font-sans overflow-hidden">
 
          {/* 1. RETRO INFO HEADER */}
-         <header className="bg-black/95 backdrop-blur-xl py-4 px-8 flex justify-between items-center text-[10px] font-black uppercase tracking-[0.25em] border-b border-white/5 z-30 pt-safe">
-            <div className="text-white/40 flex items-center gap-4">
-               <span className="text-white/60">Brasileiro • D1</span>
-               <div className="w-1 h-1 rounded-full bg-white/10" />
-               <span>Rodada {round}</span>
-            </div>
-            <div className="flex items-center gap-4">
-               <span className="text-primary italic text-lg tracking-tighter drop-shadow-[0_0_10px_rgba(255,100,255,0.4)]">{minute}'</span>
-               <div className="w-1 h-1 rounded-full bg-white/10" />
-               <span className="text-white/40">{gameState === '1H' ? '1ºT' : gameState === 'HT' ? 'INT' : '2ºT'}</span>
-            </div>
-         </header>
+         {!showSubModal && !showTacticsModal && (
+            <header className="bg-black/95 backdrop-blur-xl py-4 px-8 flex justify-between items-center text-[10px] font-black uppercase tracking-[0.25em] border-b border-white/5 z-30 pt-safe">
+               <div className="text-white/40 flex items-center gap-4">
+                  <span className="text-white/60">Brasileiro • D1</span>
+                  <div className="w-1 h-1 rounded-full bg-white/10" />
+                  <span>Rodada {round}</span>
+               </div>
+               <div className="flex items-center gap-4">
+                  <span className="text-primary italic text-lg tracking-tighter drop-shadow-[0_0_10px_rgba(255,100,255,0.4)]">{minute}'</span>
+                  <div className="w-1 h-1 rounded-full bg-white/10" />
+                  <span className="text-white/40">{gameState === '1H' ? '1ºT' : gameState === 'HT' ? 'INT' : '2ºT'}</span>
+               </div>
+            </header>
+         )}
 
          {/* 2. COMPACT TEAM STRIPS */}
-         <div className="flex flex-col flex-none">
-            <div className={clsx(
-               "py-1.5 flex justify-center items-center font-black italic text-sm uppercase tracking-tighter border-b border-white/5 transition-all duration-700",
-               homeTeam.logoColor1 || "bg-primary"
-            )}>
-               <span className="drop-shadow-lg">{homeTeam.name}</span>
+         {!showSubModal && !showTacticsModal && (
+            <div className="flex flex-col flex-none">
+               <div className={clsx(
+                  "py-1.5 flex justify-center items-center font-black italic text-sm uppercase tracking-tighter border-b border-white/5 transition-all duration-700",
+                  homeTeam.logoColor1 || "bg-primary"
+               )}>
+                  <span className="drop-shadow-lg">{homeTeam.name}</span>
+               </div>
+               <div className={clsx(
+                  "py-1.5 flex justify-center items-center font-black italic text-sm uppercase tracking-tighter border-b border-white/5 transition-all duration-700",
+                  initialAwayTeam.logoColor1 || "bg-secondary"
+               )}>
+                  <span className="drop-shadow-lg">{initialAwayTeam.name}</span>
+               </div>
             </div>
-            <div className={clsx(
-               "py-1.5 flex justify-center items-center font-black italic text-sm uppercase tracking-tighter border-b border-white/5 transition-all duration-700",
-               initialAwayTeam.logoColor1 || "bg-secondary"
-            )}>
-               <span className="drop-shadow-lg">{initialAwayTeam.name}</span>
-            </div>
-         </div>
+         )}
 
          {/* 3. DIGITAL LED SCOREBOARD (COMPACT) */}
-         <div className="bg-[#050505] relative overflow-hidden py-3 px-6 flex justify-around items-center border-b border-white/5 shadow-inner flex-none">
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '4px 4px' }} />
+         {!showSubModal && !showTacticsModal && (
+            <div className="bg-[#050505] relative overflow-hidden py-3 px-6 flex justify-around items-center border-b border-white/5 shadow-inner flex-none">
+               <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '4px 4px' }} />
 
-            <div className="flex flex-col items-center">
-               <span className="text-[7px] font-black uppercase text-white/20 tracking-[0.2em] mb-1">CASA</span>
-               <div className="bg-black/40 rounded-lg px-3 py-1 border border-white/5">
-                  <span className="text-3xl font-black text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.4)] tabular-nums" style={{ fontFamily: 'monospace' }}>
-                     {homeScore}
-                  </span>
+               <div className="flex flex-col items-center">
+                  <span className="text-[7px] font-black uppercase text-white/20 tracking-[0.2em] mb-1">CASA</span>
+                  <div className="bg-black/40 rounded-lg px-3 py-1 border border-white/5">
+                     <span className="text-3xl font-black text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.4)] tabular-nums" style={{ fontFamily: 'monospace' }}>
+                        {homeScore}
+                     </span>
+                  </div>
+               </div>
+
+               <div className="text-xl font-black text-white/10">-</div>
+
+               <div className="flex flex-col items-center">
+                  <span className="text-[7px] font-black uppercase text-white/20 tracking-[0.2em] mb-1">FORA</span>
+                  <div className="bg-black/40 rounded-lg px-3 py-1 border border-white/5">
+                     <span className="text-3xl font-black text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.4)] tabular-nums" style={{ fontFamily: 'monospace' }}>
+                        {awayScore}
+                     </span>
+                  </div>
                </div>
             </div>
-
-            <div className="text-xl font-black text-white/10">-</div>
-
-            <div className="flex flex-col items-center">
-               <span className="text-[7px] font-black uppercase text-white/20 tracking-[0.2em] mb-1">FORA</span>
-               <div className="bg-black/40 rounded-lg px-3 py-1 border border-white/5">
-                  <span className="text-3xl font-black text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.4)] tabular-nums" style={{ fontFamily: 'monospace' }}>
-                     {awayScore}
-                  </span>
-               </div>
-            </div>
-         </div>
+         )}
 
          {/* 4. LIVE HIGHLIGHT & EVENT SUMMARY (SCROLLABLE AREA) */}
-         <div className="px-6 py-4 space-y-4 flex-none z-10 bg-black/20 border-b border-white/5">
-            {/* Event Summary Grid - Ultra Compact */}
-            <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-1.5">
-                  <h4 className="text-[7px] font-black uppercase text-white/30 tracking-[0.2em] flex items-center gap-2">
-                     <span className="w-1 h-1 bg-primary rounded-full" /> EVENTOS CASA
-                  </h4>
-                  <div className="bg-white/5 rounded-xl p-3 border border-white/5 min-h-[50px] max-h-[100px] overflow-y-auto no-scrollbar flex flex-col gap-1.5 shadow-inner">
-                     {matchEvents.filter(e => e.teamId === homeTeam.id).length === 0 && (
-                        <span className="text-[8px] text-white/5 font-black uppercase tracking-wider text-center py-2 italic">Nenhum evento</span>
-                     )}
-                     {matchEvents.filter(e => e.teamId === homeTeam.id).map((event, idx) => (
-                        <div key={idx} className="flex items-center gap-2 animate-in slide-in-from-left-2 duration-300">
-                           <span className="text-[10px]">{event.type === 'goal' ? '⚽' : event.type === 'card' ? (event.description.includes('vermelho') ? '🟥' : '🟨') : '🚑'}</span>
-                           <span className="text-[10px] font-bold text-white/70 truncate tracking-tight">{event.description.split(' - ')[0].replace('GOOOOOOOOOOOL! ', 'GOL! ')}</span>
-                           <span className="text-[9px] font-medium text-white/30 tabular-nums ml-auto">{event.minute}'</span>
-                        </div>
-                     ))}
-                  </div>
-               </div>
-
-               <div className="space-y-1.5">
-                  <h4 className="text-[7px] font-black uppercase text-white/30 tracking-[0.2em] flex items-center gap-2 justify-end">
-                     EVENTOS FORA <span className="w-1 h-1 bg-emerald-500 rounded-full" />
-                  </h4>
-                  <div className="bg-white/5 rounded-xl p-3 border border-white/5 min-h-[50px] max-h-[100px] overflow-y-auto no-scrollbar flex flex-col gap-1.5 shadow-inner">
-                     {matchEvents.filter(e => e.teamId === initialAwayTeam.id).length === 0 && (
-                        <span className="text-[8px] text-white/5 font-black uppercase tracking-wider text-center py-2 italic">Nenhum evento</span>
-                     )}
-                     {matchEvents.filter(e => e.teamId === initialAwayTeam.id).map((event, idx) => (
-                        <div key={idx} className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
-                           <span className="text-[9px] font-medium text-white/30 tabular-nums">{event.minute}'</span>
-                           <span className="text-[10px] font-bold text-white/70 truncate tracking-tight flex-1 text-right">{event.description.split(' - ')[0].replace('GOOOOOOOOOOOL! ', 'GOL! ')}</span>
-                           <span className="text-[10px] ml-1">{event.type === 'goal' ? '⚽' : event.type === 'card' ? (event.description.includes('vermelho') ? '🟥' : '🟨') : '🚑'}</span>
-                        </div>
-                     ))}
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         {/* Main Container - Narração e Stats */}
-         <main className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
-
-            {/* Barra de Momentum (O "Mini-Campo" de dados) */}
-            <div className="bg-surface/40 backdrop-blur-md rounded-[32px] p-6 border border-white/5 shadow-2xl">
-               <div className="flex justify-between items-center text-[9px] font-black uppercase text-secondary mb-4 tracking-[0.2em] px-2 opacity-60">
-                  <span className="text-primary">Pressão {homeTeam.shortName}</span>
-                  <span className="bg-white/5 px-2 py-0.5 rounded text-white/30">EQUILÍBRIO</span>
-                  <span className="text-emerald-400">Pressão {initialAwayTeam.shortName}</span>
-               </div>
-               <div className="h-2.5 bg-black/60 rounded-full overflow-hidden relative shadow-inner">
-                  <div
-                     className="absolute inset-y-0 bg-primary transition-all duration-1000 ease-in-out shadow-[0_0_20px_rgba(255,100,255,0.3)]"
-                     style={{ left: '0', width: `${stats.momentum}%` }}
-                  ></div>
-                  <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
-                     <div className="w-0.5 h-full bg-white/20" />
-                  </div>
-               </div>
-               <div className="grid grid-cols-3 mt-6 text-center">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-base font-black tabular-nums">{stats.possession}%</span>
-                     <span className="text-[8px] text-secondary uppercase font-black tracking-widest opacity-60">Posse</span>
-                  </div>
-                  <div className="flex flex-col gap-1 border-x border-white/5">
-                     <span className="text-sm font-black uppercase tracking-tighter italic text-primary">{currentStyle}</span>
-                     <span className="text-[8px] text-secondary uppercase font-black tracking-widest opacity-60">Mentalidade</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                     <span className="text-base font-black tabular-nums">{stats.homeShots} - {stats.awayShots}</span>
-                     <span className="text-[8px] text-secondary uppercase font-black tracking-widest opacity-60">Chutes</span>
-                  </div>
-               </div>
-            </div>
-
-            {/* Feed de Narração (A Alma do Elifoot) */}
-            <div
-               ref={feedRef}
-               className="flex-1 bg-black/30 rounded-[40px] border border-white/5 overflow-y-auto p-8 space-y-5 no-scrollbar shadow-inner relative"
-            >
-               {feed.length === 0 && (
-                  <div className="h-full flex flex-col items-center justify-center text-secondary/20 gap-6">
-                     <MessageSquare size={56} strokeWidth={1} />
-                     <p className="text-xs font-black uppercase tracking-[0.3em] italic text-center px-10 leading-relaxed shadow-sm">
-                        O gramado está impecável... <br />O árbitro consulta o cronômetro...
-                     </p>
-                  </div>
-               )}
-               {feed.map((msg, i) => (
-                  <div
-                     key={i}
-                     className={clsx(
-                        "animate-in fade-in slide-in-from-bottom-4 duration-500",
-                        msg.type === 'goal' ? "bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-3xl shadow-xl shadow-emerald-500/5" :
-                           msg.type === 'danger' ? "bg-rose-500/5 border-l-4 border-rose-500 px-6 py-2" : "px-2"
-                     )}
-                  >
-                     <div className="flex items-start gap-4">
-                        <span className="text-xs font-black text-secondary/40 mt-1.5 tabular-nums tracking-tighter shadow-sm">{msg.minute}'</span>
-                        <p className={clsx(
-                           "text-[15px] leading-relaxed font-medium tracking-tight",
-                           msg.type === 'goal' ? "text-emerald-400 font-black italic text-xl" :
-                              msg.type === 'danger' ? "text-rose-400 font-bold" :
-                                 msg.type === 'event' ? "text-primary font-bold" : "text-gray-200"
-                        )}>
-                           {msg.text}
-                        </p>
+         {!showSubModal && !showTacticsModal && (
+            <div className="px-6 py-4 space-y-4 flex-none z-10 bg-black/20 border-b border-white/5">
+               {/* Event Summary Grid - Ultra Compact */}
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                     <h4 className="text-[7px] font-black uppercase text-white/30 tracking-[0.2em] flex items-center gap-2">
+                        <span className="w-1 h-1 bg-primary rounded-full" /> EVENTOS CASA
+                     </h4>
+                     <div className="bg-white/5 rounded-xl p-3 border border-white/5 min-h-[50px] max-h-[100px] overflow-y-auto no-scrollbar flex flex-col gap-1.5 shadow-inner">
+                        {matchEvents.filter(e => e.teamId === homeTeam.id).length === 0 && (
+                           <span className="text-[8px] text-white/5 font-black uppercase tracking-wider text-center py-2 italic">Nenhum evento</span>
+                        )}
+                        {matchEvents.filter(e => e.teamId === homeTeam.id).map((event, idx) => (
+                           <div key={idx} className="flex items-center gap-2 animate-in slide-in-from-left-2 duration-300">
+                              <span className="text-[10px]">{event.type === 'goal' ? '⚽' : event.type === 'card' ? (event.description.includes('vermelho') ? '🟥' : '🟨') : '🚑'}</span>
+                              <span className="text-[10px] font-bold text-white/70 truncate tracking-tight">{event.description.split(' - ')[0].replace('GOOOOOOOOOOOL! ', 'GOL! ')}</span>
+                              <span className="text-[9px] font-medium text-white/30 tabular-nums ml-auto">{event.minute}'</span>
+                           </div>
+                        ))}
                      </div>
                   </div>
-               ))}
+
+                  <div className="space-y-1.5">
+                     <h4 className="text-[7px] font-black uppercase text-white/30 tracking-[0.2em] flex items-center gap-2 justify-end">
+                        EVENTOS FORA <span className="w-1 h-1 bg-emerald-500 rounded-full" />
+                     </h4>
+                     <div className="bg-white/5 rounded-xl p-3 border border-white/5 min-h-[50px] max-h-[100px] overflow-y-auto no-scrollbar flex flex-col gap-1.5 shadow-inner">
+                        {matchEvents.filter(e => e.teamId === initialAwayTeam.id).length === 0 && (
+                           <span className="text-[8px] text-white/5 font-black uppercase tracking-wider text-center py-2 italic">Nenhum evento</span>
+                        )}
+                        {matchEvents.filter(e => e.teamId === initialAwayTeam.id).map((event, idx) => (
+                           <div key={idx} className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
+                              <span className="text-[9px] font-medium text-white/30 tabular-nums">{event.minute}'</span>
+                              <span className="text-[10px] font-bold text-white/70 truncate tracking-tight flex-1 text-right">{event.description.split(' - ')[0].replace('GOOOOOOOOOOOL! ', 'GOL! ')}</span>
+                              <span className="text-[10px] ml-1">{event.type === 'goal' ? '⚽' : event.type === 'card' ? (event.description.includes('vermelho') ? '🟥' : '🟨') : '🚑'}</span>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+               </div>
             </div>
-         </main>
+         )}
+         {/* Main Container - Narração e Stats */}
+         {!showSubModal && !showTacticsModal && (
+            <main className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
+
+               {/* Barra de Momentum (O "Mini-Campo" de dados) */}
+               <div className="bg-surface/40 backdrop-blur-md rounded-[32px] p-6 border border-white/5 shadow-2xl">
+                  <div className="flex justify-between items-center text-[9px] font-black uppercase text-secondary mb-4 tracking-[0.2em] px-2 opacity-60">
+                     <span className="text-primary">Pressão {homeTeam.shortName}</span>
+                     <span className="bg-white/5 px-2 py-0.5 rounded text-white/30">EQUILÍBRIO</span>
+                     <span className="text-emerald-400">Pressão {initialAwayTeam.shortName}</span>
+                  </div>
+                  <div className="h-2.5 bg-black/60 rounded-full overflow-hidden relative shadow-inner">
+                     <div
+                        className="absolute inset-y-0 bg-primary transition-all duration-1000 ease-in-out shadow-[0_0_20px_rgba(255,100,255,0.3)]"
+                        style={{ left: '0', width: `${stats.momentum}%` }}
+                     ></div>
+                     <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
+                        <div className="w-0.5 h-full bg-white/20" />
+                     </div>
+                  </div>
+                  <div className="grid grid-cols-3 mt-6 text-center">
+                     <div className="flex flex-col gap-1">
+                        <span className="text-base font-black tabular-nums">{stats.possession}%</span>
+                        <span className="text-[8px] text-secondary uppercase font-black tracking-widest opacity-60">Posse</span>
+                     </div>
+                     <div className="flex flex-col gap-1 border-x border-white/5">
+                        <span className="text-sm font-black uppercase tracking-tighter italic text-primary">{currentStyle}</span>
+                        <span className="text-[8px] text-secondary uppercase font-black tracking-widest opacity-60">Mentalidade</span>
+                     </div>
+                     <div className="flex flex-col gap-1">
+                        <span className="text-base font-black tabular-nums">{stats.homeShots} - {stats.awayShots}</span>
+                        <span className="text-[8px] text-secondary uppercase font-black tracking-widest opacity-60">Chutes</span>
+                     </div>
+                  </div>
+               </div>
+
+               {/* Feed de Narração (A Alma do Elifoot) */}
+               <div
+                  ref={feedRef}
+                  className="flex-1 bg-black/30 rounded-[40px] border border-white/5 overflow-y-auto p-8 space-y-5 no-scrollbar shadow-inner relative"
+               >
+                  {feed.length === 0 && (
+                     <div className="h-full flex flex-col items-center justify-center text-secondary/20 gap-6">
+                        <MessageSquare size={56} strokeWidth={1} />
+                        <p className="text-xs font-black uppercase tracking-[0.3em] italic text-center px-10 leading-relaxed shadow-sm">
+                           O gramado está impecável... <br />O árbitro consulta o cronômetro...
+                        </p>
+                     </div>
+                  )}
+                  {feed.map((msg, i) => (
+                     <div
+                        key={i}
+                        className={clsx(
+                           "animate-in fade-in slide-in-from-bottom-4 duration-500",
+                           msg.type === 'goal' ? "bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-3xl shadow-xl shadow-emerald-500/5" :
+                              msg.type === 'danger' ? "bg-rose-500/5 border-l-4 border-rose-500 px-6 py-2" : "px-2"
+                        )}
+                     >
+                        <div className="flex items-start gap-4">
+                           <span className="text-xs font-black text-secondary/40 mt-1.5 tabular-nums tracking-tighter shadow-sm">{msg.minute}'</span>
+                           <p className={clsx(
+                              "text-[15px] leading-relaxed font-medium tracking-tight",
+                              msg.type === 'goal' ? "text-emerald-400 font-black italic text-xl" :
+                                 msg.type === 'danger' ? "text-rose-400 font-bold" :
+                                    msg.type === 'event' ? "text-primary font-bold" : "text-gray-200"
+                           )}>
+                              {msg.text}
+                           </p>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+            </main>
+         )}
 
          {/* Controle de Velocidade e Pausa Flutuante */}
-         <div className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col gap-2 z-10">
-            <button onClick={() => setIsPaused(!isPaused)} className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all">
-               {isPaused ? <Play size={20} fill="currentColor" /> : <Pause size={20} fill="currentColor" />}
-            </button>
-            <button onClick={() => setSpeed(s => s === 1 ? 10 : (s === 10 ? 100 : 1))} className="w-12 h-12 bg-surface border border-white/10 rounded-full flex items-center justify-center text-[10px] font-black shadow-xl">
-               {speed}x
-            </button>
-         </div>
+         {!showSubModal && !showTacticsModal && (
+            <div className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col gap-2 z-10">
+               <button onClick={() => setIsPaused(!isPaused)} className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all">
+                  {isPaused ? <Play size={20} fill="currentColor" /> : <Pause size={20} fill="currentColor" />}
+               </button>
+               <button onClick={() => setSpeed(s => s === 1 ? 10 : (s === 10 ? 100 : 1))} className="w-12 h-12 bg-surface border border-white/10 rounded-full flex items-center justify-center text-[10px] font-black shadow-xl">
+                  {speed}x
+               </button>
+            </div>
+         )}
 
          {/* Rodapé de Gestão em Tempo Real */}
-         {!isFinished && (
+         {!isFinished && !showSubModal && !showTacticsModal && (
             <div className="p-6 bg-surface/60 backdrop-blur-3xl border-t border-white/5 space-y-4 pb-safe z-40">
                <div className="flex gap-2.5">
                   {['Pressionar', 'Acalmar', 'Explorar Alas'].map(shout => (
@@ -542,7 +554,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
          )}
 
          {/* MODAL: INTERVALO (HT) */}
-         {gameState === 'HT' && (
+         {gameState === 'HT' && !showTacticsModal && !showSubModal && (
             <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-2xl animate-in fade-in duration-300 flex items-center justify-center p-8">
                <div className="w-full max-w-sm bg-surface border border-white/10 rounded-[40px] p-8 flex flex-col items-center gap-8 shadow-2xl relative overflow-hidden">
                   <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent" />
@@ -586,8 +598,8 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
          )}
 
          {/* MODAL: FIM DE PARTIDA (FT) */}
-         {isFinished && (
-            <div className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-3xl animate-in fade-in duration-500 flex items-center justify-center p-8">
+         {isFinished && !showTacticsModal && !showSubModal && (
+            <div className="fixed inset-0 z-[160] bg-slate-950/95 backdrop-blur-3xl animate-in fade-in duration-500 flex items-center justify-center p-8">
                <div className="w-full max-w-sm flex flex-col items-center gap-10">
                   <div className="flex flex-col items-center gap-6 text-center">
                      <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center border border-white/20 animate-pulse">
@@ -630,7 +642,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
 
          {/* Modal Tática */}
          {showTacticsModal && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md">
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-950/95 backdrop-blur-md">
                <div className="w-full max-w-sm bg-surface border border-white/10 rounded-[48px] p-10 space-y-8 animate-in zoom-in duration-300">
                   <div className="flex justify-between items-center">
                      <h3 className="text-xl font-black italic tracking-tighter">PRANCHETA</h3>
@@ -650,14 +662,14 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                         </div>
                      </div>
                   </div>
-                  <button onClick={() => { setShowTacticsModal(false); setIsPaused(false); }} className="w-full py-5 bg-white text-background rounded-3xl font-black uppercase tracking-widest">Confirmar</button>
+                  <button onClick={() => { setShowTacticsModal(false); setIsPaused(false); }} className="w-full py-5 bg-white text-slate-900 rounded-3xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">Confirmar</button>
                </div>
             </div>
          )}
 
          {/* Modal Substituição */}
          {showSubModal && (
-            <div className="fixed inset-0 z-[101] bg-background pt-safe flex flex-col">
+            <div className="fixed inset-0 z-[200] bg-slate-950 pt-safe flex flex-col">
                <header className="p-6 border-b border-white/10 flex items-center justify-between">
                   <button onClick={() => { setShowSubModal(false); setIsPaused(false); }} className="p-2"><X size={24} /></button>
                   <h3 className="text-xl font-black italic tracking-tighter">SUBSTITUIÇÕES</h3>

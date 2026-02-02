@@ -20,6 +20,7 @@ import SettingsScreen from './screens/SettingsScreen';
 import ChampionScreen from './screens/ChampionScreen';
 import GameOverScreen from './screens/GameOverScreen';
 import PreMatchScreen from './screens/PreMatchScreen';
+import OnboardingModal from './components/OnboardingModal';
 import { Toaster, toast } from 'react-hot-toast';
 import { SaveGame, PlayerSeasonStats, readSlot, writeSlot, deleteSlot as deleteLocalSlot, downloadJson, readFileAsJson, SaveSlotId } from './save';
 
@@ -45,6 +46,7 @@ export default function App() {
   const [coach, setCoach] = useState<Coach | null>(null);
   const [pastSeasons, setPastSeasons] = useState<SeasonHistory[]>([]);
   const [ddaFactor, setDdaFactor] = useState(1.0);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
 
   const [activeSlot, setActiveSlot] = useState<SaveSlotId>(1);
   const [lastScreen, setLastScreen] = useState<ScreenState>('DASHBOARD');
@@ -69,9 +71,10 @@ export default function App() {
       playerStats,
       coach,
       pastSeasons,
-      ddaFactor
+      ddaFactor,
+      hasSeenOnboarding
     };
-  }, [season, currentRound, funds, ticketPrice, teams, userTeamId, matchHistory, fixtures, news, playerStats, coach, pastSeasons, ddaFactor]);
+  }, [season, currentRound, funds, ticketPrice, teams, userTeamId, matchHistory, fixtures, news, playerStats, coach, pastSeasons, ddaFactor, hasSeenOnboarding]);
 
   const applySave = useCallback((save: SaveGame) => {
     setSeason(save.season);
@@ -86,6 +89,7 @@ export default function App() {
     setCoach(save.coach ?? null);
     setPastSeasons(save.pastSeasons || []);
     setDdaFactor(save.ddaFactor ?? 1.0);
+    setHasSeenOnboarding(save.hasSeenOnboarding ?? false);
 
     // MIGRATION: Ensure Free Agents team exists for old saves
     const loadedTeams = save.teams as Team[];
@@ -1150,6 +1154,10 @@ export default function App() {
           onOpenTactics={() => { setLastScreen('DASHBOARD'); setCurrentScreen('TACTICS'); }}
           onOpenProfile={() => setCurrentScreen('PROFILE')}
         />
+      )}
+
+      {hasSeenOnboarding === false && currentScreen === 'DASHBOARD' && (
+        <OnboardingModal onComplete={() => setHasSeenOnboarding(true)} />
       )}
 
       {userTeam && nextOpponent && currentScreen === 'PRE_MATCH' && (

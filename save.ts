@@ -26,6 +26,7 @@ export interface SaveGame {
   coach?: any; // Coach
   pastSeasons?: any[]; // SeasonHistory[]
   ddaFactor?: number;
+  hasSeenOnboarding?: boolean;
 }
 
 const KEY_PREFIX = 'bolanarede_save_slot_';
