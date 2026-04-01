@@ -1,72 +1,219 @@
 @import "tailwindcss";
 
+/* ============================================
+   BOLANAREDE MANAGER — DESIGN SYSTEM
+   "Dark Forest" — Deep & Premium
+   ============================================ */
+
+/* Import premium font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 :root {
+  /* Color Palette */
+  --color-bg:               #030A06;
+  --color-surface:          #0A1A12;
+  --color-surface-low:      #0D2118;
+  --color-surface-high:     #142B1F;
+  --color-surface-highest:  #1A3828;
+  --color-primary:          #1FB185;
+  --color-primary-light:    #4ECDA4;
+  --color-secondary:        #0D4A35;
+  --color-tertiary:         #E05A5A;
+  --color-on-surface:       #EDFAF4;
+  --color-on-surface-var:   #7AAD94;
+  --color-border:           rgba(31, 177, 133, 0.12);
+
+  /* Safe areas */
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
-  --nav-height: 5.5rem;
-  /* ~88px */
+}
+
+/* ============================================
+   BASE
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
-  background-color: #0f172a;
-  color: white;
+  background-color: var(--color-bg);
+  color: var(--color-on-surface);
+  font-family: 'Inter', system-ui, sans-serif;
   overflow: hidden;
-  -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
   padding: var(--safe-top) env(safe-area-inset-right) var(--safe-bottom) env(safe-area-inset-left);
+  height: 100%;
+  margin: 0;
 }
 
-/* Touch Feedback */
 button:active {
   transform: scale(0.96);
   opacity: 0.9;
 }
 
-.clickable:active {
-  transform: scale(0.98);
-  opacity: 0.8;
+input, select, textarea {
+  background: transparent;
+  color: var(--color-on-surface);
 }
 
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
-}
+/* ============================================
+   SAFE AREA UTILITIES
+   ============================================ */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.pt-safe { padding-top: env(safe-area-inset-top); }
+.mb-safe { margin-bottom: env(safe-area-inset-bottom); }
 
-.pt-safe {
-  padding-top: env(safe-area-inset-top);
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
+/* ============================================
+   SCROLLBAR UTILITIES
+   ============================================ */
+.no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-* {
-  -webkit-overflow-scrolling: touch;
+/* ============================================
+   GLASSMORPHISM COMPONENTS
+   ============================================ */
+.glass-panel {
+  background: rgba(10, 26, 18, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(31, 177, 133, 0.08);
+  border-radius: 1.5rem;
 }
 
+.glass-vibrant {
+  background: rgba(13, 33, 24, 0.85);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(31, 177, 133, 0.15);
+  border-radius: 1.5rem;
+}
+
+/* ============================================
+   GLOW EFFECTS
+   ============================================ */
+.glow-text {
+  text-shadow: 0 0 20px rgba(31, 177, 133, 0.5);
+}
+
+.glow-primary {
+  box-shadow: 0 0 12px rgba(31, 177, 133, 0.6);
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+.font-display {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* ============================================
+   BACKGROUNDS
+   ============================================ */
+.bg-background { background-color: var(--color-bg) !important; }
+.bg-surface-low { background-color: var(--color-surface-low) !important; }
+.bg-surface-high { background-color: var(--color-surface-high) !important; }
+.bg-surface-highest { background-color: var(--color-surface-highest) !important; }
+
+/* ============================================
+   TEXT COLORS
+   ============================================ */
+.text-primary           { color: var(--color-primary) !important; }
+.text-primary-light     { color: var(--color-primary-light) !important; }
+.text-secondary         { color: var(--color-primary-light) !important; }
+.text-tertiary          { color: var(--color-tertiary) !important; }
+.text-background        { color: var(--color-bg) !important; }
+.text-on-surface        { color: var(--color-on-surface) !important; }
+.text-on-surface-variant { color: var(--color-on-surface-var) !important; }
+
+/* ============================================
+   MATCH PITCH + ANIMATIONS
+   ============================================ */
 @keyframes scan {
-  0% {
-    transform: translateX(-100%);
-  }
-
-  100% {
-    transform: translateX(100%);
-  }
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-@keyframes pulse-white {
+@keyframes goalPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.2); opacity: 0.8; }
+}
 
-  0%,
-  100% {
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-  }
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
 
-  50% {
-    box-shadow: 0 0 30px rgba(255, 255, 255, 1);
-  }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ============================================
+   RANGE INPUT STYLING
+   ============================================ */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgba(31, 177, 133, 0.1);
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(31, 177, 133, 0.5);
+  border: 3px solid var(--color-bg);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(31, 177, 133, 0.5);
+  border: 3px solid var(--color-bg);
+}
+
+/* ============================================
+   TEXT INPUT STYLING
+   ============================================ */
+input[type="text"], input[type="number"] {
+  background: rgba(13, 33, 24, 0.7);
+  border: 1px solid rgba(31, 177, 133, 0.15);
+  color: var(--color-on-surface);
+  border-radius: 0.75rem;
+}
+
+input[type="text"]::placeholder,
+input[type="number"]::placeholder {
+  color: var(--color-on-surface-var);
+  opacity: 0.5;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+  outline: none;
+  border-color: rgba(31, 177, 133, 0.4);
+  box-shadow: 0 0 0 3px rgba(31, 177, 133, 0.1);
 }

@@ -27,6 +27,14 @@ export interface SaveGame {
   pastSeasons?: any[]; // SeasonHistory[]
   ddaFactor?: number;
   hasSeenOnboarding?: boolean;
+  hiredStaff?: any[]; // StaffMember[]
+  staffMarket?: any[]; // StaffMember[]
+  infrastructure?: any; // Infrastructure
+  squadFocus?: string; // TrainingFocus
+  squadTrainingFocus?: string; // TrainingFocus (alias)
+  trainingIntensity?: string; // TrainingIntensity
+  squadTrainingIntensity?: string; // TrainingIntensity (alias)
+  youthRoster?: any[]; // Player[]
 }
 
 const KEY_PREFIX = 'bolanarede_save_slot_';

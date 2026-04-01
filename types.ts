@@ -50,6 +50,8 @@ export interface Player {
     physical: number;
     keeping: number; // For GOL
   };
+  individualFocus?: string;
+  trainingProgress?: number;
 }
 
 export interface Coach {
@@ -75,7 +77,7 @@ export interface NewsItem {
   round: number;
   title: string;
   body: string;
-  category: 'FINANCE' | 'MORAL' | 'HEALTH' | 'MARKET' | 'BOARD';
+  category: 'FINANCE' | 'MORAL' | 'HEALTH' | 'MARKET' | 'BOARD' | 'TRAINING' | 'MEDICAL';
   impactText?: string;
   isRead: boolean;
   choices?: NewsChoice[];
@@ -163,8 +165,31 @@ export interface TransferLog {
 
 export type FormationType = '4-4-2' | '4-3-3' | '3-5-2' | '5-4-1' | '4-5-1' | '5-3-2';
 export type PlayingStyle = 'Ultra-Defensivo' | 'Defensivo' | 'Equilibrado' | 'Ofensivo' | 'Tudo-ou-Nada';
+export type TrainingIntensity = 'BAIXA' | 'MEDIA' | 'ALTA';
+export type TrainingFocus = 'ATAQUE' | 'DEFESA' | 'FISICO' | 'BALANCEADO' | 'TATICO';
 
-export type ScreenState = 'SPLASH' | 'PRE_MATCH' | 'COACH_SETUP' | 'TEAM_SELECT' | 'DASHBOARD' | 'SQUAD' | 'TACTICS' | 'MATCH' | 'MARKET' | 'FINANCE' | 'CALENDAR' | 'LEAGUE' | 'NEWS' | 'STATS' | 'SETTINGS' | 'CHAMPION' | 'GAME_OVER' | 'PROFILE';
+export type StaffType = 'COACH' | 'PHYSIO' | 'SCOUT';
+export type StaffLevel = 'BRONZE' | 'SILVER' | 'GOLD';
+
+export interface StaffMember {
+  id: string;
+  name: string;
+  type: StaffType;
+  level: StaffLevel;
+  salary: number;
+  description: string;
+  bonus?: number; // Optional numeric bonus value
+}
+
+export type InfrastructureType = 'ct' | 'dm' | 'scout';
+
+export interface Infrastructure {
+  ct: number;    // Centro de Treinamento (1-3)
+  dm: number;    // Departamento Médico (1-3)
+  scout: number; // Escritório de Scouting (1-3)
+}
+
+export type ScreenState = 'SPLASH' | 'PRE_MATCH' | 'COACH_SETUP' | 'TEAM_SELECT' | 'DASHBOARD' | 'SQUAD' | 'TACTICS' | 'MATCH' | 'MARKET' | 'FINANCE' | 'CALENDAR' | 'LEAGUE' | 'NEWS' | 'STATS' | 'SETTINGS' | 'CHAMPION' | 'GAME_OVER' | 'PROFILE' | 'TRAINING' | 'INFRASTRUCTURE' | 'STAFF' | 'YOUTH';
 
 export interface SeasonHistory {
   year: number;
