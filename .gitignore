@@ -15,6 +15,10 @@ dist-ssr
 !.env.example
 .vercel
 *.local
+lighthouse-*.json
+serie_a_logos_profissionais_2026/
+serie_b_logos_profissionais_2026/
+world_cup_shields/
 
 # Editor directories and files
 .vscode/*
