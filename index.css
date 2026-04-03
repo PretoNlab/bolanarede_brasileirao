@@ -1,12 +1,16 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap');
+
+@source "./index.html";
+@source "./*.{ts,tsx}";
+@source "./components/**/*.{ts,tsx}";
+@source "./engine/**/*.{ts,tsx}";
+@source "./screens/**/*.{ts,tsx}";
 
 /* ============================================
    BOLANAREDE MANAGER — DESIGN SYSTEM
    "Dark Forest" — Deep & Premium
    ============================================ */
-
-/* Import premium font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
   /* Color Palette */
@@ -19,9 +23,17 @@
   --color-primary-light:    #4ECDA4;
   --color-secondary:        #0D4A35;
   --color-tertiary:         #E05A5A;
+  --color-gold:             #FFD700;
+  --color-gold-dark:        #B8860B;
   --color-on-surface:       #EDFAF4;
   --color-on-surface-var:   #7AAD94;
   --color-border:           rgba(31, 177, 133, 0.12);
+  --color-border-gold:      rgba(255, 215, 0, 0.2);
+
+  /* Shadows */
+  --shadow-premium: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
+  --shadow-glow:    0 0 20px rgba(31, 177, 133, 0.3);
+  --shadow-gold:    0 0 20px rgba(255, 215, 0, 0.2);
 
   /* Safe areas */
   --safe-top: env(safe-area-inset-top);
@@ -84,19 +96,27 @@ input, select, textarea {
    GLASSMORPHISM COMPONENTS
    ============================================ */
 .glass-panel {
-  background: rgba(10, 26, 18, 0.7);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(31, 177, 133, 0.08);
-  border-radius: 1.5rem;
+  background: rgba(10, 26, 18, 0.6);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(31, 177, 133, 0.1);
+  box-shadow: var(--shadow-premium);
 }
 
 .glass-vibrant {
-  background: rgba(13, 33, 24, 0.85);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
-  border: 1px solid rgba(31, 177, 133, 0.15);
-  border-radius: 1.5rem;
+  background: rgba(13, 33, 24, 0.8);
+  backdrop-filter: blur(36px) saturate(200%);
+  -webkit-backdrop-filter: blur(36px) saturate(200%);
+  border: 1px solid rgba(31, 177, 133, 0.2);
+  box-shadow: var(--shadow-glow);
+}
+
+.glass-gold {
+  background: rgba(20, 20, 5, 0.7);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: var(--shadow-gold);
 }
 
 /* ============================================
@@ -114,7 +134,11 @@ input, select, textarea {
    TYPOGRAPHY
    ============================================ */
 .font-display {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+}
+
+.font-editorial {
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
 }
 
 /* ============================================
@@ -157,6 +181,84 @@ input, select, textarea {
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+@keyframes revealRise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glint {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  25%, 100% { transform: translateX(100%) skewX(-15deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.reveal-soft {
+  animation: revealRise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.reveal-delayed {
+  animation-delay: 0.12s;
+}
+
+.reveal-more-delayed {
+  animation-delay: 0.22s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-soft,
+  .reveal-delayed,
+  .reveal-more-delayed,
+  .animate-float,
+  .glint-effect::after {
+    animation: none !important;
+  }
+}
+
+.glint-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.glint-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: glint 8s infinite;
+}
+
+.bnr-toast {
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  letter-spacing: -0.01em;
+}
+
+.bnr-toast > div {
+  color: inherit !important;
+}
+
+.bnr-toast [data-content] {
+  color: inherit !important;
+  white-space: normal;
 }
 
 /* ============================================
