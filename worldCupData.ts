@@ -1,5 +1,6 @@
 
 import { Player, Team, WCTeamData, WCConfederation, DetailedPosition } from './types';
+import worldCupPrelistCsv from './prelistas_copa_2026_atualizadas_2025_2026.csv?raw';
 
 // ========== GERADOR DE JOGADOR NACIONAL ==========
 
@@ -119,6 +120,31 @@ export const CONFEDERATION_LABELS: Record<WCConfederation, string> = {
   CAF: 'África',
   OFC: 'Oceania',
 };
+
+type WCPrelistPositionGroup = 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward';
+
+interface WCPrelistRow {
+  teamId: string;
+  playerName: string;
+  positionGroup: WCPrelistPositionGroup;
+}
+
+const PRELIST_TEAM_NAME_ALIASES: Record<string, string> = {
+  'bosnia e herzegovina': 'wc_bosnia',
+};
+
+function normalizeLookupValue(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function normalizePlayerName(value: string) {
+  return value.replace(/\s+/g, ' ').trim();
+}
 
 // ========== 48 SELEÇÕES DA COPA DO MUNDO 2026 ==========
 
@@ -1766,6 +1792,75 @@ export const ESTABLISHED_GROUPS: { name: string; teamIds: string[] }[] = [
 
 // Exportar times construídos
 export const getWorldCupTeams = (): Team[] => WC_TEAMS_DATA.map(buildWCTeam);
+
+let cachedWorldCupPrelistRows: WCPrelistRow[] | null = null;
+
+function parseWorldCupPrelistRows(): WCPrelistRow[] {
+  if (cachedWorldCupPrelistRows) {
+    return cachedWorldCupPrelistRows;
+  }
+
+  const rows = worldCupPrelistCsv
+    .trim()
+    .split(/\r?\n/)
+    .slice(1)
+    .map((line) => {
+      const [group, team, playerName, positionGroup] = line.split(',');
+      void group;
+
+      const normalizedTeam = normalizeLookupValue(team);
+      const mappedTeamId =
+        PRELIST_TEAM_NAME_ALIASES[normalizedTeam] ??
+        WC_TEAMS_DATA.find((wcTeam) => normalizeLookupValue(wcTeam.name) === normalizedTeam)?.id;
+
+      if (!mappedTeamId) {
+        return null;
+      }
+
+      const cleanedName = normalizePlayerName(playerName);
+      if (!cleanedName) {
+        return null;
+      }
+
+      if (
+        positionGroup !== 'Goalkeeper' &&
+        positionGroup !== 'Defender' &&
+        positionGroup !== 'Midfielder' &&
+        positionGroup !== 'Forward'
+      ) {
+        return null;
+      }
+
+      return {
+        teamId: mappedTeamId,
+        playerName: cleanedName,
+        positionGroup,
+      } satisfies WCPrelistRow;
+    })
+    .filter((row): row is WCPrelistRow => row !== null);
+
+  cachedWorldCupPrelistRows = rows;
+  return rows;
+}
+
+export function getWorldCupSupplementalCandidates(teamId: string, existingPlayers: WCTeamData['players']) {
+  const existingNames = new Set(existingPlayers.map((player) => normalizeLookupValue(player.name)));
+  const seenNames = new Set<string>();
+
+  return parseWorldCupPrelistRows().filter((row) => {
+    if (row.teamId !== teamId) {
+      return false;
+    }
+
+    const normalizedName = normalizeLookupValue(row.playerName);
+    if (existingNames.has(normalizedName) || seenNames.has(normalizedName)) {
+      return false;
+    }
+
+    seenNames.add(normalizedName);
+    return true;
+  });
+}
 
 // Mapa de confederação por ID de time
 export const getTeamConfederation = (teamId: string): WCConfederation => {

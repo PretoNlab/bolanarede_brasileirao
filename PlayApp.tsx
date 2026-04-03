@@ -2,7 +2,7 @@ import React, { Suspense, lazy, useState, useEffect, useMemo, useCallback } from
 import { AnimatePresence, motion } from 'framer-motion';
 import { Team, Player, ScreenState, MatchResult, Fixture, MatchEvent, NewsItem, Coach, SeasonHistory, PlayerHistoryEvent, StaffMember, Infrastructure, TrainingFocus, TrainingIntensity, WorldCupGameState } from './types';
 import { INITIAL_TEAMS, generateSchedule } from './data';
-import { WC_TEAMS_DATA, createPlayer, getWorldCupTeams } from './worldCupData';
+import { WC_TEAMS_DATA, createPlayer, getWorldCupSupplementalCandidates, getWorldCupTeams } from './worldCupData';
 import {
   PHASE_LABELS,
   generateGroupFixtures,
@@ -125,6 +125,16 @@ function buildExtraWorldCupPlayerName(
 
 function normalizeWorldCupSquadNames(players: Player[]) {
   return players;
+}
+
+function isSupplementalCandidateCompatible(
+  positionGroup: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward',
+  position: Player['position']
+) {
+  if (position === 'GOL') return positionGroup === 'Goalkeeper';
+  if (position === 'ZAG' || position === 'LAT') return positionGroup === 'Defender';
+  if (position === 'VOL' || position === 'MEI') return positionGroup === 'Midfielder';
+  return positionGroup === 'Forward';
 }
 
 export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppProps) {
@@ -1330,18 +1340,46 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     // Gerar pré-lista de 40 jogadores
     // 1. Jogadores reais
     const realPlayers = [...teamData.players];
+    const supplementalCandidates = getWorldCupSupplementalCandidates(teamId, realPlayers);
     // 2. Gerar mais 14 jogadores para completar 40
     const extraPlayers: Player[] = [];
     const avgOvr = realPlayers.reduce((sum, p) => sum + p.overall, 0) / realPlayers.length;
     const usedNames = new Set(realPlayers.map((player) => player.name));
+    const usedSupplementalIndexes = new Set<number>();
     const extraPositionPlan: Player['position'][] = ['GOL', 'ZAG', 'ZAG', 'LAT', 'LAT', 'VOL', 'VOL', 'MEI', 'MEI', 'MEI', 'ATA', 'ATA', 'ATA', 'ATA'];
 
     for (let i = 0; i < extraPositionPlan.length; i++) {
       const pos = extraPositionPlan[i];
+      const supplementalIndex = supplementalCandidates.findIndex(
+        (candidate, candidateIndex) =>
+          !usedSupplementalIndexes.has(candidateIndex) &&
+          isSupplementalCandidateCompatible(candidate.positionGroup, pos)
+      );
+
+      if (supplementalIndex >= 0) {
+        const candidate = supplementalCandidates[supplementalIndex];
+        const comparablePlayers = realPlayers.filter((player) => player.position === pos);
+        const sampleBase = comparablePlayers.length > 0 ? comparablePlayers : realPlayers;
+        const avgAge = sampleBase.reduce((sum, player) => sum + player.age, 0) / sampleBase.length;
+        const avgComparableOvr = sampleBase.reduce((sum, player) => sum + player.overall, 0) / sampleBase.length;
+
+        usedSupplementalIndexes.add(supplementalIndex);
+        usedNames.add(candidate.playerName);
+        extraPlayers.push(
+          createPlayer(
+            candidate.playerName,
+            pos,
+            Math.max(18, Math.round(avgAge + (Math.random() * 4 - 2))),
+            Math.max(64, Math.round(avgComparableOvr + (Math.random() * 6 - 3)))
+          )
+        );
+        continue;
+      }
+
       const name = buildExtraWorldCupPlayerName(teamData, usedNames, i);
       const age = 18 + Math.floor(Math.random() * 15);
       const ovr = Math.round(avgOvr - 3 + Math.random() * 6);
-      
+
       extraPlayers.push(createPlayer(name, pos, age, ovr));
     }
 
