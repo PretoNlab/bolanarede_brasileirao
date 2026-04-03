@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TeamLogo } from '../components/TeamLogo';
+import OnboardingModal from '../components/OnboardingModal';
 import { Team, NewsItem, TransferOffer } from '../types';
 import { Play, Users, ArrowLeftRight, Wallet, LayoutDashboard, Trophy, Settings, Newspaper, Target, Lock, Unlock, MessageSquare, Heart, BarChart3, Home, ShieldAlert, CalendarDays, ChevronRight, Building2 } from 'lucide-react';
 import { impactLight, impactMedium, hapticSelection } from '../haptics';
@@ -39,7 +40,7 @@ interface Props {
 
 
 export default function DashboardScreen({
-   team, nextOpponent, round, funds, isWindowOpen,
+   team, nextOpponent, round, funds, isWindowOpen, onboardingComplete, onCompleteOnboarding,
    onOpenSquad, onOpenMarket, onOpenFinance, onOpenCalendar,
    onOpenLeague, onOpenStats, onOpenNews, onOpenSettings, onSimulate, onOpenTactics, onOpenProfile,
    onOpenTraining, onOpenStaff, onOpenInfrastructure, onOpenYouth,
@@ -196,6 +197,14 @@ export default function DashboardScreen({
 
    return (
       <div className="flex flex-col h-screen bg-background text-white relative font-sans">
+         {!onboardingComplete && (
+            <OnboardingModal
+               teamName={team.name}
+               nextOpponentName={nextOpponent.name}
+               onComplete={onCompleteOnboarding}
+            />
+         )}
+
          <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-2xl border-b border-white/5 p-5 flex items-center justify-between pt-safe">
             <div className="flex items-center gap-4">
                {onBackHome && (
