@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { TeamLogo } from '../components/TeamLogo';
 import { ArrowLeft, BarChart3, Trophy, Target, HandHelping, Users } from 'lucide-react';
 import clsx from 'clsx';
 import { Team } from '../types';
@@ -21,13 +22,6 @@ interface Props {
   onBack: () => void;
 }
 
-const TeamLogo = ({ team, size = "w-10 h-10" }: { team: Team, size?: string }) => {
-  return (
-    <div className={`${size} rounded-2xl bg-gradient-to-br ${team.logoColor1} ${team.logoColor2} flex items-center justify-center font-black shadow-lg border border-white/10`}>
-      {team.shortName}
-    </div>
-  );
-};
 
 export default function StatsScreen({ teams, season, round, playerStats, onBack }: Props) {
   const [tab, setTab] = useState<'SCORERS' | 'ASSISTS' | 'TEAMS'>('SCORERS');
@@ -106,7 +100,7 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
           </button>
           <div className="flex flex-col items-center">
             <h1 className="text-sm font-black tracking-tight flex items-center gap-2"><BarChart3 size={16} className="text-secondary" /> Estatísticas</h1>
-            <p className="text-[10px] text-secondary font-bold">Temporada {season} • Rodada {round}</p>
+            <p className="text-[12px] text-white/65 font-bold">Temporada {season} • Rodada {round}</p>
           </div>
           <div className="w-10"></div>
         </div>
@@ -117,7 +111,7 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
           <button
             onClick={() => setTab('SCORERS')}
             className={clsx(
-              'py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all',
+              'py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.14em] border transition-all',
               tab === 'SCORERS' ? 'bg-primary/15 border-primary/30 text-primary' : 'bg-surface border-white/5 text-secondary'
             )}
           >
@@ -126,7 +120,7 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
           <button
             onClick={() => setTab('ASSISTS')}
             className={clsx(
-              'py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all',
+              'py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.14em] border transition-all',
               tab === 'ASSISTS' ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-surface border-white/5 text-secondary'
             )}
           >
@@ -135,7 +129,7 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
           <button
             onClick={() => setTab('TEAMS')}
             className={clsx(
-              'py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all',
+              'py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.14em] border transition-all',
               tab === 'TEAMS' ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : 'bg-surface border-white/5 text-secondary'
             )}
           >
@@ -150,7 +144,7 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
             </div>
             <div>
               <h2 className="text-lg font-black tracking-tight">{CardTitle.title}</h2>
-              <p className="text-[10px] text-secondary font-bold uppercase tracking-widest">{CardTitle.subtitle}</p>
+              <p className="text-[12px] text-white/60 font-bold uppercase tracking-[0.14em]">{CardTitle.subtitle}</p>
             </div>
           </div>
 
@@ -160,7 +154,7 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
                 <div className="py-12 text-center text-secondary">
                   <Users size={28} className="mx-auto mb-2 opacity-40" />
                   <p className="text-xs font-bold">Sem dados ainda</p>
-                  <p className="text-[10px] opacity-70">Jogue algumas rodadas para popular o ranking.</p>
+                  <p className="text-[12px] opacity-70">Jogue algumas rodadas para popular o ranking.</p>
                 </div>
               ) : (
                 (tab === 'SCORERS' ? scorers : assisters).map((r, idx) => (
@@ -177,12 +171,12 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-bold leading-tight">{r.playerName}</span>
-                        <span className="text-[10px] text-secondary font-bold">{r.teamShort}</span>
+                        <span className="text-[12px] text-white/60 font-bold">{r.teamShort}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
                       <span className="text-lg font-black tabular-nums">{r.value}</span>
-                      <span className="text-[10px] text-secondary font-bold">por jogo: {r.secondary ?? 0}</span>
+                      <span className="text-[12px] text-white/55 font-bold">por jogo: {r.secondary ?? 0}</span>
                     </div>
                   </div>
                 ))
@@ -205,16 +199,16 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
                       {idx + 1}
                     </div>
                     <div className="flex items-center gap-3">
-                      <TeamLogo team={t} />
+                      <TeamLogo team={t} size="md" />
                       <div className="flex flex-col">
                         <span className="text-sm font-bold leading-tight">{t.name}</span>
-                        <span className="text-[10px] text-secondary font-bold">{t.points} pts • SG {t.gf - t.ga}</span>
+                        <span className="text-[12px] text-white/60 font-bold">{t.points} pts • SG {t.gf - t.ga}</span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] text-secondary font-bold">J {t.played} • V {t.won} • E {t.drawn} • D {t.lost}</div>
-                    <div className="text-[10px] text-secondary font-bold">GF {t.gf} • GA {t.ga}</div>
+                    <div className="text-[12px] text-white/55 font-bold">J {t.played} • V {t.won} • E {t.drawn} • D {t.lost}</div>
+                    <div className="text-[12px] text-white/55 font-bold">GF {t.gf} • GA {t.ga}</div>
                   </div>
                 </div>
               ))}

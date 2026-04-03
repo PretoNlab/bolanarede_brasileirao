@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { TeamLogo } from '../components/TeamLogo';
 import { Team, Player, TransferLog } from '../types';
 import { ArrowLeft, PencilLine, Zap, AlertCircle, Target, Trophy, History, X, ChevronRight, TrendingUp, DollarSign, ShieldAlert } from 'lucide-react';
 import clsx from 'clsx';
@@ -47,7 +47,9 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                <ArrowLeft size={20} />
             </button>
             <h1 className="text-base font-black italic tracking-tighter uppercase">Elenco Profissional</h1>
-            <div className="w-12"></div>
+            <div className="w-12 flex items-center justify-end">
+               <TeamLogo team={team} size="sm" />
+            </div>
          </header>
 
          <div className="px-6 py-5 overflow-x-auto no-scrollbar flex gap-3 bg-background/60 backdrop-blur-xl sticky top-[80px] z-30 border-b border-white/5">

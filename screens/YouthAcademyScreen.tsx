@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Player, Team, Infrastructure } from '../types';
+import { TeamLogo } from '../components/TeamLogo';
 import { ArrowLeft, Star, TrendingUp, UserPlus, ShieldPlus, Activity, Zap, Target, Trophy, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
 interface Props {
+   userTeam: Team;
    roster: Player[];
    funds: number;
    infrastructure: Infrastructure;
@@ -22,7 +24,7 @@ const POS_COLORS = {
    'ATA': 'text-primary-light bg-primary-light/10 border-primary-light/20',
 };
 
-export default function YouthAcademyScreen({ roster, funds, infrastructure, onPromote, onBack }: Props) {
+export default function YouthAcademyScreen({ userTeam, roster, funds, infrastructure, onPromote, onBack }: Props) {
    const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
    const formatMoney = (val: number) => {
@@ -42,9 +44,7 @@ export default function YouthAcademyScreen({ roster, funds, infrastructure, onPr
                <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-0.5 glow-text">CATEGORIAS DE BASE</h1>
                <span className="text-sm font-black uppercase tracking-tight font-display italic text-on-surface-variant">YOUTH ACADEMY</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-surface-low flex items-center justify-center border border-white/5 text-primary shadow-lg shadow-primary/5">
-               <Trophy size={18} />
-            </div>
+            <TeamLogo team={userTeam} size="md" />
          </header>
 
          <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-6 space-y-8 no-scrollbar pb-32">

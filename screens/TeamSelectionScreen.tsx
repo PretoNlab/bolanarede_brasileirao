@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Search, Check, Zap, ArrowRight, Shield, Swords, Activity, X, Trophy, Wallet, Users } from 'lucide-react';
+import { TeamLogo } from '../components/TeamLogo';
+import { ArrowLeft, Search, Check, X, Trophy, Wallet, Users, Shield, ChevronRight } from 'lucide-react';
 import { Team } from '../types';
 import clsx from 'clsx';
 
@@ -9,16 +10,9 @@ interface Props {
   onBack: () => void;
 }
 
-const TeamLogo = ({ team, size = "w-12 h-12" }: { team: Team, size?: string }) => {
-  return (
-    <div className={`${size} shrink-0 flex items-center justify-center rounded-2xl bg-gradient-to-br ${team.logoColor1} ${team.logoColor2} shadow-lg border border-white/10`}>
-      <span className="text-white font-black text-lg tracking-wider drop-shadow-md">{team.shortName}</span>
-    </div>
-  );
-};
 
 export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) {
-  const [activeDiv, setActiveDiv] = useState<1 | 2 | 'FAVORITOS'>('FAVORITOS');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'BEGINNER' | 'PRESSURE' | 'BUDGET' | 1 | 2>('ALL');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -36,26 +30,49 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
         t.city.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    // Tab Filter (Full List or Divisions)
-    else if (activeDiv === 'FAVORITOS') {
-      // Show all teams sorted by strength (simplified 'Favorites' view)
+    else if (activeFilter === 'ALL') {
       filtered = [...teams].sort((a, b) => ((b.attack + b.defense) / 2) - ((a.attack + a.defense) / 2));
+    } else if (activeFilter === 'BEGINNER') {
+      filtered = [...teams].sort((a, b) => {
+        const aScore = (((a.attack + a.defense) / 2) * 2) + (a.financeStatus === 'Rico' ? 20 : a.financeStatus === 'Boa' ? 12 : 0);
+        const bScore = (((b.attack + b.defense) / 2) * 2) + (b.financeStatus === 'Rico' ? 20 : b.financeStatus === 'Boa' ? 12 : 0);
+        return bScore - aScore;
+      });
+    } else if (activeFilter === 'PRESSURE') {
+      filtered = [...teams].sort((a, b) => {
+        const expectationWeight = (team: Team) => {
+          if (team.seasonExpectation?.toLowerCase().includes('título')) return 30;
+          if (team.seasonExpectation?.toLowerCase().includes('liberta')) return 20;
+          if (team.seasonExpectation?.toLowerCase().includes('acesso')) return 18;
+          return 8;
+        };
+        return expectationWeight(b) - expectationWeight(a);
+      });
+    } else if (activeFilter === 'BUDGET') {
+      filtered = [...teams].sort((a, b) => {
+        const financeWeight = (team: Team) => {
+          if (team.financeStatus === 'Rico') return 4;
+          if (team.financeStatus === 'Boa') return 3;
+          if (team.financeStatus === 'Controlada') return 2;
+          return 1;
+        };
+        return financeWeight(b) - financeWeight(a);
+      });
     } else {
-      filtered = filtered.filter(t => t.division === activeDiv);
+      filtered = filtered.filter(t => t.division === activeFilter);
     }
 
     return filtered;
-  }, [teams, searchTerm, activeDiv]);
+  }, [teams, searchTerm, activeFilter]);
 
-  const handleCardClick = (teamId: string) => {
+  const openDetails = (teamId: string) => {
     setSelectedId(teamId);
     setShowModal(true);
   };
 
-  const confirmSelection = () => {
-    if (selectedId) {
-      onSelect(selectedId);
-    }
+  const quickSelect = (teamId: string) => {
+    setSelectedId(teamId);
+    onSelect(teamId);
   };
 
   // Helper to format currency
@@ -69,12 +86,29 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
     }
   };
 
+  const getChallengeLabel = (team: Team) => {
+    const overall = Math.round((team.attack + team.defense) / 2);
+    if (overall >= 88 && (team.financeStatus === 'Rico' || team.financeStatus === 'Boa')) return 'Mais estável';
+    if ((team.seasonExpectation || '').toLowerCase().includes('título')) return 'Pressão alta';
+    if (team.division === 2) return 'Projeto de acesso';
+    return 'Desafio equilibrado';
+  };
+
+  const filterButtons = [
+    { id: 'ALL', label: 'Todos' },
+    { id: 'BEGINNER', label: 'Melhor início' },
+    { id: 'PRESSURE', label: 'Mais pressão' },
+    { id: 'BUDGET', label: 'Mais caixa' },
+    { id: 1, label: 'Série A' },
+    { id: 2, label: 'Série B' },
+  ] as const;
+
   return (
     <div className="flex flex-col h-screen bg-background text-white font-sans">
 
       {/* HEADER */}
       <header className="px-5 pt-12 pb-4 bg-background z-10">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-5">
           <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-surface text-white transition-colors">
             <ArrowLeft className="w-6 h-6" />
           </button>
@@ -82,30 +116,38 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
             <span className="text-[10px] font-black tracking-[0.2em] text-primary uppercase">Brasileirão 2026</span>
             <span className="text-xs font-medium text-secondary tracking-widest uppercase opacity-70">Seleção de Clubes</span>
           </div>
-          <button className="p-2 -mr-2 rounded-full hover:bg-surface text-white transition-colors">
-            <Search className="w-6 h-6" />
-          </button>
+          <div className="w-10" />
         </div>
 
-        <h1 className="text-4xl font-black mb-1 leading-none">Escolha seu<br /><span className="text-primary">Destino.</span></h1>
-        <p className="text-sm text-secondary leading-relaxed mb-6 max-w-[85%]">
-          Assuma o controle de um gigante e mude a história do futebol brasileiro em 2026.
+        <h1 className="text-4xl font-black mb-2 leading-none">Escolha seu<br /><span className="text-primary">clube.</span></h1>
+        <p className="text-[13px] text-white/65 leading-6 mb-5 max-w-[92%]">
+          Decida rápido pelo contexto certo: mais força, mais caixa, mais pressão ou projeto de acesso.
         </p>
 
-        {/* FILTERS */}
+        <div className="relative mb-4">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary" size={18} />
+          <input
+            type="text"
+            placeholder="Buscar clube ou cidade..."
+            className="w-full rounded-[20px] border border-white/5 bg-surface px-12 py-4 text-sm font-medium outline-none transition-all focus:border-primary/30 focus:ring-2 focus:ring-primary/20"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
         <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-          {['FAVORITOS', 1, 2].map((div) => (
+          {filterButtons.map((filter) => (
             <button
-              key={div}
-              onClick={() => { setActiveDiv(div as any); setSearchTerm(''); }}
+              key={String(filter.id)}
+              onClick={() => setActiveFilter(filter.id as any)}
               className={clsx(
                 "px-6 py-2.5 rounded-full text-xs font-black tracking-wider uppercase whitespace-nowrap transition-all",
-                activeDiv === div
+                activeFilter === filter.id
                   ? "bg-primary text-white shadow-lg shadow-primary/25 scale-105"
                   : "bg-surface border border-white/5 text-secondary hover:bg-surface/80"
               )}
             >
-              {div === 'FAVORITOS' ? 'Todos' : div === 1 ? 'Série A' : 'Série B'}
+              {filter.label}
             </button>
           ))}
         </div>
@@ -113,6 +155,16 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
 
       {/* TEAM LIST */}
       <main className="flex-1 overflow-y-auto px-5 pb-24 scroll-smooth no-scrollbar space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h2 className="text-[16px] font-black tracking-tight text-white">Opções para assumir agora</h2>
+            <p className="mt-1 text-[12px] leading-5 text-white/55">Toque em escolher para entrar direto. Use detalhes para comparar antes.</p>
+          </div>
+          <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white/50">
+            {filteredTeams.length} clubes
+          </div>
+        </div>
+
         {filteredTeams.map((team) => {
           const overall = Math.round((team.attack + team.defense) / 2);
           const financeLabel = team.financeStatus || 'Boa';
@@ -120,26 +172,28 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
           return (
             <div
               key={team.id}
-              onClick={() => handleCardClick(team.id)}
-              className="relative overflow-hidden bg-surface rounded-[2rem] border border-white/5 p-5 active:scale-[0.98] transition-all duration-300"
+              className={clsx(
+                "relative overflow-hidden bg-surface rounded-[2rem] border p-5 transition-all duration-300",
+                selectedId === team.id ? "border-primary/30 shadow-lg shadow-primary/10" : "border-white/5"
+              )}
             >
-              {activeDiv === 'FAVORITOS' && overall >= 90 && (
+              {overall >= 90 && (
                 <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary to-blue-600"></div>
               )}
-              {activeDiv === 'FAVORITOS' && overall < 90 && overall >= 80 && (
+              {overall < 90 && overall >= 80 && (
                 <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-emerald-500 to-green-600"></div>
               )}
-              {activeDiv === 'FAVORITOS' && overall < 80 && (
+              {overall < 80 && (
                 <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-secondary"></div>
               )}
 
-              <div className="flex justify-between items-start mb-6 pl-3">
+              <div className="flex justify-between items-start mb-5 pl-3">
                 <div className="flex items-center gap-4">
-                  <TeamLogo team={team} size="w-16 h-16" />
+                  <TeamLogo team={team} size="lg" />
                   <div>
                     <h3 className="text-xl font-black text-white leading-none mb-1">{team.name}</h3>
                     <span className="text-[10px] font-black uppercase tracking-wider text-secondary bg-white/5 px-2 py-0.5 rounded-md inline-block">
-                      {team.description ? team.description.split(' ')[0] : 'Clube'}
+                      {team.city}
                     </span>
                   </div>
                 </div>
@@ -154,7 +208,12 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
                 </div>
               </div>
 
-              {/* Stats Bars */}
+              <div className="pl-3 mb-4">
+                <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white/65">
+                  {getChallengeLabel(team)}
+                </span>
+              </div>
+
               <div className="grid grid-cols-2 gap-6 pl-3">
                 <div>
                   <div className="flex justify-between items-end mb-1.5">
@@ -176,13 +235,20 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
                 </div>
               </div>
 
-              {/* Selected Indicator */}
-              {selectedId === team.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-9 bg-primary flex items-center justify-between px-5">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white">Clube Selecionado</span>
-                  <Check className="w-4 h-4 text-white" />
-                </div>
-              )}
+              <div className="mt-5 grid grid-cols-2 gap-3 pl-3">
+                <button
+                  onClick={() => openDetails(team.id)}
+                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-white transition-all active:scale-[0.98]"
+                >
+                  Ver detalhes
+                </button>
+                <button
+                  onClick={() => quickSelect(team.id)}
+                  className="rounded-2xl bg-primary px-4 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                >
+                  Escolher clube
+                </button>
+              </div>
             </div>
           );
         })}
@@ -204,7 +270,7 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
               </button>
 
               <div className="flex items-center gap-5">
-                <TeamLogo team={selectedTeam} size="w-20 h-20" />
+                <TeamLogo team={selectedTeam} size="xl" />
                 <div>
                   <h2 className="text-2xl font-black text-white leading-tight mb-1">{selectedTeam.name}</h2>
                   <div className="flex items-center gap-2 text-secondary text-sm font-medium">
@@ -275,16 +341,26 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
                 </div>
               </div>
 
+              <div className="mt-4 rounded-2xl border border-white/5 bg-surface p-4">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.16em] text-secondary">Leitura rápida</span>
+                </div>
+                <p className="mt-3 text-[13px] leading-6 text-white/72">
+                  {getChallengeLabel(selectedTeam)}. Orçamento {selectedTeam.financeStatus || 'estável'} e expectativa {selectedTeam.seasonExpectation || 'moderada'}.
+                </p>
+              </div>
+
             </div>
 
             {/* Bottom Action */}
             <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#151B26] via-[#151B26] to-transparent">
               <button
-                onClick={confirmSelection}
+                onClick={() => quickSelect(selectedTeam.id)}
                 className="w-full py-4 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-lg tracking-wide shadow-xl shadow-primary/25 flex items-center justify-center gap-3 transition-transform active:scale-[0.98]"
               >
-                <span>CONFIRMAR SELEÇÃO</span>
-                <Check className="w-6 h-6 bg-white/20 rounded-full p-1" />
+                <span>ASSUMIR {selectedTeam.shortName}</span>
+                <ChevronRight className="w-5 h-5" />
               </button>
             </div>
 

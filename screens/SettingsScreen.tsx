@@ -1,9 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Trash2, Save, Database, Cloud, LogIn, LogOut, Check, Download, Info, Activity, HardDrive, Upload } from 'lucide-react';
-import { supabase, isSupabaseConfigured, testSupabaseConnection } from '../supabaseClient';
 import toast from 'react-hot-toast';
-// Added missing import for clsx
 import clsx from 'clsx';
 import { SaveSlotId, listSlots, readSlot } from '../save';
 
@@ -17,10 +15,12 @@ interface Props {
    onReset: () => void;
    onLoadCloud: () => void;
    onFixData: () => void;
+   activeSlot: SaveSlotId;
+   lastLocalSaveAt: string | null;
    session: any;
 }
 
-export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, onClearSlot, onExport, onImportFile, onReset, session, onLoadCloud, onFixData }: Props) {
+export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, onClearSlot, onExport, onImportFile, onReset, session, onLoadCloud, onFixData, activeSlot, lastLocalSaveAt }: Props) {
    const [email, setEmail] = useState('');
    const [password, setPassword] = useState('');
    const [loading, setLoading] = useState(false);
@@ -31,7 +31,10 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
       checkDB();
    }, []);
 
+   const loadSupabaseModule = async () => import('../supabaseClient');
+
    const checkDB = async () => {
+      const { testSupabaseConnection } = await loadSupabaseModule();
       const res = await testSupabaseConnection();
       setDbStatus({ checked: true, ok: res.success, msg: res.message });
    };
@@ -43,7 +46,8 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
    };
 
    const handleLogin = async () => {
-      if (!isSupabaseConfigured()) {
+      const { isSupabaseConfigured, supabase } = await loadSupabaseModule();
+      if (!isSupabaseConfigured() || !supabase) {
          toast.error("Supabase não configurado.");
          return;
       }
@@ -63,7 +67,8 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
    };
 
    const handleSignUp = async () => {
-      if (!isSupabaseConfigured()) {
+      const { isSupabaseConfigured, supabase } = await loadSupabaseModule();
+      if (!isSupabaseConfigured() || !supabase) {
          toast.error("Supabase não configurado.");
          return;
       }
@@ -82,6 +87,11 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
    };
 
    const handleLogout = async () => {
+      const { supabase } = await loadSupabaseModule();
+      if (!supabase) {
+         toast.error("Supabase não configurado.");
+         return;
+      }
       await supabase.auth.signOut();
       toast.success("Desconectado.");
    };
@@ -114,17 +124,17 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
             )}>
                <Activity size={18} className={!dbStatus.checked ? "animate-pulse" : ""} />
                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase">Status do Banco de Dados</span>
-                  <span className="text-[9px] font-bold opacity-80">{dbStatus.checked ? dbStatus.msg : "Verificando..."}</span>
+                  <span className="text-[11px] font-black uppercase tracking-[0.14em]">Status do Banco de Dados</span>
+                  <span className="text-[12px] font-bold opacity-85">{dbStatus.checked ? dbStatus.msg : "Verificando..."}</span>
                </div>
                {!dbStatus.ok && dbStatus.checked && (
-                  <button onClick={checkDB} className="ml-auto bg-rose-500 text-white text-[8px] font-black px-2 py-1 rounded">RETESTAR</button>
+                  <button onClick={checkDB} className="ml-auto bg-rose-500 text-white text-[10px] font-black px-3 py-1.5 rounded-lg tracking-[0.12em]">RETESTAR</button>
                )}
             </div>
 
             {/* Cloud Sync Section */}
             <section className="space-y-3">
-               <h2 className="text-xs font-bold uppercase tracking-wider text-secondary px-1">Bolanarede ID (Nuvem)</h2>
+               <h2 className="text-xs font-bold uppercase tracking-wider text-secondary px-1">Sincronização Opcional</h2>
 
                {!session ? (
                   <div className="bg-surface rounded-xl border border-white/5 overflow-hidden p-4">
@@ -135,15 +145,19 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
                                  <Cloud size={24} className="text-blue-500" />
                               </div>
                               <div>
-                                 <h3 className="font-bold text-sm">Sincronizar Progresso</h3>
-                                 <p className="text-[10px] text-secondary">Acesse seu save em qualquer lugar.</p>
+                                 <h3 className="font-bold text-sm">Conta é opcional</h3>
+                                 <p className="text-[12px] text-white/68 leading-5">Jogue normalmente com save local. Use conta só para sincronizar entre dispositivos.</p>
                               </div>
+                           </div>
+                           <div className="flex items-start gap-2 rounded-lg border border-white/8 bg-background/50 p-3">
+                              <Info size={14} className="text-secondary shrink-0 mt-0.5" />
+                              <p className="text-[12px] text-white/68 leading-5">O fluxo principal do jogo funciona sem login. Seus slots locais continuam sendo a forma principal de salvar e continuar.</p>
                            </div>
                            <button
                               onClick={() => setShowLogin(true)}
-                              className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg text-sm transition-all active:scale-[0.98]"
+                              className="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-lg text-sm transition-all active:scale-[0.98] border border-white/10"
                            >
-                              Entrar ou Criar Conta
+                              Ativar sincronização
                            </button>
                         </div>
                      ) : (
@@ -183,10 +197,10 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
 
                            <div className="flex items-start gap-2 bg-blue-500/5 p-3 rounded-lg border border-blue-500/10 mt-2">
                               <Info size={14} className="text-blue-400 shrink-0 mt-0.5" />
-                              <p className="text-[9px] text-blue-300 leading-tight">Ao criar conta, enviaremos um e-mail de confirmação. Você <b>precisa</b> clicar no link antes de fazer login.</p>
+                              <p className="text-[12px] text-blue-200 leading-5">Ao criar conta, enviaremos um e-mail de confirmação. Você <b>precisa</b> clicar no link antes de fazer login.</p>
                            </div>
 
-                           <button onClick={() => setShowLogin(false)} className="text-[10px] text-secondary text-center mt-2 underline">Voltar</button>
+                           <button onClick={() => setShowLogin(false)} className="text-[12px] text-white/60 text-center mt-2 underline">Voltar</button>
                         </div>
                      )}
                   </div>
@@ -199,7 +213,7 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
                            </div>
                            <div>
                               <h3 className="font-bold text-sm text-emerald-400">Sessão Ativa</h3>
-                              <p className="text-[10px] text-secondary truncate max-w-[150px]">{session.user.email}</p>
+                              <p className="text-[12px] text-white/68 truncate max-w-[170px]">{session.user.email}</p>
                            </div>
                         </div>
                         <button onClick={handleLogout} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
@@ -210,14 +224,14 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
                      <div className="grid grid-cols-2 gap-2">
                         <button
                            onClick={onLoadCloud}
-                           className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black hover:bg-white/10 active:scale-95 transition-all"
+                           className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-xl text-[11px] font-black tracking-[0.12em] hover:bg-white/10 active:scale-95 transition-all"
                         >
                            <Download size={14} className="text-primary" />
                            BAIXAR SAVE
                         </button>
                         <button
                            onClick={() => onSaveToSlot(1)}
-                           className="flex items-center justify-center gap-2 py-3 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-black text-primary hover:bg-primary/20 active:scale-95 transition-all"
+                           className="flex items-center justify-center gap-2 py-3 bg-primary/10 border border-primary/20 rounded-xl text-[11px] font-black tracking-[0.12em] text-primary hover:bg-primary/20 active:scale-95 transition-all"
                         >
                            <Cloud size={14} />
                            SUBIR SAVE
@@ -231,24 +245,27 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
                <h2 className="text-xs font-bold uppercase tracking-wider text-secondary px-1">Dados Locais</h2>
                <div className="bg-surface rounded-xl border border-white/5 overflow-hidden">
                   <button
-                     onClick={() => { onSaveToSlot(1); toast.success("Progresso salvo no Slot 1!"); }}
+                     onClick={() => onSaveToSlot(activeSlot)}
                      className="w-full flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 transition-colors active:bg-white/10"
                   >
                      <div className="flex items-center gap-3">
                         <Save size={20} className="text-emerald-500" />
                         <div className="flex flex-col items-start">
                            <span className="text-sm font-bold text-emerald-500">Forçar Save Manual</span>
-                           <span className="text-[10px] text-secondary">Salva no Cache do Navegador</span>
+                           <span className="text-[12px] text-white/68">Salva no Slot {activeSlot} do navegador</span>
                         </div>
                      </div>
                   </button>
 
-                  <div className="flex items-start gap-3 p-4 bg-background/50">
+                     <div className="flex items-start gap-3 p-4 bg-background/50">
                      <Database size={20} className="text-secondary shrink-0 mt-0.5" />
                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-white mb-1">Armazenamento em Cache</span>
-                        <p className="text-[10px] text-secondary leading-relaxed">
-                           Seus dados são salvos localmente. Use a Nuvem para evitar perda de dados se limpar o histórico do navegador.
+                        <span className="text-xs font-bold text-white mb-1">Fluxo principal sem login</span>
+                        <p className="text-[12px] text-white/68 leading-6">
+                           Seus dados são salvos localmente. Os slots abaixo são a forma principal de continuar jogando. A nuvem é complementar.
+                        </p>
+                        <p className="mt-2 text-[12px] text-white/60 leading-6">
+                           {lastLocalSaveAt ? `Autosave mais recente: ${new Date(lastLocalSaveAt).toLocaleString()} no Slot ${activeSlot}.` : `Slot ativo atual: ${activeSlot}.`}
                         </p>
                      </div>
                   </div>
@@ -268,31 +285,31 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
                                  <HardDrive size={18} className="text-secondary" />
                               </div>
                               <div className="flex flex-col">
-                                 <span className="text-sm font-black">Slot {slot}</span>
+                                 <span className="text-sm font-black">Slot {slot}{activeSlot === slot ? ' • Ativo' : ''}</span>
                                  {meta ? (
-                                    <span className="text-[10px] text-secondary font-bold">Temp. {meta.season} • Rodada {meta.round} • {new Date(meta.savedAt).toLocaleString()}</span>
+                                    <span className="text-[12px] text-white/68 font-bold">Temp. {meta.season} • Rodada {meta.round} • {new Date(meta.savedAt).toLocaleString()}</span>
                                  ) : (
-                                    <span className="text-[10px] text-secondary font-bold">Vazio</span>
+                                    <span className="text-[12px] text-white/45 font-bold">Vazio</span>
                                  )}
                               </div>
                            </div>
                            <div className="flex items-center gap-2">
                               <button
                                  onClick={() => onSaveToSlot(slot as SaveSlotId)}
-                                 className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black hover:bg-emerald-500/20 active:scale-95 transition-all"
+                                 className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-black tracking-[0.12em] hover:bg-emerald-500/20 active:scale-95 transition-all"
                               >
                                  SALVAR
                               </button>
                               <button
                                  onClick={() => meta ? onLoadFromSlot(slot as SaveSlotId) : toast.error('Slot vazio.')}
-                                 className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-[10px] font-black hover:bg-white/10 active:scale-95 transition-all"
+                                 className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-[11px] font-black tracking-[0.12em] hover:bg-white/10 active:scale-95 transition-all"
                               >
                                  CARREGAR
                               </button>
                               <button
                                  onClick={() => meta ? onClearSlot(slot as SaveSlotId) : undefined}
                                  className={clsx(
-                                    "px-3 py-2 rounded-lg border text-[10px] font-black active:scale-95 transition-all",
+                                    "px-3 py-2 rounded-lg border text-[11px] font-black tracking-[0.12em] active:scale-95 transition-all",
                                     meta ? "bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20" : "bg-white/5 border-white/10 text-secondary opacity-40 cursor-not-allowed"
                                  )}
                               >

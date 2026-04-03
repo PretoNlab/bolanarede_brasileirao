@@ -1,5 +1,5 @@
-
 import React, { useMemo } from 'react';
+import { TeamLogo } from '../components/TeamLogo';
 import { Team, Player } from '../types';
 import { ArrowLeft, Play, ShieldAlert, Swords, Users, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
@@ -48,11 +48,8 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
             "flex flex-col items-center p-6 rounded-3xl border w-full max-w-[160px]",
             isUser ? "bg-primary/10 border-primary/20" : "bg-surface border-white/5"
         )}>
-            <div className={clsx(
-                "w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-xl",
-                "bg-gradient-to-br " + team.logoColor1 + " " + team.logoColor2
-            )}>
-                <span className="text-2xl font-black text-white">{team.shortName.substring(0, 2)}</span>
+            <div className="mb-4">
+                <TeamLogo team={team} size="lg" />
             </div>
             <h3 className="text-sm font-black uppercase text-center mb-1">{team.name}</h3>
             <div className="flex items-center gap-2">

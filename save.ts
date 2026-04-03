@@ -35,6 +35,9 @@ export interface SaveGame {
   trainingIntensity?: string; // TrainingIntensity
   squadTrainingIntensity?: string; // TrainingIntensity (alias)
   youthRoster?: any[]; // Player[]
+  // Copa do Mundo
+  worldCupState?: any; // WorldCupGameState
+  isWorldCupMode?: boolean;
 }
 
 const KEY_PREFIX = 'bolanarede_save_slot_';
@@ -48,7 +51,7 @@ export function readSlot(slot: SaveSlotId): SaveGame | null {
     const raw = localStorage.getItem(slotKey(slot));
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (!parsed || parsed.version !== 1) return null;
+    if (!isValidSaveGame(parsed)) return null;
     return parsed as SaveGame;
   } catch {
     return null;
@@ -73,6 +76,24 @@ export function listSlots(): { slot: SaveSlotId; save: SaveGame }[] {
   return out;
 }
 
+export function hasAnyLocalSave() {
+  return listSlots().length > 0;
+}
+
+export function getLatestLocalSave() {
+  const slots = listSlots();
+  if (!slots.length) return null;
+
+  return slots.reduce((latest, current) => {
+    const latestTime = Date.parse(latest.save.savedAt || '');
+    const currentTime = Date.parse(current.save.savedAt || '');
+
+    if (Number.isNaN(latestTime)) return current;
+    if (Number.isNaN(currentTime)) return latest;
+    return currentTime > latestTime ? current : latest;
+  });
+}
+
 export function downloadJson(filename: string, obj: any) {
   const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -88,4 +109,24 @@ export function downloadJson(filename: string, obj: any) {
 export async function readFileAsJson(file: File): Promise<any> {
   const text = await file.text();
   return JSON.parse(text);
+}
+
+export function isValidSaveGame(value: unknown): value is SaveGame {
+  if (!value || typeof value !== 'object') return false;
+
+  const candidate = value as Record<string, unknown>;
+
+  return (
+    candidate.version === 1 &&
+    typeof candidate.savedAt === 'string' &&
+    typeof candidate.season === 'number' &&
+    typeof candidate.currentRound === 'number' &&
+    typeof candidate.funds === 'number' &&
+    typeof candidate.ticketPrice === 'number' &&
+    Array.isArray(candidate.teams) &&
+    (typeof candidate.userTeamId === 'string' || candidate.userTeamId === null) &&
+    Array.isArray(candidate.matchHistory) &&
+    Array.isArray(candidate.fixtures) &&
+    Array.isArray(candidate.news)
+  );
 }

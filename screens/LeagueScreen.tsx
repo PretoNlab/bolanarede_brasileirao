@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
+import { TeamLogo } from '../components/TeamLogo';
 import { Team, Player } from '../types';
 import { ArrowLeft, Trophy, Globe, Award, Star, ListOrdered, User } from 'lucide-react';
 import clsx from 'clsx';
@@ -10,9 +11,6 @@ interface Props {
   onBack: () => void;
 }
 
-const TeamLogo = ({ team, size = "w-5 h-5" }: { team: Team, size?: string }) => {
-  return <div className={`${size} rounded-full bg-gradient-to-br ${team.logoColor1} ${team.logoColor2}`}></div>;
-};
 
 export default function LeagueScreen({ teams, userTeamId, onBack }: Props) {
   const [tab, setTab] = useState<'LOCAL' | 'SCORERS'>('LOCAL');
@@ -25,10 +23,10 @@ export default function LeagueScreen({ teams, userTeamId, onBack }: Props) {
   }, [teams, div]);
 
   const topScorers = useMemo(() => {
-    const players: { p: Player, tName: string }[] = [];
+    const players: { p: Player, team: Team }[] = [];
     teams.filter(t => t.division === div).forEach(team => {
       team.roster.forEach(player => {
-        if (player.goals > 0) players.push({ p: player, tName: team.name });
+        if (player.goals > 0) players.push({ p: player, team });
       });
     });
     return players.sort((a, b) => b.p.goals - a.p.goals).slice(0, 10);
@@ -85,7 +83,7 @@ export default function LeagueScreen({ teams, userTeamId, onBack }: Props) {
                         <span className="font-black">{i + 1}º</span>
                       </td>
                       <td className="px-2 py-4 font-bold flex items-center gap-2">
-                        <TeamLogo team={t} />
+                        <TeamLogo team={t} size="sm" />
                         <span className="truncate max-w-[120px]">{t.name}</span>
                       </td>
                       <td className="px-3 py-4 text-center font-black">{t.points}</td>
@@ -119,7 +117,10 @@ export default function LeagueScreen({ teams, userTeamId, onBack }: Props) {
                     <span className="text-lg font-black text-secondary">#{idx + 1}</span>
                     <div>
                       <p className="text-sm font-bold text-white">{entry.p.name}</p>
-                      <p className="text-[10px] text-secondary font-bold uppercase">{entry.tName}</p>
+                      <div className="flex items-center gap-1.5 pt-0.5">
+                        <TeamLogo team={entry.team} size="xs" />
+                        <p className="text-[10px] text-secondary font-bold uppercase">{entry.team.name}</p>
+                      </div>
                     </div>
                   </div>
                   <div className="flex flex-col items-end">

@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { Coach } from '../types';
-import { ArrowLeft, User, DollarSign, ShoppingBag, Star, Car, Home, Watch, Plane } from 'lucide-react';
+import { Coach, Team } from '../types';
+import { TeamLogo } from '../components/TeamLogo';
+import { ArrowLeft, User, DollarSign, ShoppingBag, Star, Car, Home, Watch, Plane, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
 interface Props {
     coach: Coach;
+    userTeam: Team;
     onBack: () => void;
     onUpdateCoach: (newCoach: Coach) => void;
 }
@@ -22,7 +24,7 @@ const LUXURY_ITEMS = [
     { id: 'jatinho', label: 'Jatinho Particular', price: 5000000, icon: <Plane size={24} className="text-rose-400" />, desc: 'O céu é o limite.' },
 ];
 
-export default function CoachProfileScreen({ coach, onBack, onUpdateCoach }: Props) {
+export default function CoachProfileScreen({ coach, userTeam, onBack, onUpdateCoach }: Props) {
     const formatMoney = (val: number) => {
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(val);
     };
@@ -56,14 +58,15 @@ export default function CoachProfileScreen({ coach, onBack, onUpdateCoach }: Pro
                 {/* Profile Card */}
                 <div className="bg-gradient-to-br from-primary to-primary-hover p-6 rounded-3xl shadow-2xl relative overflow-hidden">
                     <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-white/20">
-                            <User size={40} className="text-primary" />
+                        <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white/20 overflow-hidden">
+                            <TeamLogo team={userTeam} size="lg" />
                         </div>
                         <div>
                             <p className="text-xs font-black uppercase opacity-70 mb-1">Treinador</p>
                             <h2 className="text-2xl font-black">{coach.name}</h2>
                             <div className="flex items-center gap-2 mt-2">
                                 <span className="bg-black/20 px-3 py-1 rounded-lg text-xs font-bold uppercase">{coach.style}</span>
+                                <span className="bg-white/10 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-tight italic opacity-80">{userTeam.name}</span>
                             </div>
                         </div>
                     </div>
@@ -120,8 +123,4 @@ export default function CoachProfileScreen({ coach, onBack, onUpdateCoach }: Pro
             </main>
         </div>
     );
-}
-
-function Check({ size }: { size: number }) {
-    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
 }

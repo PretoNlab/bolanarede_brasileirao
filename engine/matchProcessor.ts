@@ -1,6 +1,7 @@
 import { Team, Player, MatchResult, MatchEvent, StaffMember, PlayerHistoryEvent, TrainingFocus, TrainingIntensity, Infrastructure } from '../types';
 import { PlayerSeasonStats } from '../save';
 import { clamp, DEFAULT_TICKET_PRICE } from './gameState';
+import { calculateDynamicTeamStrength } from './tacticsEngine';
 
 export interface MatchProcessorInput {
   teams: Team[];
@@ -144,10 +145,13 @@ export function processMatchResults(input: MatchProcessorInput): MatchProcessorO
         aScore = fix.homeTeamId === userTeamId ? opponentGoals : userGoals;
       } else {
         // AI match simulation
-        const hAtt = hTeamRef.attack;
-        const hDef = hTeamRef.defense;
-        const aAtt = aTeamRef.attack;
-        const aDef = aTeamRef.defense;
+        const hStats = calculateDynamicTeamStrength(hTeamRef);
+        const aStats = calculateDynamicTeamStrength(aTeamRef);
+
+        const hAtt = hStats.att;
+        const hDef = hStats.def;
+        const aAtt = aStats.att;
+        const aDef = aStats.def;
 
         const homeAdvantage = 5;
         const isRivalry = hTeamRef.rivalId === aTeamRef.id || aTeamRef.rivalId === hTeamRef.id;
@@ -353,17 +357,32 @@ export function processMatchResults(input: MatchProcessorInput): MatchProcessorO
 
       if (isSuspended) newStatus = 'suspended';
 
-      // Energy recovery
+      // Energy management (Depletion for starters, recovery for bench)
       const intensityEnergyMap: Record<string, number> = { 'BAIXA': 5, 'MEDIA': 0, 'ALTA': -8 };
-      const intensityTax = team.id === userTeamId ? (intensityEnergyMap[squadTrainingIntensity] || 0) : 0;
-      const dmBonus = team.id === userTeamId ? (infrastructure.dm - 1) * 0.15 : 0;
+      const trainingTax = team.id === userTeamId ? (intensityEnergyMap[squadTrainingIntensity] || 0) : 0;
+      const dmBonus = team.id === userTeamId ? (infrastructure.dm - 1) * 0.1 : 0;
+      const staffRecoveryBonus = physioBonus * 1.5;
 
       let newEnergy = p.energy;
-      if (!team.lineup.includes(p.id)) {
-        const baseRec = 15 + Math.round(15 * physioBonus) + intensityTax;
-        newEnergy = Math.min(100, newEnergy + baseRec * (1 + dmBonus));
+      const isInLineup = team.lineup.includes(p.id);
+
+      if (isInLineup) {
+        // MATCH DEPLETION
+        let depletion = 15 + Math.random() * 5; // Base depletion per match
+        
+        if (team.instructions) {
+          if (team.instructions.pressing === 'ALTA') depletion += 10;
+          if (team.instructions.pressing === 'BAIXA') depletion -= 5;
+          if (team.instructions.tempo === 'VELOZ') depletion += 5;
+          if (team.instructions.tempo === 'LENTO') depletion -= 3;
+        }
+
+        // Apply Staff and Infrastructure mitigations
+        depletion = depletion * (1 - staffRecoveryBonus * 0.5) * (1 - dmBonus);
+        newEnergy = Math.max(0, newEnergy - depletion + trainingTax);
       } else {
-        const baseRec = 8 + Math.round(8 * physioBonus) + intensityTax;
+        // RECOVERY
+        const baseRec = 15 + Math.round(15 * staffRecoveryBonus) + trainingTax;
         newEnergy = Math.min(100, newEnergy + baseRec * (1 + dmBonus));
       }
 
