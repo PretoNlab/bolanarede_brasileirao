@@ -101,62 +101,30 @@ function runWhenIdle(task: () => void) {
 function buildExtraWorldCupPlayerName(
   teamData: (typeof WC_TEAMS_DATA)[number],
   usedNames: Set<string>,
-  usedLastNames: Set<string>,
   index: number
 ) {
-  const splitNames = teamData.players.map((player) =>
-    player.name
-      .split(' ')
-      .map((part) => part.replace(/\./g, '').trim())
-      .filter((part) => part.length > 1)
-  );
-
-  const extractedFirst = splitNames.map((parts) => parts[0]).filter(Boolean);
-  const extractedLast = splitNames.map((parts) => parts[parts.length - 1]).filter(Boolean);
   const fallback = WORLD_CUP_FALLBACK_NAMES[teamData.confederation];
-  const firstPool = extractedFirst.length > 0 ? extractedFirst : [...fallback.first];
-  const lastPool = extractedLast.length > 0 ? extractedLast : [...fallback.last];
+  const firstPool = [...fallback.first];
+  const lastPool = [...fallback.last];
 
-  for (let attempt = 0; attempt < 12; attempt++) {
+  for (let attempt = 0; attempt < 120; attempt++) {
     const first = firstPool[Math.floor(Math.random() * firstPool.length)];
     const last = lastPool[Math.floor(Math.random() * lastPool.length)];
     const candidate = `${first} ${last}`;
 
-    if (!usedNames.has(candidate) && !usedLastNames.has(last)) {
+    if (!usedNames.has(candidate)) {
       usedNames.add(candidate);
-      usedLastNames.add(last);
       return candidate;
     }
   }
 
-  const fallbackLast = `${lastPool[(index + 3) % lastPool.length]} ${index + 1}`;
-  const fallbackName = `${firstPool[index % firstPool.length]} ${fallbackLast}`;
+  const fallbackName = `${firstPool[index % firstPool.length]} ${lastPool[(index + 3) % lastPool.length]}`;
   usedNames.add(fallbackName);
-  usedLastNames.add(fallbackLast);
   return fallbackName;
 }
 
 function normalizeWorldCupSquadNames(players: Player[]) {
-  const nameCounts = new Map<string, number>();
-
-  players.forEach((player) => {
-    nameCounts.set(player.name, (nameCounts.get(player.name) ?? 0) + 1);
-  });
-
-  return players.map((player) => {
-    const duplicateCount = nameCounts.get(player.name) ?? 0;
-    const singleToken = player.name.trim().split(' ').length === 1;
-
-    if (!singleToken && duplicateCount <= 1) {
-      return player;
-    }
-
-    const suffix = player.mainPosition === 'GK' ? 'GK' : player.position;
-    return {
-      ...player,
-      name: `${player.name} ${suffix}`,
-    };
-  });
+  return players;
 }
 
 export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppProps) {
@@ -1366,16 +1334,11 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     const extraPlayers: Player[] = [];
     const avgOvr = realPlayers.reduce((sum, p) => sum + p.overall, 0) / realPlayers.length;
     const usedNames = new Set(realPlayers.map((player) => player.name));
-    const usedLastNames = new Set(
-      realPlayers
-        .map((player) => player.name.split(' ').at(-1)?.replace(/\./g, '').trim())
-        .filter(Boolean) as string[]
-    );
     const extraPositionPlan: Player['position'][] = ['GOL', 'ZAG', 'ZAG', 'LAT', 'LAT', 'VOL', 'VOL', 'MEI', 'MEI', 'MEI', 'ATA', 'ATA', 'ATA', 'ATA'];
 
     for (let i = 0; i < extraPositionPlan.length; i++) {
       const pos = extraPositionPlan[i];
-      const name = buildExtraWorldCupPlayerName(teamData, usedNames, usedLastNames, i);
+      const name = buildExtraWorldCupPlayerName(teamData, usedNames, i);
       const age = 18 + Math.floor(Math.random() * 15);
       const ovr = Math.round(avgOvr - 3 + Math.random() * 6);
       
