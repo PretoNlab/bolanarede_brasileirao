@@ -6,7 +6,7 @@ import { clsx, type ClassValue } from 'clsx';
 interface TeamLogoProps {
   team: Partial<Team> | { id: string; name: string; shortName: string; logoColor1?: string; logoColor2?: string; logoUrl?: string };
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
 /**
@@ -17,6 +17,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ team, className = "", size =
   const [error, setError] = useState(false);
 
   const sizeClasses = {
+    xs: "w-5 h-5 text-[7px]",
     sm: "w-6 h-6 text-[8px]",
     md: "w-10 h-10 text-[10px]",
     lg: "w-16 h-16 text-[14px]",

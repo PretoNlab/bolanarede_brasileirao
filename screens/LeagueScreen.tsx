@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { TeamLogo } from '../components/TeamLogo';
 import { Team, Player } from '../types';
-import { ArrowLeft, Trophy, Globe, Award, Star, ListOrdered, User } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import clsx from 'clsx';
 
 interface Props {
@@ -112,20 +112,35 @@ export default function LeagueScreen({ teams, userTeamId, onBack }: Props) {
               <div className="py-20 text-center text-secondary opacity-40">Nenhum gol marcado ainda.</div>
             ) : (
               topScorers.map((entry, idx) => (
-                <div key={idx} className="bg-surface p-4 rounded-2xl flex items-center justify-between border border-white/5">
-                  <div className="flex items-center gap-4">
-                    <span className="text-lg font-black text-secondary">#{idx + 1}</span>
-                    <div>
-                      <p className="text-sm font-bold text-white">{entry.p.name}</p>
-                      <div className="flex items-center gap-1.5 pt-0.5">
-                        <TeamLogo team={entry.team} size="xs" />
-                        <p className="text-[10px] text-secondary font-bold uppercase">{entry.team.name}</p>
+                <div
+                  key={entry.p.id}
+                  className="bg-surface p-4 rounded-2xl border border-white/5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex flex-1 items-start gap-3">
+                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl border border-white/8 bg-black/15 text-sm font-black text-secondary">
+                        #{idx + 1}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold text-white">{entry.p.name}</p>
+                        <div className="mt-1 flex min-w-0 items-center gap-2">
+                          <TeamLogo team={entry.team} size="xs" />
+                          <p className="truncate text-[10px] font-bold uppercase text-secondary">
+                            {entry.team.name}
+                          </p>
+                        </div>
                       </div>
                     </div>
+                    <div className="flex flex-shrink-0 flex-col items-end text-right">
+                      <span className="text-lg font-black tabular-nums text-emerald-500">{entry.p.goals}</span>
+                      <span className="text-[9px] font-black uppercase tracking-[0.14em] text-secondary">
+                        Gols
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-lg font-black text-emerald-500">{entry.p.goals}</span>
-                    <span className="text-[8px] font-black text-secondary uppercase">Gols</span>
+                  <div className="mt-3 flex items-center justify-between rounded-xl bg-black/15 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white/55">
+                    <span>{div === 1 ? 'Série A' : 'Série B'}</span>
+                    <span>{entry.team.shortName}</span>
                   </div>
                 </div>
               ))
