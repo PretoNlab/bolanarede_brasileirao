@@ -13,13 +13,13 @@
    ============================================ */
 
 :root {
-  /* Color Palette */
-  --color-bg:               #030A06;
-  --color-surface:          #0A1A12;
-  --color-surface-low:      #0D2118;
-  --color-surface-high:     #142B1F;
-  --color-surface-highest:  #1A3828;
-  --color-primary:          #1FB185;
+  /* Color Palette — BNR Dark Mode (Game Default) */
+  --color-bg:               #050505;
+  --color-surface:          #0D0D0D;
+  --color-surface-low:      #121212;
+  --color-surface-high:     #1A1A1A;
+  --color-surface-highest:  #222222;
+  --color-primary:          #1FB185; /* Emerald */
   --color-primary-light:    #4ECDA4;
   --color-secondary:        #0D4A35;
   --color-tertiary:         #E05A5A;
@@ -30,7 +30,7 @@
   --color-border:           rgba(31, 177, 133, 0.12);
   --color-border-gold:      rgba(255, 215, 0, 0.2);
 
-  /* Shadows */
+  /* Shadows — Adjusted for Dark Theme */
   --shadow-premium: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
   --shadow-glow:    0 0 20px rgba(31, 177, 133, 0.3);
   --shadow-gold:    0 0 20px rgba(255, 215, 0, 0.2);
@@ -43,7 +43,9 @@
 /* ============================================
    BASE
    ============================================ */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   -webkit-overflow-scrolling: touch;
@@ -71,7 +73,9 @@ button:active {
   opacity: 0.9;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   background: transparent;
   color: var(--color-on-surface);
 }
@@ -79,14 +83,25 @@ input, select, textarea {
 /* ============================================
    SAFE AREA UTILITIES
    ============================================ */
-.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-.pt-safe { padding-top: env(safe-area-inset-top); }
-.mb-safe { margin-bottom: env(safe-area-inset-bottom); }
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom);
+}
 
 /* ============================================
    SCROLLBAR UTILITIES
    ============================================ */
-.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -123,11 +138,22 @@ input, select, textarea {
    GLOW EFFECTS
    ============================================ */
 .glow-text {
-  text-shadow: 0 0 20px rgba(31, 177, 133, 0.5);
+  text-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
 }
 
 .glow-primary {
-  box-shadow: 0 0 12px rgba(31, 177, 133, 0.6);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+.stadium-glow {
+  background: radial-gradient(circle at 50% -20%, rgba(16, 185, 129, 0.15), transparent 70%);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* ============================================
@@ -144,43 +170,100 @@ input, select, textarea {
 /* ============================================
    BACKGROUNDS
    ============================================ */
-.bg-background { background-color: var(--color-bg) !important; }
-.bg-surface-low { background-color: var(--color-surface-low) !important; }
-.bg-surface-high { background-color: var(--color-surface-high) !important; }
-.bg-surface-highest { background-color: var(--color-surface-highest) !important; }
+.bg-background {
+  background-color: var(--color-bg) !important;
+}
+
+.bg-surface-low {
+  background-color: var(--color-surface-low) !important;
+}
+
+.bg-surface-high {
+  background-color: var(--color-surface-high) !important;
+}
+
+.bg-surface-highest {
+  background-color: var(--color-surface-highest) !important;
+}
 
 /* ============================================
    TEXT COLORS
    ============================================ */
-.text-primary           { color: var(--color-primary) !important; }
-.text-primary-light     { color: var(--color-primary-light) !important; }
-.text-secondary         { color: var(--color-primary-light) !important; }
-.text-tertiary          { color: var(--color-tertiary) !important; }
-.text-background        { color: var(--color-bg) !important; }
-.text-on-surface        { color: var(--color-on-surface) !important; }
-.text-on-surface-variant { color: var(--color-on-surface-var) !important; }
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.text-primary-light {
+  color: var(--color-primary-light) !important;
+}
+
+.text-secondary {
+  color: var(--color-primary-light) !important;
+}
+
+.text-tertiary {
+  color: var(--color-tertiary) !important;
+}
+
+.text-background {
+  color: var(--color-bg) !important;
+}
+
+.text-on-surface {
+  color: var(--color-on-surface) !important;
+}
+
+.text-on-surface-variant {
+  color: var(--color-on-surface-var) !important;
+}
 
 /* ============================================
    MATCH PITCH + ANIMATIONS
    ============================================ */
 @keyframes scan {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes goalPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50%       { transform: scale(1.2); opacity: 0.8; }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes revealRise {
@@ -188,6 +271,7 @@ input, select, textarea {
     opacity: 0;
     transform: translateY(18px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -195,13 +279,26 @@ input, select, textarea {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes glint {
-  0% { transform: translateX(-100%) skewX(-15deg); }
-  25%, 100% { transform: translateX(100%) skewX(-15deg); }
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+
+  25%,
+  100% {
+    transform: translateX(100%) skewX(-15deg);
+  }
 }
 
 .animate-float {
@@ -221,6 +318,7 @@ input, select, textarea {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .reveal-soft,
   .reveal-delayed,
   .reveal-more-delayed,
@@ -252,7 +350,7 @@ input, select, textarea {
   letter-spacing: -0.01em;
 }
 
-.bnr-toast > div {
+.bnr-toast>div {
   color: inherit !important;
 }
 
@@ -300,7 +398,8 @@ input[type="range"]::-moz-range-thumb {
 /* ============================================
    TEXT INPUT STYLING
    ============================================ */
-input[type="text"], input[type="number"] {
+input[type="text"],
+input[type="number"] {
   background: rgba(13, 33, 24, 0.7);
   border: 1px solid rgba(31, 177, 133, 0.15);
   color: var(--color-on-surface);

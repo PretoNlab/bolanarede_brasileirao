@@ -129,7 +129,7 @@ function ShowcasePhone({
   return (
     <div className={`relative ${className}`} style={{ width, height }}>
       <div
-        className="absolute left-1/2 top-0 overflow-hidden rounded-[42px] bg-[#171717] p-3 shadow-[0_40px_90px_rgba(17,17,17,0.18)]"
+        className="absolute left-1/2 top-0 overflow-hidden rounded-[48px] bg-[#0A0A0A] p-2.5 shadow-[0_40px_100px_rgba(0,0,0,0.8),0_0_30px_rgba(16,185,129,0.1)] border border-white/5"
         style={{
           width: 390,
           height: 844,
@@ -137,8 +137,8 @@ function ShowcasePhone({
           transformOrigin: 'top center',
         }}
       >
-        <div className="absolute left-1/2 top-3 z-20 h-6 w-28 -translate-x-1/2 rounded-b-2xl bg-[#171717]" />
-        <div className="relative h-full overflow-hidden rounded-[32px] bg-background">
+        <div className="absolute left-1/2 top-0 z-20 h-7 w-32 -translate-x-1/2 rounded-b-3xl bg-[#0A0A0A] border-x border-b border-white/5" />
+        <div className="relative h-full overflow-hidden rounded-[38px] bg-[#050505]">
           {children}
         </div>
       </div>

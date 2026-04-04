@@ -250,20 +250,20 @@ export default function CoachSetupScreen({ onComplete, onBack }: Props) {
             </main>
 
             {/* Footer: Action Button */}
-            <footer className="fixed bottom-0 inset-x-0 p-8 pt-12 bg-gradient-to-t from-background via-background/90 to-transparent z-50">
+            <footer className="fixed bottom-0 inset-x-0 p-8 pt-12 bg-gradient-to-t from-[#050505] via-[#050505]/90 to-transparent z-50">
                 <motion.button
                     whileTap={{ scale: 0.96 }}
                     onClick={handleNext}
                     className={clsx(
                         "w-full h-16 rounded-[2rem] font-bold uppercase tracking-[0.3em] font-display shadow-2xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group",
                         step === 3
-                            ? "bg-secondary text-background shadow-secondary/20 hover:bg-secondary/90"
-                            : "bg-surface-highest text-white border border-white/10 hover:bg-surface-container"
+                            ? "bg-[#1FB185] text-black shadow-[#1FB185]/20 hover:bg-[#1FB185]/90"
+                            : "bg-white text-black hover:bg-white/90"
                     )}
                 >
                     <span className="relative z-10">{step === 3 ? "INICIAR CARREIRA" : step === 0 ? "VAMOS LÁ" : "CONFIRMAR"}</span>
                     {step !== 3 && <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 </motion.button>
             </footer>
 

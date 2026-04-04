@@ -14,19 +14,29 @@ function normalizePath(pathname: string): RoutePath {
 
 function LoadingScreen() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-[#f7f4ee] text-[#111111]">
-      <div className="font-editorial text-[1.4rem] font-bold tracking-[-0.05em]">Carregando</div>
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[#050505] text-white">
+      <div className="relative mb-8">
+        <div className="absolute inset-0 bg-[#10B981] blur-3xl opacity-20" />
+        <img src="/logo.svg" alt="BNR" className="h-16 w-16 relative z-10 animate-float" />
+      </div>
+      <div className="font-editorial text-[1.4rem] font-bold tracking-[-0.05em] italic glow-text">Iniciando BNR Series</div>
     </div>
   );
 }
 
 function ErrorScreen({ title, message }: { title: string; message: string }) {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-[#f7f4ee] px-6 text-[#111111]">
-      <div className="max-w-2xl rounded-[28px] border border-black/10 bg-white p-8 shadow-[0_20px_50px_rgba(17,17,17,0.08)]">
-        <div className="text-[11px] font-black uppercase tracking-[0.18em] text-black/40">Erro de runtime</div>
-        <div className="font-editorial mt-4 text-[2rem] font-bold tracking-[-0.06em]">{title}</div>
-        <pre className="mt-4 whitespace-pre-wrap break-words text-[14px] leading-7 text-black/70">{message}</pre>
+    <div className="flex min-h-screen w-full items-center justify-center bg-[#050505] px-6 text-white stadium-glow">
+      <div className="max-w-2xl rounded-[42px] border border-white/5 bg-white/[0.03] p-10 shadow-2xl backdrop-blur-xl">
+        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#10B981]">Erro de Runtime</div>
+        <div className="font-editorial mt-6 text-[2.2rem] font-bold tracking-[-0.06em] italic">{title}</div>
+        <pre className="mt-6 whitespace-pre-wrap break-words text-[14px] leading-7 text-white/50 bg-black/40 rounded-2xl p-6 border border-white/5">{message}</pre>
+        <button 
+          onClick={() => window.location.href = '/'}
+          className="mt-8 flex h-12 items-center justify-center rounded-full bg-white px-8 text-[11px] font-black uppercase tracking-[0.15em] text-black"
+        >
+          Voltar para Home
+        </button>
       </div>
     </div>
   );
@@ -63,9 +73,10 @@ class AppErrorBoundary extends React.Component<
 function runWhenIdle(task: () => void) {
   if (typeof window === 'undefined') return () => {};
 
-  if ('requestIdleCallback' in window) {
-    const id = window.requestIdleCallback(() => task(), { timeout: 1200 });
-    return () => window.cancelIdleCallback(id);
+  const win = window as any;
+  if (win.requestIdleCallback) {
+    const id = win.requestIdleCallback(() => task(), { timeout: 1200 });
+    return () => win.cancelIdleCallback(id);
   }
 
   const timeout = window.setTimeout(task, 500);
