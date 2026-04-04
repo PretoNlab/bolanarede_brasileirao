@@ -2,17 +2,23 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Bolanarede Manager
+# Bola na Rede Manager
 
-This contains everything you need to run your app locally.
+Manager de futebol brasileiro com carreira, Série A, Série B, mercado, finanças, staff, base e Copa do Mundo 2026.
 
-## Run Locally
+## Rodar Localmente
 
-**Prerequisites:**  Node.js
+Pré-requisito: `Node.js`
 
-
-1. Install dependencies:
+1. Instale as dependências:
    `npm install`
-2. Create a local `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
-3. Run the app:
+2. Crie um `.env.local` com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
+3. Rode o app:
    `npm run dev`
+
+## Release
+
+- Verificação mínima antes de deploy:
+  `npm run release:check`
+- Build de produção:
+  `npm run build`

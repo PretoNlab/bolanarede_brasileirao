@@ -1,6 +1,6 @@
 {
-  "name": "Bolanarede Manager",
-  "description": "A high-fidelity football management simulation game inspired by Elifoot. Manage your team, simulate matches, and conquer the championship.",
+  "name": "Bola na Rede Manager",
+  "description": "Football manager brasileiro com carreira, mercado, finanças, staff, base e Copa do Mundo 2026.",
   "requestFramePermissions": [],
   "orientation": "portrait"
 }

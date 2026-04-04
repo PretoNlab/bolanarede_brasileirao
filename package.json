@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "release:check": "node scripts/release-check.mjs",
     "sync": "npx cap sync",
     "open:android": "npx cap open android"
   },
