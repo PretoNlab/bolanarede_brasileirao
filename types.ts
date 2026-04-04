@@ -81,6 +81,7 @@ export interface WCTeamPlayer {
   secondaryPositions?: DetailedPosition[];
   preferredFoot?: 'LEFT' | 'RIGHT' | 'BOTH';
   statsOverrides?: Partial<Player['stats']>;
+  potential?: number;
 }
 
 // ========== TÁTICA AVANÇADA ==========
@@ -163,6 +164,7 @@ export interface Team {
   stadiumName?: string;
   socioCount?: number;
   rivalId?: string;
+  managerName?: string;
   description?: string;
   financeStatus?: string;
   seasonExpectation?: string;
@@ -218,7 +220,18 @@ export interface TransferLog {
   type: 'buy' | 'sell' | 'loan';
 }
 
-export type FormationType = '4-4-2' | '4-3-3' | '3-5-2' | '5-4-1' | '4-5-1' | '5-3-2' | '4-2-3-1';
+export type FormationType =
+  | '4-4-2'
+  | '4-3-3'
+  | '4-2-3-1'
+  | '3-5-2'
+  | '4-5-1'
+  | '5-3-2'
+  | '5-4-1'
+  | '3-4-3'
+  | '4-1-4-1'
+  | '4-1-2-1-2'
+  | '4-2-4';
 export type PlayingStyle = 'Ultra-Defensivo' | 'Defensivo' | 'Equilibrado' | 'Ofensivo' | 'Tudo-ou-Nada';
 
 export interface TacticalInstructions {
@@ -251,7 +264,7 @@ export interface Infrastructure {
   scout: number; // Escritório de Scouting (1-3)
 }
 
-export type ScreenState = 'SPLASH' | 'PRE_MATCH' | 'COACH_SETUP' | 'TEAM_SELECT' | 'DASHBOARD' | 'SQUAD' | 'TACTICS' | 'MATCH' | 'MARKET' | 'FINANCE' | 'CALENDAR' | 'LEAGUE' | 'NEWS' | 'STATS' | 'SETTINGS' | 'CHAMPION' | 'GAME_OVER' | 'PROFILE' | 'TRAINING' | 'INFRASTRUCTURE' | 'STAFF' | 'YOUTH' | 'WC_TEAM_SELECT' | 'WC_SQUAD_CALLUP' | 'WC_DASHBOARD' | 'WC_GROUPS' | 'WC_BRACKET' | 'WC_PRE_MATCH' | 'WC_MATCH' | 'WC_CHAMPION';
+export type ScreenState = 'SPLASH' | 'PRE_MATCH' | 'COACH_SETUP' | 'TEAM_SELECT' | 'DASHBOARD' | 'SQUAD' | 'TACTICS' | 'MATCH' | 'MARKET' | 'FINANCE' | 'CALENDAR' | 'LEAGUE' | 'NEWS' | 'STATS' | 'SETTINGS' | 'CHAMPION' | 'GAME_OVER' | 'PROFILE' | 'TRAINING' | 'INFRASTRUCTURE' | 'STAFF' | 'YOUTH' | 'WC_TEAM_SELECT' | 'WC_SQUAD_CALLUP' | 'WC_DASHBOARD' | 'WC_GROUPS' | 'WC_BRACKET' | 'WC_PRE_MATCH' | 'WC_MATCH' | 'WC_CHAMPION' | 'WC_ELIMINATED';
 
 export interface SeasonHistory {
   year: number;
@@ -314,4 +327,5 @@ export interface WCTeamData {
   attack: number;
   defense: number;
   players: WCTeamPlayer[];
+  managerName?: string;
 }

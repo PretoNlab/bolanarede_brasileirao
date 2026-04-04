@@ -108,8 +108,11 @@ export default function WorldCupDashboardScreen({
           <div className="flex items-center gap-4 relative z-10">
             <TeamLogo team={userTeam} size="lg" />
             <div>
-              <h2 className="text-xl font-black italic tracking-tighter uppercase">{userTeam.name}</h2>
-              <div className="flex items-center gap-2 mt-1">
+              <h2 className="text-xl font-black italic tracking-tighter uppercase leading-none">{userTeam.name}</h2>
+              {userTeam.managerName && (
+                <span className="text-[10px] font-bold text-yellow-500/80 uppercase tracking-widest block mt-0.5">Técnico: {userTeam.managerName}</span>
+              )}
+              <div className="flex items-center gap-2 mt-1.5">
                 <span className={clsx(
                   "px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase",
                   isEliminated ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { TeamLogo } from '../components/TeamLogo';
-import { Team, MatchEvent, PlayingStyle, FormationType } from '../types';
+import { Team, MatchEvent, PlayingStyle, FormationType, TacticalInstructions } from '../types';
 import { Play, Pause, ArrowRightLeft, Settings2, X, Activity, MessageSquare, Zap, Target, Shield, Info, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
@@ -83,7 +83,7 @@ interface Props {
    awayTeam: Team;
    round: number;
    ddaFactor: number;
-   onFinish: (homeScore: number, awayScore: number, events: MatchEvent[]) => void;
+   onFinish: (homeScore: number, awayScore: number, matchEvents: MatchEvent[], pkHome?: number, pkAway?: number) => void;
    mode?: 'league' | 'worldcup';
    wcPhase?: string;
 }
@@ -95,6 +95,35 @@ interface Narration {
    teamId?: string;
 }
 
+const MATCH_FORMATIONS: FormationType[] = ['4-4-2', '4-3-3', '4-2-3-1', '3-5-2', '4-5-1', '5-3-2', '5-4-1', '3-4-3', '4-1-4-1', '4-1-2-1-2', '4-2-4'];
+
+function getFormationBias(formation: FormationType) {
+   switch (formation) {
+      case '3-5-2':
+         return { attack: 5, defense: -2, control: 4 };
+      case '4-3-3':
+         return { attack: 6, defense: -1, control: 2 };
+      case '4-2-3-1':
+         return { attack: 4, defense: 1, control: 4 };
+      case '3-4-3':
+         return { attack: 7, defense: -3, control: 1 };
+      case '4-1-4-1':
+         return { attack: 1, defense: 4, control: 5 };
+      case '4-1-2-1-2':
+         return { attack: 5, defense: 0, control: 3 };
+      case '4-2-4':
+         return { attack: 8, defense: -5, control: -2 };
+      case '4-5-1':
+         return { attack: -3, defense: 4, control: 3 };
+      case '5-3-2':
+         return { attack: -2, defense: 5, control: 1 };
+      case '5-4-1':
+         return { attack: -5, defense: 7, control: -1 };
+      default:
+         return { attack: 1, defense: 1, control: 1 };
+   }
+}
+
 export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initialAwayTeam, round, ddaFactor, onFinish, mode = 'league', wcPhase }: Props) {
    const [minute, setMinute] = useState(0);
    const [homeScore, setHomeScore] = useState(0);
@@ -102,12 +131,28 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
    const [isFinished, setIsFinished] = useState(false);
    const [isPaused, setIsPaused] = useState(true);
    const [speed, setSpeed] = useState<1 | 10 | 100>(10);
-   const [gameState, setGameState] = useState<'1H' | 'HT' | '2H' | 'FT'>('1H');
+   const [gameState, setGameState] = useState<'1H' | 'HT' | '2H' | 'ET1' | 'ET_INT' | 'ET2' | 'PK' | 'FT'>('1H');
    const [stoppageTime, setStoppageTime] = useState(Math.floor(Math.random() * 3) + 1);
+
+   // --- WORLD CUP / KNOCKOUT SPECIFIC ---
+   const isKnockout = useMemo(() => {
+      if (mode !== 'worldcup') return false;
+      // In our worldCupEngine, phases are R16, QF, SF, FINAL
+      if (!wcPhase) return false;
+      return !wcPhase.includes('Grupo');
+   }, [mode, wcPhase]);
+
+   const [pkResults, setPkResults] = useState<{ home: (0 | 1 | 2)[], away: (0 | 1 | 2)[] }>({ home: [], away: [] });
+   const [pkTurn, setPkTurn] = useState<'HOME' | 'AWAY'>('HOME');
+   const [pkIndex, setPkIndex] = useState(0);
+   const [pkMessage, setPkMessage] = useState('Disputa de pênaltis iniciada!');
 
    const [homeTeam, setHomeTeam] = useState<Team>({ ...initialHomeTeam });
    const [currentStyle, setCurrentStyle] = useState<PlayingStyle>(initialHomeTeam.style);
    const [currentFormation, setCurrentFormation] = useState<FormationType>(initialHomeTeam.formation);
+   const [currentInstructions, setCurrentInstructions] = useState<TacticalInstructions>(
+      initialHomeTeam.instructions || { pressing: 'MEDIA', passing: 'MISTO', tempo: 'PADRAO' }
+   );
    const [shoutActive, setShoutActive] = useState<string | null>(null);
 
    const [feed, setFeed] = useState<Narration[]>([]);
@@ -135,8 +180,8 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
       }
    }, [feed]);
 
-   const addNarration = (text: string, type: Narration['type'] = 'neutral', teamId?: string) => {
-      setFeed(prev => [...prev, { minute, text, type, teamId }]);
+   const addNarration = (text: string, type: Narration['type'] = 'neutral', teamId?: string, overrideMinute?: number) => {
+      setFeed(prev => [...prev, { minute: overrideMinute ?? minute, text, type, teamId }]);
    };
 
    const matchPulse = useMemo(() => {
@@ -218,12 +263,22 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
          setStats(s => ({
             ...s,
             homeShots: isHomeAttacking ? s.homeShots + 1 : s.homeShots,
-            awayShots: !isHomeAttacking ? s.awayShots + 1 : s.awayShots
+               awayShots: !isHomeAttacking ? s.awayShots + 1 : s.awayShots
          }));
 
          let goalProb = 0.2;
          if (isHomeAttacking && currentStyle === 'Ofensivo') goalProb = 0.3;
          if (isHomeAttacking && currentStyle === 'Tudo-ou-Nada') goalProb = 0.45;
+         if (isHomeAttacking) {
+            const formationBias = getFormationBias(currentFormation);
+            const currentInstructions = homeTeam.instructions;
+            goalProb += formationBias.attack * 0.01;
+            if (currentInstructions.passing === 'CURTO') goalProb += 0.02;
+            if (currentInstructions.passing === 'LONGO') goalProb += 0.03;
+            if (currentInstructions.tempo === 'VELOZ') goalProb += 0.04;
+            if (currentInstructions.pressing === 'ALTA') goalProb += 0.02;
+         }
+         goalProb = Math.min(0.55, Math.max(0.08, goalProb));
 
          if (Math.random() < goalProb) {
             const scorer = pickRandomLineupPlayer(attackingTeam);
@@ -273,31 +328,71 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
 
    useEffect(() => {
       let interval: ReturnType<typeof setInterval>;
-      if (!isPaused && (gameState === '1H' || gameState === '2H')) {
+      const isActiveGame = ['1H', '2H', 'ET1', 'ET2'].includes(gameState);
+
+      if (!isPaused && isActiveGame) {
          const intervalTime = speed === 1 ? 1500 : (speed === 10 ? 300 : 80);
          interval = setInterval(() => {
             setMinute(m => {
                const nextMinute = m + 1;
 
+               // --- TRANSITIONS ---
                if (gameState === '1H' && nextMinute > 45 + stoppageTime) {
                   setGameState('HT');
                   setIsPaused(true);
                   addNarration("FIM DO PRIMEIRO TEMPO!", 'event');
                   return 45;
                }
+
                if (gameState === '2H' && nextMinute > 90 + stoppageTime) {
-                  setGameState('FT');
-                  setIsFinished(true);
-                  setIsPaused(true);
-                  addNarration("FINAL DE PARTIDA!", 'event');
-                  try { Haptics.notification({ type: NotificationType.Warning }); } catch { }
-                  return 90;
+                  if (isKnockout && homeScore === awayScore) {
+                     setGameState('ET_INT');
+                     setIsPaused(true);
+                     addNarration("FIM DO TEMPO REGULAR! Vamos para a Prorrogação.", 'event');
+                     return 90;
+                  } else {
+                     setGameState('FT');
+                     setIsFinished(true);
+                     setIsPaused(true);
+                     addNarration("FINAL DE PARTIDA!", 'event');
+                     try { Haptics.notification({ type: NotificationType.Warning }); } catch { }
+                     return 90;
+                  }
                }
 
+               if (gameState === 'ET1' && nextMinute > 105) {
+                  setGameState('ET2');
+                  addNarration("FIM DO PRIMEIRO TEMPO DA PRORROGAÇÃO!", 'event');
+                  return 105;
+               }
+
+               if (gameState === 'ET2' && nextMinute > 120) {
+                  if (homeScore === awayScore) {
+                     setGameState('PK');
+                     setIsPaused(true);
+                     addNarration("FIM DA PRORROGAÇÃO! A decisão será nos Pênaltis.", 'event');
+                     return 120;
+                  } else {
+                     setGameState('FT');
+                     setIsFinished(true);
+                     setIsPaused(true);
+                     addNarration("FINAL DE PARTIDA!", 'event');
+                     return 120;
+                  }
+               }
+
+               // --- MATCH LOGIC (MOMENTUM & EVENTS) ---
                let bias = 0;
-               if (currentStyle === 'Ofensivo') bias = 5;
-               if (currentStyle === 'Defensivo') bias = -5;
-               if (shoutActive === 'Pressionar') bias += 10;
+               const formationBias = getFormationBias(currentFormation);
+               const currentInstructions = homeTeam.instructions;
+
+               bias -= formationBias.defense * 0.15;
+               if (currentInstructions.pressing === 'ALTA') bias += 6;
+               if (currentInstructions.pressing === 'BAIXA') bias -= 4;
+               if (currentInstructions.tempo === 'VELOZ') bias += 4;
+               if (currentInstructions.tempo === 'LENTO') bias -= 3;
+               if (currentInstructions.passing === 'CURTO') bias += 2;
+               if (currentInstructions.passing === 'LONGO') bias += 1;
                bias -= (ddaFactor - 1.0) * 25;
 
                const shift = (Math.random() * 20 - 10) + bias;
@@ -316,7 +411,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
          }, intervalTime);
       }
       return () => clearInterval(interval);
-   }, [gameState, isPaused, speed, stats.momentum, currentStyle, shoutActive, stoppageTime]);
+   }, [gameState, isPaused, speed, stats.momentum, currentStyle, currentFormation, homeTeam.instructions, shoutActive, stoppageTime, isKnockout, homeScore, awayScore, ddaFactor]);
 
    const handleSubstitution = (outId: string, inId: string) => {
       setHomeTeam(prev => ({ ...prev, lineup: prev.lineup.map(id => id === outId ? inId : id) }));
@@ -326,6 +421,70 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
       const pOut = homeTeam.roster.find(p => p.id === outId);
       addNarration(`SUBSTITUIÇÃO: Sai ${pOut?.name}, entra ${pIn?.name}.`, 'event', homeTeam.id);
       toast.success("Substituição confirmada!");
+   };
+
+   // --- INTERACTIVE PENALTY SHOOTOUT ---
+   const handlePenaltyKick = (corner: 'left' | 'center' | 'right') => {
+      const isHomeTurn = pkTurn === 'HOME';
+      const shooterTeam = isHomeTurn ? homeTeam : initialAwayTeam;
+      const keeperTeam = isHomeTurn ? initialAwayTeam : homeTeam;
+
+      // Logic: Probability based on overall and a bit of luck
+      // shooter corner vs keeper corner (keeper choice is random)
+      const keeperCorner = ['left', 'center', 'right'][Math.floor(Math.random() * 3)];
+      const shooterPower = isHomeTurn ? 0.75 + (homeTeam.attack / 200) : 0.7 + (initialAwayTeam.attack / 200);
+      
+      let scored = Math.random() < shooterPower;
+      if (corner === keeperCorner && scored) {
+         // Keeper guessed right: 70% chance to save if they guess right
+         if (Math.random() < 0.7) scored = false;
+      }
+
+      const result = scored ? 1 : 2; // 1 = goal, 2 = miss/save
+      
+      setPkResults(prev => ({
+         ...prev,
+         [isHomeTurn ? 'home' : 'away']: [...prev[isHomeTurn ? 'home' : 'away'], result]
+      }));
+
+      const msg = scored 
+         ? `GOOOL! ${isHomeTurn ? 'Você' : shooterTeam.shortName} marcou no canto ${corner === 'left' ? 'esquerdo' : corner === 'right' ? 'direito' : 'central'}!`
+         : `PERDEU! O goleiro defendeu ou a bola foi fora!`;
+      
+      setPkMessage(msg);
+      addNarration(`${isHomeTurn ? 'PÊNALTI:' : 'PÊNALTI ADVERSÁRIO:'} ${msg}`, scored ? 'goal' : 'neutral', shooterTeam.id, 120);
+
+      // Check if finished
+      const hCount = isHomeTurn ? pkResults.home.length + 1 : pkResults.home.length;
+      const aCount = !isHomeTurn ? pkResults.away.length + 1 : pkResults.away.length;
+      
+      // Basic 5-kick rule check (simplification for now, common in games)
+      // Real rule is more complex (mathematical impossibility), but let's do simple turn advance
+      if (isHomeTurn) {
+         setPkTurn('AWAY');
+         // Auto-kick for AI after a short delay
+         setTimeout(() => {
+            const aiCorner = (['left', 'center', 'right'] as const)[Math.floor(Math.random() * 3)];
+            handlePenaltyKick(aiCorner);
+         }, 1000);
+      } else {
+         setPkTurn('HOME');
+         setPkIndex(prev => prev + 1);
+
+         // Check if winner determined
+         const hGoals = pkResults.home.filter(r => r === 1).length + (scored && isHomeTurn ? 1 : 0);
+         const aGoals = pkResults.away.filter(r => r === 1).length + (scored && !isHomeTurn ? 1 : 0);
+         
+         // At least 5 kicks or more if tied
+         if (hCount >= 5 && aCount >= 5 && hGoals !== aGoals) {
+            setHomeScore(hGoals);
+            setAwayScore(aGoals);
+            setGameState('FT');
+            setIsFinished(true);
+            setIsPaused(true);
+            addNarration(`FIM DOS PÊNALTIS! Placar: ${hGoals} x ${aGoals}`, 'event');
+         }
+      }
    };
 
    return (
@@ -352,13 +511,21 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                <div className="flex items-center gap-4">
                   <span className="text-primary italic text-lg tracking-tighter">{minute}'</span>
                   <div className="w-1 h-1 rounded-full bg-white/10" />
-                  <span className="text-white/40">{gameState === '1H' ? '1ºT' : gameState === 'HT' ? 'INT' : '2ºT'}</span>
+                  <span className="text-white/40">
+                     {gameState === '1H' ? '1ºT' : 
+                      gameState === 'HT' ? 'INT' : 
+                      gameState === '2H' ? '2ºT' : 
+                      gameState === 'ET1' ? '1ºP' : 
+                      gameState === 'ET2' ? '2ºP' : 
+                      gameState === 'ET_INT' ? 'INT' : 
+                      gameState === 'PK' ? 'PEN' : 'FT'}
+                  </span>
                </div>
             </header>
          )}
 
          {/* 2. MODERN HORIZONTAL SCOREBOARD */}
-         {!showSubModal && !showTacticsModal && (
+         {!showSubModal && !showTacticsModal && gameState !== 'PK' && (
             <div className="bg-black/90 backdrop-blur-xl relative overflow-hidden py-4 px-6 flex justify-between items-center border-b border-white/10 shadow-2xl flex-none z-20">
                <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 0.5px, transparent 0)', backgroundSize: '10px 10px' }} />
 
@@ -455,10 +622,78 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
             </div>
          )}
 
-         {/* 4. MAIN FEED & STATS */}
-         {!showSubModal && !showTacticsModal && (
-            <main className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
+         {/* --- PENALTY SHOOTOUT OVERLAY --- */}
+         {gameState === 'PK' && (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 bg-black/60 backdrop-blur-2xl animate-in fade-in duration-700">
+               <div className="w-full max-w-md text-center space-y-8">
+                  <div>
+                     <h2 className="text-3xl font-black italic tracking-tighter mb-2 text-primary">DISPUTA DE PÊNALTIS</h2>
+                     <p className="text-white/60 text-sm font-medium">{pkMessage}</p>
+                  </div>
 
+                  <div className="grid grid-cols-2 gap-8 mb-8">
+                     <div className="space-y-3">
+                        <div className="flex items-center gap-2 justify-center">
+                           <TeamLogo team={homeTeam} size="sm" />
+                           <span className="font-bold text-sm">{pkResults.home.filter(r => r === 1).length}</span>
+                        </div>
+                        <div className="flex gap-1 justify-center">
+                           {[...Array(5)].map((_, i) => (
+                              <div key={i} className={clsx(
+                                 "w-3 h-3 rounded-full border border-white/20",
+                                 pkResults.home[i] === 1 && "bg-emerald-500 border-none shadow-[0_0_10px_#10b981]",
+                                 pkResults.home[i] === 2 && "bg-red-500 border-none shadow-[0_0_10px_#ef4444]"
+                              )} />
+                           ))}
+                        </div>
+                     </div>
+                     <div className="space-y-3">
+                        <div className="flex items-center gap-2 justify-center">
+                           <span className="font-bold text-sm">{pkResults.away.filter(r => r === 1).length}</span>
+                           <TeamLogo team={initialAwayTeam} size="sm" />
+                        </div>
+                        <div className="flex gap-1 justify-center">
+                           {[...Array(5)].map((_, i) => (
+                              <div key={i} className={clsx(
+                                 "w-3 h-3 rounded-full border border-white/20",
+                                 pkResults.away[i] === 1 && "bg-emerald-500 border-none shadow-[0_0_10px_#10b981]",
+                                 pkResults.away[i] === 2 && "bg-red-500 border-none shadow-[0_0_10px_#ef4444]"
+                              )} />
+                           ))}
+                        </div>
+                     </div>
+                  </div>
+
+                  {pkTurn === 'HOME' ? (
+                     <div className="space-y-6">
+                        <p className="text-white font-bold tracking-widest uppercase text-xs">Sua Vez! Escolha onde bater:</p>
+                        <div className="grid grid-cols-3 gap-3">
+                           <button onClick={() => handlePenaltyKick('left')} className="aspect-square rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center hover:bg-primary/20 hover:border-primary transition-all group">
+                              <ArrowRightLeft className="w-6 h-6 mb-2 -rotate-45 group-hover:scale-110 transition-transform" />
+                              <span className="text-[10px] font-bold">ESQUERDO</span>
+                           </button>
+                           <button onClick={() => handlePenaltyKick('center')} className="aspect-square rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center hover:bg-primary/20 hover:border-primary transition-all group">
+                              <Target className="w-6 h-6 mb-2 group-hover:scale-110 transition-transform" />
+                              <span className="text-[10px] font-bold">CENTRO</span>
+                           </button>
+                           <button onClick={() => handlePenaltyKick('right')} className="aspect-square rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center hover:bg-primary/20 hover:border-primary transition-all group">
+                              <ArrowRightLeft className="w-6 h-6 mb-2 rotate-45 group-hover:scale-110 transition-transform" />
+                              <span className="text-[10px] font-bold">DIREITO</span>
+                           </button>
+                        </div>
+                     </div>
+                  ) : (
+                     <div className="h-24 flex items-center justify-center text-white/40 italic text-sm animate-pulse">
+                        Aguardando cobrança adversária...
+                     </div>
+                  )}
+               </div>
+            </div>
+         )}
+
+         {/* 3. CENTER ENGINE (PULSE CARD + PITCH) */}
+         {!showSubModal && !showTacticsModal && gameState !== 'PK' && (
+            <main className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
                <Pitch2D isDanger={isDanger} attackingTeamId={dangerTeamId} homeTeamId={homeTeam.id} momentum={stats.momentum} isGoalAnimation={isGoalAnimation} shoutActive={shoutActive} />
 
                {/* Momentum Strip */}
@@ -569,12 +804,14 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
          )}
 
          {/* MODAL: INTERVALO */}
-         {gameState === 'HT' && !showTacticsModal && !showSubModal && (
+         {(gameState === 'HT' || gameState === 'ET_INT') && !showTacticsModal && !showSubModal && (
             <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-2xl animate-in fade-in duration-300 flex items-center justify-center p-8">
                <div className="w-full max-w-sm bg-surface border border-white/10 rounded-[40px] p-8 flex flex-col items-center gap-8 shadow-2xl relative overflow-hidden">
                   <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent" />
                   <div className="flex flex-col items-center gap-2">
-                     <h4 className="text-3xl font-black italic tracking-tighter text-yellow-500 uppercase leading-none">Intervalo</h4>
+                     <h4 className="text-3xl font-black italic tracking-tighter text-yellow-500 uppercase leading-none">
+                        {gameState === 'HT' ? 'Intervalo' : 'Prorrogação'}
+                     </h4>
                      <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.3em]">Instruções no Vestiário</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4 w-full">
@@ -588,15 +825,20 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                      </button>
                   </div>
                   <button onClick={() => {
-                        setGameState('2H');
-                        setMinute(45);
-                        setStoppageTime(Math.floor(Math.random() * 5) + 2);
+                        if (gameState === 'HT') {
+                           setGameState('2H');
+                           setMinute(45);
+                           setStoppageTime(Math.floor(Math.random() * 5) + 2);
+                        } else {
+                           setGameState('ET1');
+                           setMinute(90);
+                        }
                         setIsPaused(false);
-                        addNarration("Começa o Segundo Tempo!", 'event');
+                        addNarration("Voltamos para o jogo!", 'event');
                      }}
                      className="w-full py-5 bg-white text-black rounded-[24px] font-black uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all text-xs"
                   >
-                     Iniciar 2º Tempo
+                     Continuar Jogo
                   </button>
                </div>
             </div>
@@ -632,7 +874,11 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                            .filter(f => f.type !== 'goal')
                            .slice(-12)
                            .map(f => ({ minute: f.minute, type: 'commentary', description: f.text }));
-                        onFinish(homeScore, awayScore, [...matchEvents, ...commentary]);
+                        
+                        const pkHome = pkResults.home.filter(r => r === 1).length;
+                        const pkAway = pkResults.away.filter(r => r === 1).length;
+
+                        onFinish(homeScore, awayScore, [...matchEvents, ...commentary], pkHome > 0 || pkAway > 0 ? pkHome : undefined, pkHome > 0 || pkAway > 0 ? pkAway : undefined);
                      }}
                      className="w-full py-5 bg-white text-slate-900 rounded-[32px] font-black uppercase tracking-[0.3em] shadow-2xl active:scale-95 transition-all text-xs"
                   >
@@ -654,7 +900,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                      <div className="space-y-3">
                         <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Mentalidade</label>
                         <div className="grid grid-cols-2 gap-2">
-                           {['Defensivo', 'Equilibrado', 'Ofensivo', 'Tudo-ou-Nada'].map(s => (
+                           {['Ultra-Defensivo', 'Defensivo', 'Equilibrado', 'Ofensivo', 'Tudo-ou-Nada'].map(s => (
                               <button key={s} onClick={() => setCurrentStyle(s as any)}
                                  className={clsx("py-3 rounded-xl text-[11px] font-black border transition-all", currentStyle === s ? "bg-primary border-primary text-white" : "bg-background border-white/5 text-secondary")}
                               >
@@ -663,8 +909,43 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                            ))}
                         </div>
                      </div>
+                     <div className="space-y-3">
+                        <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Formação</label>
+                        <div className="grid grid-cols-3 gap-2">
+                           {['4-4-2', '4-3-3', '3-5-2', '5-4-1', '4-5-1', '5-3-2', '4-2-3-1'].map((formation) => (
+                              <button
+                                 key={formation}
+                                 onClick={() => setCurrentFormation(formation as any)}
+                                 className={clsx(
+                                    "py-3 rounded-xl text-[11px] font-black border transition-all",
+                                    currentFormation === formation ? "bg-primary border-primary text-white" : "bg-background border-white/5 text-secondary"
+                                 )}
+                              >
+                                 {formation}
+                              </button>
+                           ))}
+                        </div>
+                     </div>
+                     {/* Simplified Pressing Selection */}
+                     <div className="space-y-3">
+                        <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Postura</label>
+                        <p className="text-[10px] text-white/40 italic">As instruções detalhadas podem ser ajustadas no CT.</p>
+                     </div>
                   </div>
-                  <button onClick={() => { setShowTacticsModal(false); setIsPaused(false); }} className="w-full py-5 bg-white text-slate-900 rounded-3xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">Confirmar</button>
+                  <button
+                     onClick={() => {
+                        setHomeTeam((prev) => ({
+                           ...prev,
+                           style: currentStyle,
+                           formation: currentFormation,
+                        }));
+                        setShowTacticsModal(false);
+                        setIsPaused(false);
+                     }}
+                     className="w-full py-5 bg-white text-slate-900 rounded-3xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+                  >
+                     Confirmar
+                  </button>
                </div>
             </div>
          )}

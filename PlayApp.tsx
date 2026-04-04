@@ -49,6 +49,7 @@ const WorldCupDashboardScreen = lazy(() => import('./screens/WorldCupDashboardSc
 const WorldCupGroupScreen = lazy(() => import('./screens/WorldCupGroupScreen'));
 const WorldCupBracketScreen = lazy(() => import('./screens/WorldCupBracketScreen'));
 const WorldCupChampionScreen = lazy(() => import('./screens/WorldCupChampionScreen'));
+const WorldCupEliminatedScreen = lazy(() => import('./screens/WorldCupEliminatedScreen'));
 const WCSquadCallupScreen = lazy(() => import('./screens/WCSquadCallupScreen'));
 
 const DEFAULT_TICKET_PRICE = 50;
@@ -1274,19 +1275,19 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     setCurrentScreen('DASHBOARD');
   };
 
-  const handleTacticsSave = (f: any, s: any, l: any) => {
+  const handleTacticsSave = (f: any, s: any, l: any, instructions: any) => {
     if (isWorldCupMode && wcState) {
       // Salvar táticas no time da Copa
       setWcState(prev => {
         if (!prev) return prev;
         return {
           ...prev,
-          teams: prev.teams.map(t => t.id === prev.userTeamId ? { ...t, formation: f, style: s, lineup: l } : t),
+          teams: prev.teams.map(t => t.id === prev.userTeamId ? { ...t, formation: f, style: s, lineup: l, instructions } : t),
         };
       });
       setCurrentScreen('WC_DASHBOARD');
     } else {
-      setTeams(prev => prev.map(t => t.id === userTeamId ? { ...t, formation: f, style: s, lineup: l } : t));
+      setTeams(prev => prev.map(t => t.id === userTeamId ? { ...t, formation: f, style: s, lineup: l, instructions } : t));
       setCurrentScreen(lastScreen);
     }
   };
@@ -1399,14 +1400,14 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
       teams: updatedTeams,
       groups,
       fixtures: groupFixtures,
-      provisionalSquad: undefined, // Limpar após confirmar
+      provisionalSquad: undefined,
     } : prev);
 
     setCurrentScreen('WC_DASHBOARD');
     toast.success('Convocação confirmada e grupos sorteados!', { icon: '🏆' });
   }, [wcState]);
 
-  const handleWCMatchFinished = useCallback((homeScore: number, awayScore: number, events: MatchEvent[]) => {
+  const handleWCMatchFinished = useCallback((homeScore: number, awayScore: number, events: MatchEvent[], pkHome?: number, pkAway?: number) => {
     if (!wcState) return;
     const { currentPhase, userTeamId: wcUserTeamId } = wcState;
     const userTeamWC = wcState.teams.find(t => t.id === wcUserTeamId);
@@ -1465,23 +1466,42 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
       );
       if (userBracketMatch) {
         userBracketMatch.played = true;
+        
+        // Atribuir placares de acordo com quem é time1 e time2 no bracket
         if (userBracketMatch.team1Id === wcUserTeamId) {
           userBracketMatch.score1 = homeScore;
           userBracketMatch.score2 = awayScore;
+          if (pkHome !== undefined) {
+             userBracketMatch.penalties1 = pkHome;
+             userBracketMatch.penalties2 = pkAway;
+          }
         } else {
           userBracketMatch.score1 = awayScore;
           userBracketMatch.score2 = homeScore;
+          if (pkHome !== undefined) {
+             userBracketMatch.penalties1 = pkAway;
+             userBracketMatch.penalties2 = pkHome;
+          }
         }
 
         let winnerId: string;
         if (userBracketMatch.score1 === userBracketMatch.score2) {
           // Pênaltis
-          const t1 = newState.teams.find(t => t.id === userBracketMatch.team1Id)!;
-          const t2 = newState.teams.find(t => t.id === userBracketMatch.team2Id)!;
-          const pens = simulatePenalties(t1, t2);
-          userBracketMatch.penalties1 = pens.score1;
-          userBracketMatch.penalties2 = pens.score2;
-          winnerId = pens.score1 > pens.score2 ? userBracketMatch.team1Id! : userBracketMatch.team2Id!;
+          if (pkHome !== undefined && pkAway !== undefined) {
+             // Caso os pênaltis já tenham sido jogados na MatchScreen
+             const userIsTeam1 = userBracketMatch.team1Id === wcUserTeamId;
+             const p1 = userIsTeam1 ? pkHome : pkAway;
+             const p2 = userIsTeam1 ? pkAway : pkHome;
+             winnerId = p1 > p2 ? userBracketMatch.team1Id! : userBracketMatch.team2Id!;
+          } else {
+             // Fallback caso algo falhe
+             const t1 = newState.teams.find(t => t.id === userBracketMatch.team1Id)!;
+             const t2 = newState.teams.find(t => t.id === userBracketMatch.team2Id)!;
+             const pens = simulatePenalties(t1, t2);
+             userBracketMatch.penalties1 = pens.score1;
+             userBracketMatch.penalties2 = pens.score2;
+             winnerId = pens.score1 > pens.score2 ? userBracketMatch.team1Id! : userBracketMatch.team2Id!;
+          }
         } else {
           winnerId = userBracketMatch.score1! > userBracketMatch.score2! ? userBracketMatch.team1Id! : userBracketMatch.team2Id!;
         }
@@ -1514,6 +1534,8 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
 
     if (newState.currentPhase === 'FINISHED') {
       setCurrentScreen('WC_CHAMPION');
+    } else if (newState.isEliminated) {
+      setCurrentScreen('WC_ELIMINATED');
     } else {
       setCurrentScreen('WC_DASHBOARD');
     }
@@ -2068,6 +2090,15 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
           {currentScreen === 'WC_CHAMPION' && wcState && (
             <PageWrapper id="wc_champion">
               <WorldCupChampionScreen
+                wcState={wcState}
+                onQuit={handleQuitWorldCup}
+              />
+            </PageWrapper>
+          )}
+          
+          {currentScreen === 'WC_ELIMINATED' && wcState && (
+            <PageWrapper id="wc_eliminated">
+              <WorldCupEliminatedScreen
                 wcState={wcState}
                 onQuit={handleQuitWorldCup}
               />

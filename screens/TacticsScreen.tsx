@@ -8,11 +8,11 @@ import clsx from 'clsx';
 interface Props {
   team: Team;
   onBack: () => void;
-  onSave: (formation: FormationType, style: PlayingStyle, lineup: string[]) => void;
+  onSave: (formation: FormationType, style: PlayingStyle, lineup: string[], instructions: TacticalInstructions) => void;
 }
 
 const STYLES: PlayingStyle[] = ['Ultra-Defensivo', 'Defensivo', 'Equilibrado', 'Ofensivo', 'Tudo-ou-Nada'];
-const FORMATIONS: FormationType[] = ['4-4-2', '4-3-3', '4-2-3-1', '3-5-2', '4-5-1', '5-3-2', '5-4-1'];
+const FORMATIONS: FormationType[] = ['4-4-2', '4-3-3', '4-2-3-1', '3-5-2', '4-5-1', '5-3-2', '5-4-1', '3-4-3', '4-1-4-1', '4-1-2-1-2', '4-2-4'];
 
 export default function TacticsScreen({ team, onBack, onSave }: Props) {
   const [tempFormation, setTempFormation] = useState<FormationType>(team.formation);
@@ -97,7 +97,7 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
             <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em]">{team.name}</span>
         </div>
         <button 
-          onClick={() => onSave(tempFormation, tempStyle, tempLineup)}
+          onClick={() => onSave(tempFormation, tempStyle, tempLineup, tempInstructions)}
           className="w-12 h-12 rounded-2xl bg-primary/20 text-primary flex items-center justify-center active:scale-95 transition-all border border-primary/20 shadow-lg shadow-primary/10"
         >
           <Save size={20} />
