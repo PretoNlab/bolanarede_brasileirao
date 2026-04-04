@@ -24,6 +24,7 @@ export default function WorldCupDashboardScreen({
 }: Props) {
   const { currentPhase, currentMatchday, groups, fixtures, bracket, teams, isEliminated } = wcState;
   const nextMatch = findUserNextMatch(wcState);
+  const nextMatchPhase = nextMatch?.bracketMatch?.phase || currentPhase;
 
   // Grupo do usuário
   const userGroup = groups.find(g => g.teamIds.includes(wcState.userTeamId));
@@ -182,7 +183,7 @@ export default function WorldCupDashboardScreen({
                     <span className="text-lg font-black italic text-white/20">VS</span>
                   </div>
                   <div className="px-3 py-1 bg-yellow-500 text-black rounded-lg text-[9px] font-black uppercase tracking-widest">
-                    {PHASE_LABELS[currentPhase]}
+                    {PHASE_LABELS[nextMatchPhase]}
                   </div>
                 </div>
 

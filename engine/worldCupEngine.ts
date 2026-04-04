@@ -55,10 +55,10 @@ export function generateGroupFixtures(groups: WCGroup[]): Fixture[] {
     fixtures.push({ round: 1, homeTeamId: t[2], awayTeamId: t[3], played: false });
     // Rodada 2: t[0] vs t[2], t[1] vs t[3]
     fixtures.push({ round: 2, homeTeamId: t[0], awayTeamId: t[2], played: false });
-    fixtures.push({ round: 2, homeTeamId: t[3], awayTeamId: t[1], played: false });
+    fixtures.push({ round: 2, homeTeamId: t[1], awayTeamId: t[3], played: false });
     // Rodada 3: t[0] vs t[3], t[1] vs t[2]
-    fixtures.push({ round: 3, homeTeamId: t[1], awayTeamId: t[0], played: false });
-    fixtures.push({ round: 3, homeTeamId: t[3], awayTeamId: t[2], played: false });
+    fixtures.push({ round: 3, homeTeamId: t[0], awayTeamId: t[3], played: false });
+    fixtures.push({ round: 3, homeTeamId: t[1], awayTeamId: t[2], played: false });
   });
 
   return fixtures;
@@ -489,7 +489,7 @@ export function processWCMatchday(state: WorldCupGameState): WorldCupGameState {
       const team2 = newState.teams.find(t => t.id === match.team2Id);
       if (!team1 || !team2) return;
 
-      const result = simulateWCMatch(team1, team2);
+      const result = simulateWCMatch(team1, team2, match.phase);
       match.played = true;
       match.score1 = result.homeScore;
       match.score2 = result.awayScore;
@@ -552,10 +552,30 @@ export function findUserNextMatch(state: WorldCupGameState): { fixture?: Fixture
       return { fixture, opponent };
     }
   } else if (currentPhase !== 'FINISHED') {
-    const bracketMatch = bracket.find(m =>
-      m.phase === currentPhase && !m.played &&
-      (m.team1Id === userTeamId || m.team2Id === userTeamId)
-    );
+    const phasePriority: WCPhase[] = [
+      currentPhase,
+      'THIRD_PLACE',
+      'FINAL',
+      'ROUND_OF_32',
+      'ROUND_OF_16',
+      'QUARTER',
+      'SEMI',
+    ];
+
+    const seen = new Set<WCPhase>();
+    const orderedPhases = phasePriority.filter((phase) => {
+      if (seen.has(phase)) return false;
+      seen.add(phase);
+      return true;
+    });
+
+    const bracketMatch = orderedPhases
+      .flatMap((phase) => bracket.filter(m => m.phase === phase))
+      .find(m =>
+        !m.played &&
+        (m.team1Id === userTeamId || m.team2Id === userTeamId)
+      );
+
     if (bracketMatch) {
       const opponentId = bracketMatch.team1Id === userTeamId ? bracketMatch.team2Id : bracketMatch.team1Id;
       const opponent = teams.find(t => t.id === opponentId!);

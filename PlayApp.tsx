@@ -12,6 +12,7 @@ import {
 } from './worldCupData';
 import {
   PHASE_LABELS,
+  findUserNextMatch,
   generateGroupFixtures,
   generateWorldCupGroups,
   processWCMatchday,
@@ -1550,31 +1551,31 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
   const wcUserTeam = wcState ? wcState.teams.find(t => t.id === wcState.userTeamId) : null;
   const wcNextMatch = useMemo(() => {
     if (!wcState || !wcUserTeam) return null;
+    return findUserNextMatch(wcState);
+  }, [wcState, wcUserTeam]);
 
-    if (wcState.currentPhase === 'GROUP') {
-      const fixture = wcState.fixtures.find(
-        (f) =>
-          f.round === wcState.currentMatchday &&
-          !f.played &&
-          (f.homeTeamId === wcState.userTeamId || f.awayTeamId === wcState.userTeamId)
-      );
-      if (!fixture) return null;
-      const opponentId = fixture.homeTeamId === wcState.userTeamId ? fixture.awayTeamId : fixture.homeTeamId;
-      const opponent = wcState.teams.find((t) => t.id === opponentId) || null;
-      return { fixture, opponent };
+  const handleWCAdvance = useCallback(() => {
+    if (!wcState) return;
+
+    if (
+      wcNextMatch &&
+      (!wcNextMatch.bracketMatch || wcNextMatch.bracketMatch.phase === wcState.currentPhase)
+    ) {
+      setCurrentScreen('WC_MATCH');
+      return;
     }
 
-    const bracketMatch = wcState.bracket.find(
-      (m) =>
-        m.phase === wcState.currentPhase &&
-        !m.played &&
-        (m.team1Id === wcState.userTeamId || m.team2Id === wcState.userTeamId)
-    );
-    if (!bracketMatch) return null;
-    const opponentId = bracketMatch.team1Id === wcState.userTeamId ? bracketMatch.team2Id : bracketMatch.team1Id;
-    const opponent = wcState.teams.find((t) => t.id === opponentId) || null;
-    return { bracketMatch, opponent };
-  }, [wcState, wcUserTeam]);
+    const advancedState = processWCMatchday(wcState);
+    setWcState(advancedState);
+
+    if (advancedState.currentPhase === 'FINISHED') {
+      setCurrentScreen('WC_CHAMPION');
+    } else if (advancedState.isEliminated) {
+      setCurrentScreen('WC_ELIMINATED');
+    } else {
+      setCurrentScreen('WC_DASHBOARD');
+    }
+  }, [wcNextMatch, wcState]);
 
   const handleStartCareer = useCallback(() => {
     setTeams(INITIAL_TEAMS);
@@ -2033,7 +2034,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
               <WorldCupDashboardScreen
                 wcState={wcState}
                 userTeam={wcUserTeam}
-                onSimulate={() => setCurrentScreen('WC_MATCH')}
+                onSimulate={handleWCAdvance}
                 onOpenSquad={() => { setLastScreen('WC_DASHBOARD'); setCurrentScreen('SQUAD'); }}
                 onOpenTactics={() => { setLastScreen('WC_DASHBOARD'); setCurrentScreen('TACTICS'); }}
                 onOpenGroups={() => setCurrentScreen('WC_GROUPS')}
@@ -2081,7 +2082,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 wcPhase={
                   wcState.currentPhase === 'GROUP' 
                     ? `Grupo ${wcState.groups.find(g => g.teamIds.includes(wcUserTeam.id))?.name} • ${PHASE_LABELS.GROUP}`
-                    : PHASE_LABELS[wcState.currentPhase]
+                    : PHASE_LABELS[wcNextMatch.bracketMatch?.phase || wcState.currentPhase]
                 }
               />
             </PageWrapper>

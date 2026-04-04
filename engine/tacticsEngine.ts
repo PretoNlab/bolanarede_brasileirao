@@ -387,15 +387,47 @@ export function pickWeightedPlayer(players: Player[], getWeight: (player: Player
 
 export function selectGoalParticipants(team: Team): { scorer: Player | null; assist: Player | null } {
   const activePlayers = getTeamLineupContributions(team);
-  const attackingPlayers = activePlayers.filter((entry) => ['AM', 'RW', 'LW', 'ST', 'CM', 'DM'].includes(entry.slot.position));
+  const scoringPositionMultiplier: Partial<Record<DetailedPosition, number>> = {
+    ST: 1.85,
+    RW: 1.35,
+    LW: 1.35,
+    AM: 1.08,
+    CM: 0.58,
+    DM: 0.22,
+    RB: 0.08,
+    LB: 0.08,
+    CB: 0.05,
+    GK: 0,
+  };
+
+  const attackingPlayers = activePlayers.filter((entry) =>
+    ['AM', 'RW', 'LW', 'ST', 'CM', 'DM', 'RB', 'LB', 'CB'].includes(entry.slot.position)
+  );
 
   const scorer = pickWeightedPlayer(
     attackingPlayers.map((entry) => entry.player),
     (player) => {
       const entry = attackingPlayers.find((item) => item.player.id === player.id);
       if (!entry) return 0;
-      const aerialBonus = entry.player.stats.heading * (entry.slot.position === 'ST' || entry.slot.position === 'CB' ? 0.15 : 0.05);
-      return entry.attack * 0.45 + entry.finishing * 0.45 + aerialBonus;
+      if (entry.slot.position === 'GK') return 0;
+
+      const positionMultiplier = scoringPositionMultiplier[entry.slot.position] ?? 0.1;
+      const aerialBonus =
+        entry.slot.position === 'CB'
+          ? entry.player.stats.heading * 0.018
+          : entry.slot.position === 'ST'
+            ? entry.player.stats.heading * 0.08
+            : entry.player.stats.heading * 0.025;
+
+      const buildUpBonus =
+        entry.slot.position === 'AM' || entry.slot.position === 'CM'
+          ? entry.control * 0.08
+          : 0;
+
+      return (
+        (entry.attack * 0.42 + entry.finishing * 0.46 + buildUpBonus + aerialBonus) *
+        positionMultiplier
+      );
     }
   );
 

@@ -149,7 +149,7 @@ export default function WorldCupChampionScreen({ wcState, onQuit }: Props) {
               <div className="w-8 h-8 rounded-full bg-slate-400/20 flex items-center justify-center mb-3">
                  <span className="text-[10px] font-black text-slate-400">2º</span>
               </div>
-              <TeamLogo team={runnerUp!} size="sm" className="mb-2" />
+              {runnerUp ? <TeamLogo team={runnerUp} size="sm" className="mb-2" /> : <div className="mb-2 h-6 w-6 rounded-full bg-white/10" />}
               <span className="text-[10px] font-black uppercase text-white/60 text-center">{runnerUp?.shortName}</span>
            </motion.div>
 
@@ -157,7 +157,7 @@ export default function WorldCupChampionScreen({ wcState, onQuit }: Props) {
               <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center mb-3">
                  <Medal className="w-4 h-4 text-yellow-400" />
               </div>
-              <TeamLogo team={champion!} size="md" className="mb-2" />
+              {champion ? <TeamLogo team={champion} size="md" className="mb-2" /> : <div className="mb-2 h-10 w-10 rounded-full bg-white/10" />}
               <span className="text-[10px] font-black uppercase text-yellow-400 text-center">{champion?.shortName}</span>
            </motion.div>
 
@@ -165,7 +165,7 @@ export default function WorldCupChampionScreen({ wcState, onQuit }: Props) {
               <div className="w-8 h-8 rounded-full bg-orange-700/20 flex items-center justify-center mb-3">
                  <span className="text-[10px] font-black text-orange-400">3º</span>
               </div>
-              <TeamLogo team={thirdPlace!} size="sm" className="mb-2" />
+              {thirdPlace ? <TeamLogo team={thirdPlace} size="sm" className="mb-2" /> : <div className="mb-2 h-6 w-6 rounded-full bg-white/10" />}
               <span className="text-[10px] font-black uppercase text-white/60 text-center">{thirdPlace?.shortName}</span>
            </motion.div>
         </div>
