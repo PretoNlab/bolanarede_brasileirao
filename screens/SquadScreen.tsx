@@ -1,7 +1,10 @@
+
 import React, { useState } from 'react';
 import { TeamLogo } from '../components/TeamLogo';
+import { Header } from '../components/Header';
 import { Team, Player, TransferLog } from '../types';
-import { ArrowLeft, PencilLine, Zap, AlertCircle, Target, Trophy, History, X, ChevronRight, TrendingUp, DollarSign, ShieldAlert } from 'lucide-react';
+import { PencilLine, Zap, AlertCircle, Target, Trophy, X, ShieldAlert, User, Activity, FileText, ChevronRight, Sparkles, TrendingUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 
 interface Props {
@@ -12,16 +15,18 @@ interface Props {
 }
 
 const POS_COLORS = {
-   'GOL': 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20',
-   'ZAG': 'text-blue-500 bg-blue-500/10 border-blue-500/20',
-   'LAT': 'text-blue-400 bg-blue-400/10 border-blue-400/20',
-   'VOL': 'text-green-500 bg-green-500/10 border-green-500/20',
-   'MEI': 'text-green-400 bg-green-400/10 border-green-400/20',
-   'ATA': 'text-red-500 bg-red-500/10 border-red-500/20',
+   'GOL': 'text-amber-400 bg-amber-400/10 border-amber-400/20 shadow-amber-400/10',
+   'ZAG': 'text-blue-400 bg-blue-400/10 border-blue-400/20 shadow-blue-400/10',
+   'LAT': 'text-blue-400 bg-blue-400/10 border-blue-400/20 shadow-blue-400/10',
+   'VOL': 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-emerald-500/10',
+   'MEI': 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20 shadow-emerald-400/10',
+   'ATA': 'text-rose-400 bg-rose-400/10 border-rose-400/20 shadow-rose-400/10',
 };
 
+type PositionFilter = 'ALL' | 'GOL' | 'DEF' | 'MID' | 'ATT';
+
 export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }: Props) {
-   const [filter, setFilter] = useState<'ALL' | 'GOL' | 'DEF' | 'MID' | 'ATT'>('ALL');
+   const [filter, setFilter] = useState<PositionFilter>('ALL');
    const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
    const [modalTab, setModalTab] = useState<'STATS' | 'BIO'>('STATS');
 
@@ -38,286 +43,263 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
       return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(val);
    };
 
-   const playerHistory = selectedPlayer ? transferLogs.filter(log => log.playerName === selectedPlayer.name) : [];
-
    return (
-      <div className="flex flex-col h-screen bg-background text-white relative font-sans">
-         <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-white/5 p-6 flex items-center justify-between pt-safe">
-            <button onClick={onBack} className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center active:scale-95 transition-all">
-               <ArrowLeft size={20} />
-            </button>
-            <h1 className="text-base font-black italic tracking-tighter uppercase">Elenco Profissional</h1>
-            <div className="w-12 flex items-center justify-end">
-               <TeamLogo team={team} size="sm" />
-            </div>
-         </header>
+      <div className="flex flex-col h-screen bg-background text-white selection:bg-primary/30 overflow-hidden">
+         <Header 
+            title="Escritório Técnico"
+            subtitle="Gestão Integrada do Elenco"
+            onBack={onBack}
+            rightAction={
+                <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-2xl border border-white/5">
+                    <Activity size={14} className="text-emerald-500" />
+                    <span className="font-black text-[10px] uppercase tracking-widest text-white/40">{team.roster.length} Atletas</span>
+                </div>
+            }
+         />
 
-         <div className="px-6 py-5 overflow-x-auto no-scrollbar flex gap-3 bg-background/60 backdrop-blur-xl sticky top-[80px] z-30 border-b border-white/5">
-            {['ALL', 'GOL', 'DEF', 'MID', 'ATT'].map((tab) => (
-               <button key={tab} onClick={() => setFilter(tab as any)} className={clsx("px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap min-w-[70px]", filter === tab ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-secondary border border-white/5")}>
-                  {tab === 'ALL' ? 'Todos' : tab}
+         {/* Cinematic Tab Navigation */}
+         <div className="px-6 py-6 overflow-x-auto no-scrollbar flex items-center gap-2 bg-background/80 backdrop-blur-3xl sticky top-0 z-30 border-b border-white/5">
+            {(['ALL', 'GOL', 'DEF', 'MID', 'ATT'] as PositionFilter[]).map((tab) => (
+               <button 
+                  key={tab} 
+                  onClick={() => setFilter(tab)} 
+                  className={clsx(
+                    "px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap italic",
+                    filter === tab 
+                      ? "bg-emerald-500 text-white shadow-[0_10px_20px_rgba(31,177,133,0.2)] border border-emerald-400/20" 
+                      : "bg-white/[0.02] text-white/30 border border-white/5 hover:bg-white/[0.05]"
+                  )}
+               >
+                  {tab === 'ALL' ? 'Geral' : tab}
                </button>
             ))}
          </div>
 
-         <div className="flex-1 overflow-y-auto px-6 pb-28 space-y-4 no-scrollbar">
+         <div className="flex-1 overflow-y-auto px-6 pb-32 pt-6 space-y-5 no-scrollbar">
             {filteredPlayers.map((player) => (
-               <div
+               <motion.div
                   key={player.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
                   onClick={() => { setSelectedPlayer(player); setModalTab('STATS'); }}
-                  className="bg-surface/60 backdrop-blur-sm rounded-[32px] p-6 border border-white/5 relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer group hover:bg-surface/80 shadow-inner"
+                  className="ui-card-premium p-8 flex items-center justify-between group cursor-pointer transition-all duration-500 hover:bg-white/[0.06] border-white/5 relative overflow-hidden"
                >
                   {player.isSuspended && (
-                     <div className="absolute top-0 right-0 px-4 py-1.5 bg-rose-600 text-[8px] font-black uppercase rounded-bl-2xl flex items-center gap-1.5 shadow-lg">
-                        <AlertCircle size={10} /> Suspenso
+                     <div className="absolute top-0 right-0 px-5 py-2 bg-rose-500/20 text-rose-400 text-[9px] font-black uppercase rounded-bl-[1.5rem] flex items-center gap-2 border-l border-b border-rose-500/20 backdrop-blur-md">
+                        <ShieldAlert size={12} /> Suspenso
                      </div>
                   )}
 
-                  <div className="flex items-center justify-between mb-4">
-                     <div className="flex items-center gap-4">
-                        <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center border-2 font-black text-xs shadow-inner transition-transform group-hover:scale-105", POS_COLORS[player.position])}>
-                           {player.position}
-                        </div>
-                        <div className="flex flex-col">
-                           <span className="text-base font-black tracking-tight">{player.name}</span>
-                           <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">OVR {player.overall} • {player.age} anos</span>
-                        </div>
+                  <div className="flex items-center gap-6 relative z-10 w-full">
+                     <div className={clsx(
+                        "w-16 h-16 rounded-[1.75rem] flex items-center justify-center border-2 font-black text-sm shadow-2xl transition-all duration-500 group-hover:scale-110 italic bg-zinc-900 shrink-0", 
+                        POS_COLORS[player.position as keyof typeof POS_COLORS]
+                     )}>
+                        {player.position}
                      </div>
-                     <div className="flex flex-col items-end gap-1">
-                        <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-emerald-400">
-                           <Zap size={10} fill="currentColor" /> {player.energy}%
+                     <div className="flex flex-col flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-1">
+                            <span className="text-xl font-black text-white italic tracking-tighter truncate group-hover:text-emerald-400 transition-colors uppercase">{player.name}</span>
+                            {player.energy < 50 && <Activity size={14} className="text-rose-500 animate-pulse" />}
                         </div>
-                        <span className="text-[9px] text-secondary/60 uppercase font-black tracking-widest">Contrato: {player.contractRounds} rod.</span>
-                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between mt-3">
-                     <div className="flex items-center gap-2">
-                        <div className="flex-1 w-24 h-1 bg-background rounded-full overflow-hidden">
-                           <div className={clsx("h-full transition-all", player.energy < 30 ? "bg-rose-500" : player.energy < 70 ? "bg-amber-500" : "bg-emerald-500")} style={{ width: `${player.energy}%` }}></div>
+                        <div className="flex items-center gap-4">
+                            <div className="bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                                <span className="text-[10px] font-black text-emerald-400 italic">OVR {player.overall}</span>
+                            </div>
+                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{player.age} anos</span>
                         </div>
                      </div>
 
-                     <div className="flex items-center gap-3 text-[10px] font-bold">
-                        {(player.goals > 0 || player.assists > 0 || player.yellowCards > 0 || player.redCards > 0) ? (
-                           <>
-                              {player.goals > 0 && <span className="flex items-center gap-1 text-emerald-400"><Target size={10} /> {player.goals}</span>}
-                              {player.assists > 0 && <span className="flex items-center gap-1 text-blue-400"><Trophy size={10} /> {player.assists}</span>}
-                              {player.yellowCards > 0 && <span className="flex items-center justify-center w-4 h-5 bg-yellow-500 text-black rounded-sm border border-yellow-600/50 shadow-sm" title="Cartões Amarelos">{player.yellowCards}</span>}
-                              {player.redCards > 0 && <span className="flex items-center justify-center w-4 h-5 bg-rose-500 text-white rounded-sm border border-rose-600/50 shadow-sm" title="Cartões Vermelhos">{player.redCards}</span>}
-                           </>
-                        ) : (
-                           <span className="text-secondary/30 italic">Sem estatísticas</span>
-                        )}
+                     <div className="flex flex-col items-end gap-3 shrink-0">
+                        <div className="flex items-center gap-2">
+                             <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                                <Zap size={10} fill="currentColor" /> {player.energy}%
+                             </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {player.goals > 0 && (
+                                <div className="flex items-center gap-1.5 text-white/20 group-hover:text-emerald-400/60 transition-colors">
+                                    <Target size={12} />
+                                    <span className="text-[10px] font-black">{player.goals}</span>
+                                </div>
+                            )}
+                            {player.assists > 0 && (
+                                <div className="flex items-center gap-1.5 text-white/20 group-hover:text-blue-400/60 transition-colors">
+                                    <Trophy size={12} />
+                                    <span className="text-[10px] font-black">{player.assists}</span>
+                                </div>
+                            )}
+                            <ChevronRight size={16} className="text-white/10 group-hover:text-emerald-500 transition-all group-hover:translate-x-1" />
+                        </div>
                      </div>
                   </div>
-               </div>
+
+                  {/* Shimmer Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+               </motion.div>
             ))}
          </div>
 
-         {/* Detalhes do Jogador (Modal) */}
+         {/* Detalhes do Atleta (Deep Immersive Modal) */}
+         <AnimatePresence>
          {selectedPlayer && (
-            <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 flex flex-col">
-               <header className="p-5 flex items-center justify-between border-b border-white/5 pt-safe bg-background/80 backdrop-blur-xl">
-                  <button onClick={() => setSelectedPlayer(null)} className="w-10 h-10 bg-surface rounded-2xl flex items-center justify-center active:scale-90 transition-all border border-white/10"><X size={20} /></button>
-                  <h2 className="text-xs font-black uppercase tracking-[0.2em] italic text-white/70">Perfil do Atleta</h2>
-                  <div className="w-10"></div>
-               </header>
+            <div className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-3xl overflow-hidden">
+               <motion.header 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-8 flex items-center justify-between border-b border-white/5 bg-black/60 pt-safe"
+               >
+                  <button onClick={() => setSelectedPlayer(null)} className="w-14 h-14 bg-white/[0.03] rounded-2xl flex items-center justify-center hover:bg-white/[0.08] transition-all border border-white/10 active:scale-90"><X size={24} /></button>
+                  <div className="flex flex-col items-center">
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-1">Dossiê Técnico</span>
+                    <h2 className="text-sm font-black uppercase tracking-[0.2em] italic text-emerald-500">Perfil do Atleta</h2>
+                  </div>
+                  <div className="w-14"></div>
+               </motion.header>
 
-               <main className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
-                  {/* Card de Identificação */}
-                  <div className="flex items-center gap-6">
-                     <div className={clsx("w-24 h-24 rounded-[32px] flex items-center justify-center border-2 font-black text-2xl shadow-2xl", POS_COLORS[selectedPlayer.position])}>
+               <main className="flex-1 overflow-y-auto p-10 space-y-12 no-scrollbar pb-32">
+                  <div className="flex flex-col lg:flex-row items-center lg:items-start gap-12 relative">
+                     <div className="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/5 blur-[120px] pointer-events-none rounded-full" />
+                     
+                     <motion.div 
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className={clsx(
+                           "w-48 h-48 rounded-[3.5rem] flex items-center justify-center border-2 font-black text-5xl shadow-[0_40px_80px_rgba(0,0,0,0.5)] relative italic shrink-0 bg-zinc-900", 
+                           POS_COLORS[selectedPlayer.position as keyof typeof POS_COLORS]
+                        )}
+                     >
                         {selectedPlayer.position}
-                     </div>
-                     <div className="space-y-1">
-                        <h3 className="text-2xl font-black">{selectedPlayer.name}</h3>
-                        <p className="text-sm text-secondary font-bold uppercase tracking-widest">{selectedPlayer.age} ANOS • {selectedPlayer.status === 'fit' ? 'EM CONDIÇÕES' : 'INDISPONÍVEL'}</p>
-                        <div className="flex items-center gap-2 pt-2">
-                           <span className="bg-primary text-white text-[10px] font-black px-2 py-1 rounded">OVR {selectedPlayer.overall}</span>
-                           <span className="bg-surface text-secondary text-[10px] font-black px-2 py-1 rounded border border-white/5">POT {selectedPlayer.potential}</span>
+                        <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-emerald-500 rounded-[2rem] border-4 border-black flex items-center justify-center text-white shadow-2xl rotate-12">
+                           <Sparkles size={32} />
+                        </div>
+                     </motion.div>
+
+                     <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-6 pt-4">
+                        <div className="space-y-2">
+                           <h3 className="text-6xl font-black text-white italic tracking-tighter leading-none uppercase">{selectedPlayer.name}</h3>
+                           <div className="flex items-center justify-center lg:justify-start gap-3">
+                                <span className="text-[11px] font-black text-white/30 uppercase tracking-[0.3em]">{selectedPlayer.age} ANOS</span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                                <span className={clsx("text-[11px] font-black uppercase tracking-[0.3em]", selectedPlayer.status === 'fit' ? "text-emerald-500" : "text-rose-500")}>
+                                    {selectedPlayer.status === 'fit' ? 'EM CONDIÇÕES' : 'INDISPONÍVEL'}
+                                </span>
+                           </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-4">
+                           <div className="bg-emerald-500 px-5 py-2.5 rounded-2xl shadow-[0_10px_30px_rgba(31,177,133,0.3)]">
+                                <span className="text-[11px] font-black text-white uppercase italic tracking-widest leading-none">OVR {selectedPlayer.overall}</span>
+                           </div>
+                           <div className="bg-white/5 border border-white/5 px-5 py-2.5 rounded-2xl backdrop-blur-xl">
+                                <span className="text-[11px] font-black text-white/40 uppercase italic tracking-widest leading-none">POT {selectedPlayer.potential}</span>
+                           </div>
                         </div>
                      </div>
                   </div>
 
-                  {/* Tabs */}
-                  <div className="flex gap-2 p-1 bg-surface rounded-xl border border-white/5 mx-2">
-                     <button onClick={() => setModalTab('STATS')} className={clsx("flex-1 py-3 rounded-lg text-xs font-black uppercase transition-all", modalTab === 'STATS' ? "bg-white text-black shadow-lg" : "text-secondary hover:bg-white/5")}>
-                        Estatísticas
-                     </button>
-                     <button onClick={() => setModalTab('BIO')} className={clsx("flex-1 py-3 rounded-lg text-xs font-black uppercase transition-all", modalTab === 'BIO' ? "bg-white text-black shadow-lg" : "text-secondary hover:bg-white/5")}>
-                        Biografia
-                     </button>
-                  </div>
-
-                  {modalTab === 'STATS' && (
-                     <div className="space-y-8 animate-in slide-in-from-right duration-300">
-                        {/* Grid de Estatísticas de Temporada */}
-                        <div className="grid grid-cols-2 gap-3">
-                           <div className="bg-surface p-4 rounded-3xl border border-white/5 space-y-2">
-                              <div className="flex items-center gap-2 text-emerald-400">
-                                 <Target size={14} />
-                                 <span className="text-[10px] font-black uppercase">Gols</span>
-                              </div>
-                              <p className="text-3xl font-black">{selectedPlayer.goals}</p>
-                           </div>
-                           <div className="bg-surface p-4 rounded-3xl border border-white/5 space-y-2">
-                              <div className="flex items-center gap-2 text-blue-400">
-                                 <Trophy size={14} />
-                                 <span className="text-[10px] font-black uppercase">Assistências</span>
-                              </div>
-                              <p className="text-3xl font-black">{selectedPlayer.assists}</p>
-                           </div>
-                           <div className="bg-surface p-4 rounded-3xl border border-white/5 space-y-2">
-                              <div className="flex items-center gap-2 text-amber-500">
-                                 <ShieldAlert size={14} />
-                                 <span className="text-[10px] font-black uppercase">Amarelos</span>
-                              </div>
-                              <p className="text-3xl font-black">{selectedPlayer.yellowCards}</p>
-                           </div>
-                           <div className="bg-surface p-4 rounded-3xl border border-white/5 space-y-2">
-                              <div className="flex items-center gap-2 text-rose-500">
-                                 <ShieldAlert size={14} fill="currentColor" />
-                                 <span className="text-[10px] font-black uppercase">Vermelhos</span>
-                              </div>
-                              <p className="text-3xl font-black">{selectedPlayer.redCards}</p>
-                           </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                     <div className="space-y-6">
+                        <div className="flex items-center gap-3 px-2">
+                           <div className="w-1.5 h-6 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(31,177,133,0.5)]" />
+                           <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-white/90 italic">Dados de Desempenho</h3>
                         </div>
 
-                        {/* Detalhes de Atributos */}
-                        <div className="bg-surface p-6 rounded-3xl border border-white/5 space-y-4">
-                           <h4 className="text-[10px] font-black uppercase tracking-widest text-secondary">Atributos Técnicos</h4>
-                           <div className="grid grid-cols-2 gap-4">
-                              {selectedPlayer.stats && (
-                                 <>
-                                    <div className="space-y-1">
-                                       <div className="flex justify-between text-xs font-bold font-mono text-secondary"><span>PAC</span> <span className="text-white">{selectedPlayer.stats.pace}</span></div>
-                                       <div className="h-1.5 bg-black/50 rounded-full overflow-hidden"><div className="h-full bg-cyan-400" style={{ width: `${selectedPlayer.stats.pace}%` }}></div></div>
-                                    </div>
-                                    <div className="space-y-1">
-                                       <div className="flex justify-between text-xs font-bold font-mono text-secondary"><span>DRI</span> <span className="text-white">{selectedPlayer.stats.dribbling}</span></div>
-                                       <div className="h-1.5 bg-black/50 rounded-full overflow-hidden"><div className="h-full bg-amber-400" style={{ width: `${selectedPlayer.stats.dribbling}%` }}></div></div>
-                                    </div>
-                                    <div className="space-y-1">
-                                       <div className="flex justify-between text-xs font-bold font-mono text-secondary"><span>SHO</span> <span className="text-white">{selectedPlayer.stats.shooting}</span></div>
-                                       <div className="h-1.5 bg-black/50 rounded-full overflow-hidden"><div className="h-full bg-emerald-400" style={{ width: `${selectedPlayer.stats.shooting}%` }}></div></div>
-                                    </div>
-                                    <div className="space-y-1">
-                                       <div className="flex justify-between text-xs font-bold font-mono text-secondary"><span>DEF</span> <span className="text-white">{selectedPlayer.stats.defending}</span></div>
-                                       <div className="h-1.5 bg-black/50 rounded-full overflow-hidden"><div className="h-full bg-rose-400" style={{ width: `${selectedPlayer.stats.defending}%` }}></div></div>
-                                    </div>
-                                    <div className="space-y-1">
-                                       <div className="flex justify-between text-xs font-bold font-mono text-secondary"><span>PAS</span> <span className="text-white">{selectedPlayer.stats.passing}</span></div>
-                                       <div className="h-1.5 bg-black/50 rounded-full overflow-hidden"><div className="h-full bg-blue-400" style={{ width: `${selectedPlayer.stats.passing}%` }}></div></div>
-                                    </div>
-                                    <div className="space-y-1">
-                                       <div className="flex justify-between text-xs font-bold font-mono text-secondary"><span>PHY</span> <span className="text-white">{selectedPlayer.stats.physical}</span></div>
-                                       <div className="h-1.5 bg-black/50 rounded-full overflow-hidden"><div className="h-full bg-purple-400" style={{ width: `${selectedPlayer.stats.physical}%` }}></div></div>
-                                    </div>
-                                 </>
-                              )}
-                              {!selectedPlayer.stats && <p className="text-xs text-secondary italic">Atributos detalhados indisponíveis.</p>}
-                           </div>
-                        </div>
-
-                        {/* Potencial e Valor */}
-                        <div className="bg-surface rounded-3xl p-6 border border-white/5 space-y-6">
-                           <div className="space-y-3">
-                              <div className="flex justify-between items-center text-[10px] font-black uppercase text-secondary">
-                                 <span>Potencial de Evolução</span>
-                                 <span>{selectedPlayer.potential}%</span>
-                              </div>
-                              <div className="h-2 bg-background rounded-full overflow-hidden">
-                                 <div className="h-full bg-primary" style={{ width: `${(selectedPlayer.overall / selectedPlayer.potential) * 100}%` }}></div>
-                              </div>
-                           </div>
-                           <div className="grid grid-cols-2 border-t border-white/5 pt-6 gap-6">
-                              <div className="space-y-1">
-                                 <span className="text-[10px] font-black text-secondary uppercase">Valor de Mercado</span>
-                                 <p className="text-sm font-black text-emerald-400">{formatCurrency(selectedPlayer.marketValue)}</p>
-                              </div>
-                              <div className="space-y-1">
-                                 <span className="text-[10px] font-black text-secondary uppercase">Contrato Restante</span>
-                                 <p className="text-sm font-black text-white">{selectedPlayer.contractRounds} rodadas</p>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  )}
-
-                  {modalTab === 'BIO' && (
-                     <div className="space-y-6 animate-in slide-in-from-right duration-300">
-                        {/* Summary Header */}
-                        <div className="bg-gradient-to-br from-surface to-background rounded-3xl p-6 border border-white/5 flex gap-6 items-center">
-                           <div className="pl-2 border-l-2 border-white/20">
-                              <p className="text-[10px] font-bold text-secondary uppercase tracking-widest">Temporada Atual</p>
-                              <div className="flex items-baseline gap-1">
-                                 <span className="text-2xl font-black text-white">{new Date().getFullYear()}</span>
-                              </div>
-                           </div>
-                           <div className="flex-1 grid grid-cols-3 gap-2 text-center">
-                              <div className="bg-black/20 rounded-xl p-2">
-                                 <p className="text-[8px] uppercase text-secondary font-black">Jogos</p>
-                                 <p className="text-lg font-black text-white">{selectedPlayer.goals > 0 || selectedPlayer.assists > 0 ? "10+" : "0"}</p> {/* Placeholder logic, waiting for improved stats tracking */}
-                              </div>
-                              <div className="bg-black/20 rounded-xl p-2">
-                                 <p className="text-[8px] uppercase text-secondary font-black">Gols</p>
-                                 <p className="text-lg font-black text-emerald-400">{selectedPlayer.goals}</p>
-                              </div>
-                              <div className="bg-black/20 rounded-xl p-2">
-                                 <p className="text-[8px] uppercase text-secondary font-black">Assist.</p>
-                                 <p className="text-lg font-black text-blue-400">{selectedPlayer.assists}</p>
-                              </div>
-                           </div>
-                        </div>
-
-                        {/* Timeline */}
-                        <div className="relative pl-4 space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-0 before:w-px before:bg-white/10">
-                           {(!selectedPlayer.history || selectedPlayer.history.length === 0) && (
-                              <div className="pl-6 py-4">
-                                 <p className="text-xs text-secondary italic">Nenhum evento registrado na biografia até o momento.</p>
-                              </div>
-                           )}
-
-                           {selectedPlayer.history && selectedPlayer.history.map((event, idx) => (
-                              <div key={event.id || idx} className="relative pl-6">
-                                 <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-surface border border-white/10 flex items-center justify-center text-[10px] z-10 shadow-lg">
-                                    {event.icon || (event.type === 'GOAL' ? '⚽' : event.type === 'INJURY' ? '🤕' : event.type === 'RED_CARD' ? '🟥' : event.type === 'YELLOW_CARD' ? '🟨' : '•')}
+                        <div className="grid grid-cols-2 gap-4">
+                           {[
+                              { label: 'Gols', val: selectedPlayer.goals, icon: Target, color: 'text-emerald-400' },
+                              { label: 'Assistências', val: selectedPlayer.assists, icon: Trophy, color: 'text-blue-400' },
+                              { label: 'Amarelos', val: selectedPlayer.yellowCards, icon: ShieldAlert, color: 'text-amber-500' },
+                              { label: 'Vermelhos', val: selectedPlayer.redCards, icon: ShieldAlert, color: 'text-rose-500', fill: true },
+                           ].map((stat) => (
+                              <div key={stat.label} className="bg-white/[0.02] p-8 rounded-[2.5rem] border border-white/5 flex flex-col gap-4 group hover:bg-white/[0.04] transition-all">
+                                 <div className={clsx("w-10 h-10 rounded-xl bg-black flex items-center justify-center border border-white/5", stat.color)}>
+                                    <stat.icon size={20} fill={stat.fill ? "currentColor" : "none"} />
                                  </div>
-                                 <div className="space-y-1">
-                                    <div className="flex justify-between items-start">
-                                       <span className="text-xs font-black uppercase text-secondary tracking-widest">Rodada {event.round} • {event.season}</span>
-                                    </div>
-                                    <p className="text-sm font-medium leading-relaxed">{event.description}</p>
+                                 <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-white/20 mb-1">{stat.label}</p>
+                                    <p className="text-4xl font-black italic tracking-tighter text-white">{stat.val}</p>
                                  </div>
                               </div>
                            ))}
-
-                           {/* Start of Career Marker */}
-                           <div className="relative pl-6 opacity-50">
-                              <div className="absolute left-0 top-1 w-6 h-6 rounded-full bg-surface border border-white/10 flex items-center justify-center text-[10px] z-10">
-                                 👶
-                              </div>
-                              <div className="space-y-1">
-                                 <span className="text-xs font-black uppercase text-secondary tracking-widest">Início</span>
-                                 <p className="text-sm font-medium">Promovido da base para o profissional.</p>
-                              </div>
-                           </div>
                         </div>
                      </div>
-                  )}
+
+                     <div className="space-y-6">
+                        <div className="flex items-center gap-3 px-2">
+                           <div className="w-1.5 h-6 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                           <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-white/90 italic">Atributos Técnicos</h3>
+                        </div>
+
+                        <div className="ui-card-premium p-10 space-y-8 bg-zinc-900 border-white/5">
+                           {selectedPlayer.stats && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                                 {[
+                                    { label: 'PAC', key: 'pace', color: 'bg-cyan-500' },
+                                    { label: 'DRI', key: 'dribbling', color: 'bg-amber-500' },
+                                    { label: 'SHO', key: 'shooting', color: 'bg-emerald-500' },
+                                    { label: 'DEF', key: 'defending', color: 'bg-rose-500' },
+                                    { label: 'PAS', key: 'passing', color: 'bg-blue-500' },
+                                    { label: 'PHY', key: 'physical', color: 'bg-purple-500' },
+                                 ].map((attr) => (
+                                    <div key={attr.label} className="space-y-2">
+                                       <div className="flex justify-between items-end mb-1">
+                                          <span className="text-[10px] font-black text-white/40 tracking-[0.2em]">{attr.label}</span>
+                                          <span className="text-sm font-black italic text-white">{(selectedPlayer.stats as any)[attr.key]}</span>
+                                       </div>
+                                       <div className="h-1.5 bg-black rounded-full overflow-hidden border border-white/5">
+                                          <motion.div 
+                                             initial={{ width: 0 }}
+                                             animate={{ width: `${(selectedPlayer.stats as any)[attr.key]}%` }}
+                                             transition={{ duration: 1, ease: "easeOut" }}
+                                             className={clsx("h-full", attr.color)} 
+                                          />
+                                       </div>
+                                    </div>
+                                 ))}
+                              </div>
+                           )}
+                           {!selectedPlayer.stats && <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 italic p-10 text-center">Dados analíticos pendentes.</p>}
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
+                    <div className="bg-white/[0.01] border border-white/5 rounded-[3rem] p-10 flex flex-col gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Valor de Mercado</span>
+                        <div className="flex items-center gap-4">
+                            <span className="text-4xl font-black italic tracking-tighter text-emerald-500">{formatCurrency(selectedPlayer.marketValue)}</span>
+                            <TrendingUp size={24} className="text-emerald-500/40" />
+                        </div>
+                    </div>
+                    <div className="bg-white/[0.01] border border-white/5 rounded-[3rem] p-10 flex flex-col gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Vínculo Contratual</span>
+                        <div className="flex items-center gap-4">
+                            <span className="text-4xl font-black italic tracking-tighter text-white">{selectedPlayer.contractRounds} RODADAS</span>
+                            <FileText size={24} className="text-white/20" />
+                        </div>
+                    </div>
+                  </div>
                </main>
 
-               <div className="p-6 bg-surface/80 backdrop-blur-3xl border-t border-white/5 pb-safe">
+               <motion.div 
+                  initial={{ y: 100 }}
+                  animate={{ y: 0 }}
+                  className="p-8 bg-black/80 backdrop-blur-3xl border-t border-white/5 pb-safe sticky bottom-0 z-50 flex gap-4"
+               >
                   <button
                      onClick={() => onRenew(selectedPlayer.id)}
-                     className="w-full py-4.5 bg-primary text-white font-black rounded-3xl flex items-center justify-center gap-2.5 active:scale-95 transition-all shadow-2xl shadow-primary/30 border border-white/10 uppercase tracking-widest text-[11px]"
+                     className="flex-1 py-8 bg-emerald-500 text-white rounded-[2.5rem] font-black uppercase tracking-[0.4em] text-[12px] shadow-[0_20px_40px_rgba(31,177,133,0.3)] relative overflow-hidden group/btn"
                   >
-                     <PencilLine size={16} /> RENOVAR CONTRATO
+                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000" />
+                      <span className="relative z-10 flex items-center justify-center gap-4 italic">
+                        <PencilLine size={18} /> RENOVAR CONTRATO
+                     </span>
                   </button>
-               </div>
+               </motion.div>
             </div>
          )}
+         </AnimatePresence>
       </div>
    );
 }

@@ -1,13 +1,17 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { TeamLogo } from '../components/TeamLogo';
 import { Team, MatchEvent, PlayingStyle, FormationType, TacticalInstructions } from '../types';
-import { Play, Pause, ArrowRightLeft, Settings2, X, Activity, MessageSquare, Zap, Target, Shield, Info, ChevronDown } from 'lucide-react';
+import { 
+  Play, Pause, ArrowRightLeft, Settings2, X, Activity, MessageSquare, 
+  Zap, Target, Shield, Info, ChevronDown, Globe, Trophy, Timer, 
+  ChevronRight, Sparkles, BarChart3, TrendingUp, TrendingDown 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
-import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { motion, AnimatePresence } from 'framer-motion';
+import { impactLight, impactMedium, impactHeavy, hapticNotificationSuccess, hapticNotificationError, hapticSelection } from '../haptics';
 
-// --- DYNAMIC PITCH COMPONENT (JUICE v2) ---
+// --- DYNAMIC PITCH COMPONENT (CINEMATIC v3) ---
 interface PitchProps {
    isDanger: boolean;
    attackingTeamId: string | null;
@@ -15,65 +19,78 @@ interface PitchProps {
    momentum: number; // 0-100
    isGoalAnimation: boolean;
    shoutActive: string | null;
+   speed: number;
 }
 
-const Pitch2D = ({ isDanger, attackingTeamId, homeTeamId, momentum, isGoalAnimation, shoutActive }: PitchProps) => {
-   const isHomeAttacking = attackingTeamId === homeTeamId;
-
-   // Calculate ball position: 5% padding on each side, momentum mapped to 5-95%
+const Pitch2D = ({ isDanger, attackingTeamId, homeTeamId, momentum, isGoalAnimation, shoutActive, speed }: PitchProps) => {
    const ballPosition = 5 + (momentum * 0.9);
 
    return (
       <div className={clsx(
-         "relative w-full h-24 bg-emerald-950/40 rounded-2xl border border-emerald-500/20 overflow-hidden backdrop-blur-md mb-2 transition-all duration-500",
-         isGoalAnimation && "ring-4 ring-yellow-400 animate-pulse shadow-[0_0_30px_rgba(250,204,21,0.5)]"
+         "relative w-full h-32 rounded-[2.5rem] border overflow-hidden transition-all duration-1000 shadow-2xl",
+         isGoalAnimation ? "border-amber-400 bg-amber-400/10" : "bg-slate-950/40 border-white/5",
+         isDanger && !isGoalAnimation && "border-rose-500/30 bg-rose-500/5 shadow-[inset_0_0_40px_rgba(244,63,94,0.1)]"
       )}>
-         {/* Field Grass Texture / Scanning */}
-         <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.02)_50%,transparent_100%)] w-[200%] h-full animate-[scan_4s_linear_infinite]" />
-
-         {/* Pressure Zones (Glow) */}
-         <div
-            className="absolute inset-y-0 left-0 bg-primary/10 blur-3xl transition-all duration-1000"
-            style={{ width: `${momentum}%` }}
-         />
-         <div
-            className="absolute inset-y-0 right-0 bg-emerald-500/5 blur-3xl transition-all duration-1000"
-            style={{ width: `${100 - momentum}%` }}
-         />
-
-         {/* Center Line & Circle */}
-         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[1px] h-full bg-white/5" />
-            <div className="w-12 h-12 rounded-full border border-white/5" />
+         {/* Atmospheric Field Texture (High Fidelity) */}
+         <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_0%,transparent_100%)]" />
+         
+         {/* Field markings (Premium Art Deco Style) */}
+         <div className="absolute inset-x-4 inset-y-6 pointer-events-none opacity-[0.08]">
+            <div className="absolute inset-0 border border-white rounded-xl" />
+            <div className="absolute left-1/2 -translate-x-1/2 h-full w-[1.5px] bg-white" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-white" />
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-14 border border-white rounded-r-lg" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-14 border border-white rounded-l-lg" />
          </div>
 
-         {/* BALL */}
+         {/* Momentum Glow Zones (Dynamic Heatmap) */}
+         <div
+            className="absolute inset-y-0 left-0 bg-primary/20 blur-[80px] transition-all duration-1000"
+            style={{ width: `${momentum}%`, opacity: momentum / 100 }}
+         />
+         <div
+            className="absolute inset-y-0 right-0 bg-rose-500/10 blur-[80px] transition-all duration-1000"
+            style={{ width: `${100 - momentum}%`, opacity: (100 - momentum) / 100 }}
+         />
+
+         {/* BALL (CORE) */}
          <div
             className={clsx(
-               "absolute top-1/2 -translate-y-1/2 w-4 h-4 transition-all duration-700 ease-in-out z-10",
-               isDanger ? "scale-150" : "scale-100"
+               "absolute top-1/2 -translate-y-1/2 w-6 h-6 transition-all duration-700 ease-in-out z-20",
+               isDanger ? "scale-125" : "scale-100"
             )}
             style={{ left: `${ballPosition}%` }}
          >
             {isDanger && (
-               <div className="absolute inset-0 bg-white/30 rounded-full animate-ping scale-150" />
+               <div className="absolute inset-0 bg-white/30 blur-2xl animate-pulse rounded-full" />
             )}
             <div className={clsx(
-               "w-full h-full rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.8)]",
-               isDanger ? "bg-white" : "bg-white/80"
+               "w-full h-full rounded-full flex items-center justify-center shadow-2xl transition-all border-2",
+               isDanger ? "bg-white border-primary" : "bg-slate-200 border-white/50"
             )}>
-               <div className="w-1.5 h-1.5 bg-emerald-900 rounded-full opacity-20" />
+               <div className="w-2.5 h-2.5 bg-black/60 rounded-full blur-[0.5px]" />
             </div>
+            {/* Trail (Cinematic Sweep) */}
+            <div className={clsx(
+               "absolute right-full mr-1 h-[2px] w-14 bg-gradient-to-l from-white/60 to-transparent blur-sm transition-opacity",
+               speed === 100 ? "opacity-100 w-24" : "opacity-40"
+            )} />
          </div>
 
-         {/* Tactical Shout Indicator */}
-         {shoutActive && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/60 rounded-full border border-white/10 animate-bounce">
-               <span className="text-[8px] font-black uppercase tracking-tighter text-primary flex items-center gap-1">
-                  <Zap size={8} /> {shoutActive}
-               </span>
-            </div>
-         )}
+         {/* Tactical Shout Popup (Standardized UI) */}
+         <AnimatePresence>
+            {shoutActive && (
+               <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-primary rounded-2xl shadow-[0_0_20px_rgba(31,177,133,0.3)] border border-primary-light/30 flex items-center gap-2 z-30"
+               >
+                  <Zap size={11} className="text-white animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white italic">{shoutActive}</span>
+               </motion.div>
+            )}
+         </AnimatePresence>
       </div>
    );
 };
@@ -99,28 +116,17 @@ const MATCH_FORMATIONS: FormationType[] = ['4-4-2', '4-3-3', '4-2-3-1', '3-5-2',
 
 function getFormationBias(formation: FormationType) {
    switch (formation) {
-      case '3-5-2':
-         return { attack: 5, defense: -2, control: 4 };
-      case '4-3-3':
-         return { attack: 6, defense: -1, control: 2 };
-      case '4-2-3-1':
-         return { attack: 4, defense: 1, control: 4 };
-      case '3-4-3':
-         return { attack: 7, defense: -3, control: 1 };
-      case '4-1-4-1':
-         return { attack: 1, defense: 4, control: 5 };
-      case '4-1-2-1-2':
-         return { attack: 5, defense: 0, control: 3 };
-      case '4-2-4':
-         return { attack: 8, defense: -5, control: -2 };
-      case '4-5-1':
-         return { attack: -3, defense: 4, control: 3 };
-      case '5-3-2':
-         return { attack: -2, defense: 5, control: 1 };
-      case '5-4-1':
-         return { attack: -5, defense: 7, control: -1 };
-      default:
-         return { attack: 1, defense: 1, control: 1 };
+      case '3-5-2': return { attack: 5, defense: -2, control: 4 };
+      case '4-3-3': return { attack: 6, defense: -1, control: 2 };
+      case '4-2-3-1': return { attack: 4, defense: 1, control: 4 };
+      case '3-4-3': return { attack: 7, defense: -3, control: 1 };
+      case '4-1-4-1': return { attack: 1, defense: 4, control: 5 };
+      case '4-1-2-1-2': return { attack: 5, defense: 0, control: 3 };
+      case '4-2-4': return { attack: 8, defense: -5, control: -2 };
+      case '4-5-1': return { attack: -3, defense: 4, control: 3 };
+      case '5-3-2': return { attack: -2, defense: 5, control: 1 };
+      case '5-4-1': return { attack: -5, defense: 7, control: -1 };
+      default: return { attack: 1, defense: 1, control: 1 };
    }
 }
 
@@ -134,10 +140,8 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
    const [gameState, setGameState] = useState<'1H' | 'HT' | '2H' | 'ET1' | 'ET_INT' | 'ET2' | 'PK' | 'FT'>('1H');
    const [stoppageTime, setStoppageTime] = useState(Math.floor(Math.random() * 3) + 1);
 
-   // --- WORLD CUP / KNOCKOUT SPECIFIC ---
    const isKnockout = useMemo(() => {
       if (mode !== 'worldcup') return false;
-      // In our worldCupEngine, phases are R16, QF, SF, FINAL
       if (!wcPhase) return false;
       return !wcPhase.includes('Grupo');
    }, [mode, wcPhase]);
@@ -157,12 +161,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
 
    const [feed, setFeed] = useState<Narration[]>([]);
    const [matchEvents, setMatchEvents] = useState<MatchEvent[]>([]);
-   const [stats, setStats] = useState({
-      homeShots: 0,
-      awayShots: 0,
-      possession: 50,
-      momentum: 50
-   });
+   const [stats, setStats] = useState({ homeShots: 0, awayShots: 0, possession: 50, momentum: 50 });
 
    const [isDanger, setIsDanger] = useState(false);
    const [dangerTeamId, setDangerTeamId] = useState<string | null>(null);
@@ -175,9 +174,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
    const feedRef = useRef<HTMLDivElement>(null);
 
    useEffect(() => {
-      if (feedRef.current) {
-         feedRef.current.scrollTop = feedRef.current.scrollHeight;
-      }
+      if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight;
    }, [feed]);
 
    const addNarration = (text: string, type: Narration['type'] = 'neutral', teamId?: string, overrideMinute?: number) => {
@@ -186,43 +183,13 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
 
    const matchPulse = useMemo(() => {
       if (isDanger && dangerTeamId === homeTeam.id) {
-         return {
-            title: `${homeTeam.shortName} pressiona agora`,
-            copy: 'Momento de volume ofensivo. Segure o ritmo ou acelere se quiser converter a pressão em gol.',
-            tone: 'primary'
-         } as const;
+         return { title: 'Mandante Ataca', copy: `Volume ofensivo crítico do ${homeTeam.shortName}.`, tone: 'primary' } as const;
       }
-
       if (isDanger && dangerTeamId === initialAwayTeam.id) {
-         return {
-            title: `${initialAwayTeam.shortName} cresce na partida`,
-            copy: 'Seu time está sob pressão. Ajuste mentalidade ou prepare troca se a energia estiver caindo.',
-            tone: 'danger'
-         } as const;
+         return { title: 'Pressão Visitante', copy: `O ${initialAwayTeam.shortName} está por cima agora.`, tone: 'danger' } as const;
       }
-
-      if (stats.momentum >= 62) {
-         return {
-            title: `${homeTeam.shortName} controla o jogo`,
-            copy: 'A posse e o território favorecem o mandante. É um bom momento para sustentar a vantagem.',
-            tone: 'primary'
-         } as const;
-      }
-
-      if (stats.momentum <= 38) {
-         return {
-            title: `${initialAwayTeam.shortName} dita o ritmo`,
-            copy: 'O visitante está confortável. Pense em mudar a partida com tática ou substituição.',
-            tone: 'danger'
-         } as const;
-      }
-
-      return {
-         title: 'Partida equilibrada',
-         copy: 'O jogo ainda está aberto. Observe energia, momentum e tempo antes de forçar uma decisão.',
-         tone: 'neutral'
-      } as const;
-   }, [dangerTeamId, homeTeam.id, homeTeam.shortName, initialAwayTeam.id, initialAwayTeam.shortName, isDanger, stats.momentum]);
+      return { title: 'Equilíbrio Tático', copy: 'A partida segue em disputa territorial intensa.', tone: 'neutral' } as const;
+   }, [dangerTeamId, homeTeam.id, homeTeam.shortName, initialAwayTeam.id, initialAwayTeam.shortName, isDanger]);
 
    const pickRandomLineupPlayer = (team: Team) => {
       const lineupPlayers = team.roster.filter(p => team.lineup.includes(p.id));
@@ -237,24 +204,22 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
       return pool[Math.floor(Math.random() * pool.length)];
    };
 
+   const penaltyScore = useMemo(() => ({
+      home: pkResults.home.filter(r => r === 1).length,
+      away: pkResults.away.filter(r => r === 1).length,
+   }), [pkResults]);
+
+   const formationBias = useMemo(() => getFormationBias(currentFormation), [currentFormation]);
+
    const getStochasticEvent = (momentum: number) => {
       const isHomeAttacking = Math.random() < (momentum / 100);
       const attackingTeam = isHomeAttacking ? homeTeam : initialAwayTeam;
       const defendingTeam = isHomeAttacking ? initialAwayTeam : homeTeam;
 
-      const scenarios = [
-         `O ${attackingTeam.shortName} trabalha a bola no meio de campo.`,
-         `Troca de passes paciente do ${attackingTeam.shortName}.`,
-         `${defendingTeam.shortName} se defende como pode!`,
-         `Jogo muito truncado nesta fase da partida.`,
-         `O técnico do ${attackingTeam.shortName} pede mais velocidade!`
-      ];
-
       const dangerScenarios = [
-         `OLHA O PERIGO! ${attackingTeam.shortName} chega forte pela ala!`,
+         `OLHA O PERIGO! ${attackingTeam.shortName} chega forte!`,
          `Lançamento longo para o ataque do ${attackingTeam.shortName}...`,
-         `QUE CHANCE! O goleiro do ${defendingTeam.shortName} faz uma defesa espetacular!`,
-         `SUBIU A BANDEIRA! Impedimento do ${attackingTeam.shortName}.`,
+         `QUE CHANCE! O goleiro do ${defendingTeam.shortName} salva!`,
          `A bola sobra na entrada da área...`
       ];
 
@@ -263,23 +228,26 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
          setStats(s => ({
             ...s,
             homeShots: isHomeAttacking ? s.homeShots + 1 : s.homeShots,
-               awayShots: !isHomeAttacking ? s.awayShots + 1 : s.awayShots
+            awayShots: !isHomeAttacking ? s.awayShots + 1 : s.awayShots
          }));
 
          let goalProb = 0.2;
-         if (isHomeAttacking && currentStyle === 'Ofensivo') goalProb = 0.3;
-         if (isHomeAttacking && currentStyle === 'Tudo-ou-Nada') goalProb = 0.45;
+         if (isHomeAttacking && currentStyle === 'Ultra-Defensivo') goalProb -= 0.08;
+         if (isHomeAttacking && currentStyle === 'Defensivo') goalProb -= 0.03;
+         if (isHomeAttacking && currentStyle === 'Ofensivo') goalProb += 0.07;
+         if (isHomeAttacking && currentStyle === 'Tudo-ou-Nada') goalProb += 0.15;
          if (isHomeAttacking) {
-            const formationBias = getFormationBias(currentFormation);
-            const currentInstructions = homeTeam.instructions;
             goalProb += formationBias.attack * 0.01;
-            if (currentInstructions.passing === 'CURTO') goalProb += 0.02;
-            if (currentInstructions.passing === 'LONGO') goalProb += 0.03;
-            if (currentInstructions.tempo === 'VELOZ') goalProb += 0.04;
+            goalProb -= Math.max(0, formationBias.defense) * 0.003;
+            if (currentInstructions.passing === 'CURTO') goalProb += 0.015;
+            if (currentInstructions.passing === 'LONGO') goalProb += 0.025;
+            if (currentInstructions.tempo === 'VELOZ') goalProb += 0.03;
+            if (currentInstructions.tempo === 'LENTO') goalProb -= 0.015;
             if (currentInstructions.pressing === 'ALTA') goalProb += 0.02;
+            if (currentInstructions.pressing === 'BAIXA') goalProb -= 0.01;
          }
          goalProb = Math.min(0.55, Math.max(0.08, goalProb));
-
+         
          if (Math.random() < goalProb) {
             const scorer = pickRandomLineupPlayer(attackingTeam);
             if (!scorer) return;
@@ -289,8 +257,8 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
             else setAwayScore(s => s + 1);
 
             const goalText = assister
-               ? `GOOOOOOOOOL DO ${attackingTeam.shortName}! ${scorer.name} (assist. ${assister.name})`
-               : `GOOOOOOOOOL DO ${attackingTeam.shortName}! ${scorer.name}`;
+               ? `GOOOL! ${scorer.name} marcou com assistência de ${assister.name}!`
+               : `GOOOL! ${scorer.name} balança as redes!`;
 
             addNarration(goalText, 'goal', attackingTeam.id);
             setMatchEvents(prev => [
@@ -304,24 +272,18 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                   description: goalText,
                },
             ]);
-            toast.success(`GOL DO ${attackingTeam.shortName}!`, { icon: '⚽' });
+            toast.success(`GOL DO ${attackingTeam.shortName.toUpperCase()}!`, { icon: '⚽' });
             setStats(s => ({ ...s, momentum: 50 })); 
-
             setIsGoalAnimation(true);
             setTimeout(() => setIsGoalAnimation(false), 3000);
-
-            try { Haptics.notification({ type: NotificationType.Success }); } catch { }
-         }
-      } else {
-         if (Math.random() < 0.4) {
-            addNarration(scenarios[Math.floor(Math.random() * scenarios.length)], 'neutral');
+            impactHeavy();
          }
       }
 
-      if (Math.random() < 0.15) {
+      if (Math.random() < 0.2) {
          setIsDanger(true);
          setDangerTeamId(attackingTeam.id);
-         try { Haptics.impact({ style: ImpactStyle.Light }); } catch { }
+         impactLight();
          setTimeout(() => setIsDanger(false), 3000);
       }
    };
@@ -331,16 +293,15 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
       const isActiveGame = ['1H', '2H', 'ET1', 'ET2'].includes(gameState);
 
       if (!isPaused && isActiveGame) {
-         const intervalTime = speed === 1 ? 1500 : (speed === 10 ? 300 : 80);
+         const intervalTime = speed === 1 ? 1200 : (speed === 10 ? 250 : 60);
          interval = setInterval(() => {
             setMinute(m => {
                const nextMinute = m + 1;
 
-               // --- TRANSITIONS ---
                if (gameState === '1H' && nextMinute > 45 + stoppageTime) {
                   setGameState('HT');
                   setIsPaused(true);
-                  addNarration("FIM DO PRIMEIRO TEMPO!", 'event');
+                  addNarration("INTERVALO DE PARTIDA", 'event');
                   return 45;
                }
 
@@ -348,21 +309,22 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                   if (isKnockout && homeScore === awayScore) {
                      setGameState('ET_INT');
                      setIsPaused(true);
-                     addNarration("FIM DO TEMPO REGULAR! Vamos para a Prorrogação.", 'event');
+                     addNarration("PRORROGAÇÃO CONFIRMADA!", 'event');
                      return 90;
                   } else {
                      setGameState('FT');
                      setIsFinished(true);
                      setIsPaused(true);
-                     addNarration("FINAL DE PARTIDA!", 'event');
-                     try { Haptics.notification({ type: NotificationType.Warning }); } catch { }
+                     addNarration("FIM DE JOGO!", 'event');
+                     hapticNotificationSuccess();
                      return 90;
                   }
                }
 
                if (gameState === 'ET1' && nextMinute > 105) {
                   setGameState('ET2');
-                  addNarration("FIM DO PRIMEIRO TEMPO DA PRORROGAÇÃO!", 'event');
+                  setIsPaused(true);
+                  addNarration("INTERVALO DA PRORROGAÇÃO", 'event');
                   return 105;
                }
 
@@ -370,48 +332,52 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                   if (homeScore === awayScore) {
                      setGameState('PK');
                      setIsPaused(true);
-                     addNarration("FIM DA PRORROGAÇÃO! A decisão será nos Pênaltis.", 'event');
-                     return 120;
-                  } else {
-                     setGameState('FT');
-                     setIsFinished(true);
-                     setIsPaused(true);
-                     addNarration("FINAL DE PARTIDA!", 'event');
+                     addNarration("DECISÃO NOS PÊNALTIS!", 'event');
                      return 120;
                   }
+                  setGameState('FT');
+                  setIsFinished(true);
+                  setIsPaused(true);
+                  addNarration("FIM DE JOGO!", 'event');
+                  hapticNotificationSuccess();
+                  return 120;
                }
 
-               // --- MATCH LOGIC (MOMENTUM & EVENTS) ---
-               let bias = 0;
-               const formationBias = getFormationBias(currentFormation);
-               const currentInstructions = homeTeam.instructions;
-
-               bias -= formationBias.defense * 0.15;
-               if (currentInstructions.pressing === 'ALTA') bias += 6;
-               if (currentInstructions.pressing === 'BAIXA') bias -= 4;
-               if (currentInstructions.tempo === 'VELOZ') bias += 4;
-               if (currentInstructions.tempo === 'LENTO') bias -= 3;
-               if (currentInstructions.passing === 'CURTO') bias += 2;
-               if (currentInstructions.passing === 'LONGO') bias += 1;
-               bias -= (ddaFactor - 1.0) * 25;
-
-               const shift = (Math.random() * 20 - 10) + bias;
+               let shift = (Math.random() * 22 - 11);
+               shift += formationBias.attack * 0.18;
+               shift += formationBias.control * 0.2;
+               shift -= Math.max(0, formationBias.defense) * 0.08;
+               if (currentStyle === 'Ultra-Defensivo') shift -= 4;
+               if (currentStyle === 'Defensivo') shift -= 2;
+               if (currentStyle === 'Ofensivo') shift += 3;
+               if (currentStyle === 'Tudo-ou-Nada') shift += 6;
+               if (currentInstructions.pressing === 'ALTA') shift += 3;
+               if (currentInstructions.pressing === 'BAIXA') shift -= 2;
+               if (currentInstructions.tempo === 'VELOZ') shift += 2;
+               if (currentInstructions.tempo === 'LENTO') shift -= 2;
+               if (currentInstructions.passing === 'CURTO') shift += 1;
+               if (currentInstructions.passing === 'LONGO') shift += 1.5;
                const newMomentum = Math.min(95, Math.max(5, stats.momentum + shift));
 
                setStats(prev => ({
                   ...prev,
                   momentum: newMomentum,
-                  possession: Math.round(prev.possession * 0.95 + (newMomentum * 0.05))
+                  possession: Math.round(prev.possession * 0.96 + (newMomentum * 0.04))
                }));
 
                getStochasticEvent(newMomentum);
-
                return nextMinute;
             });
          }, intervalTime);
       }
       return () => clearInterval(interval);
-   }, [gameState, isPaused, speed, stats.momentum, currentStyle, currentFormation, homeTeam.instructions, shoutActive, stoppageTime, isKnockout, homeScore, awayScore, ddaFactor]);
+   }, [gameState, isPaused, speed, stats.momentum, currentStyle, currentFormation, currentInstructions, formationBias, isKnockout, homeScore, awayScore]);
+
+   useEffect(() => {
+      if (gameState !== 'PK' || isFinished || pkResults.home.length + pkResults.away.length > 0) return;
+      const timeout = setTimeout(() => handlePenaltyKick('center'), 900);
+      return () => clearTimeout(timeout);
+   }, [gameState, isFinished, pkResults.home.length, pkResults.away.length]);
 
    const handleSubstitution = (outId: string, inId: string) => {
       setHomeTeam(prev => ({ ...prev, lineup: prev.lineup.map(id => id === outId ? inId : id) }));
@@ -419,583 +385,648 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
       setSelectedSubOut(null);
       const pIn = homeTeam.roster.find(p => p.id === inId);
       const pOut = homeTeam.roster.find(p => p.id === outId);
-      addNarration(`SUBSTITUIÇÃO: Sai ${pOut?.name}, entra ${pIn?.name}.`, 'event', homeTeam.id);
-      toast.success("Substituição confirmada!");
+      addNarration(`TROCA: Entra ${pIn?.name}, sai ${pOut?.name}`, 'event', homeTeam.id);
    };
 
-   // --- INTERACTIVE PENALTY SHOOTOUT ---
    const handlePenaltyKick = (corner: 'left' | 'center' | 'right') => {
       const isHomeTurn = pkTurn === 'HOME';
-      const shooterTeam = isHomeTurn ? homeTeam : initialAwayTeam;
-      const keeperTeam = isHomeTurn ? initialAwayTeam : homeTeam;
-
-      // Logic: Probability based on overall and a bit of luck
-      // shooter corner vs keeper corner (keeper choice is random)
       const keeperCorner = ['left', 'center', 'right'][Math.floor(Math.random() * 3)];
-      const shooterPower = isHomeTurn ? 0.75 + (homeTeam.attack / 200) : 0.7 + (initialAwayTeam.attack / 200);
+      let scored = Math.random() < 0.75;
+      if (corner === keeperCorner && scored) { if (Math.random() < 0.65) scored = false; }
+
+      const result = scored ? 1 : 2;
+      const nextHome = isHomeTurn ? [...pkResults.home, result] : pkResults.home;
+      const nextAway = isHomeTurn ? pkResults.away : [...pkResults.away, result];
+      setPkResults({ home: nextHome, away: nextAway });
       
-      let scored = Math.random() < shooterPower;
-      if (corner === keeperCorner && scored) {
-         // Keeper guessed right: 70% chance to save if they guess right
-         if (Math.random() < 0.7) scored = false;
+      const msg = scored ? "GOL!" : "DEFENDEU!";
+      setPkMessage(msg);
+      addNarration(`PÊNALTI ${isHomeTurn ? homeTeam.shortName : initialAwayTeam.shortName}: ${msg}`, scored ? 'goal' : 'event', isHomeTurn ? homeTeam.id : initialAwayTeam.id, 120);
+
+      const hGoals = nextHome.filter(r => r === 1).length;
+      const aGoals = nextAway.filter(r => r === 1).length;
+      const hTaken = nextHome.length;
+      const aTaken = nextAway.length;
+      const hRemaining = Math.max(0, 5 - hTaken);
+      const aRemaining = Math.max(0, 5 - aTaken);
+      const shootoutComplete =
+         hGoals > aGoals + aRemaining ||
+         aGoals > hGoals + hRemaining ||
+         (hTaken >= 5 && aTaken >= 5 && hGoals !== aGoals);
+
+      if (shootoutComplete) {
+         setGameState('FT');
+         setIsFinished(true);
+         setIsPaused(true);
+         addNarration(`FIM NOS PÊNALTIS! ${homeTeam.shortName} ${hGoals} x ${aGoals} ${initialAwayTeam.shortName}`, 'event', undefined, 120);
+         hapticNotificationSuccess();
+         return;
       }
 
-      const result = scored ? 1 : 2; // 1 = goal, 2 = miss/save
-      
-      setPkResults(prev => ({
-         ...prev,
-         [isHomeTurn ? 'home' : 'away']: [...prev[isHomeTurn ? 'home' : 'away'], result]
-      }));
-
-      const msg = scored 
-         ? `GOOOL! ${isHomeTurn ? 'Você' : shooterTeam.shortName} marcou no canto ${corner === 'left' ? 'esquerdo' : corner === 'right' ? 'direito' : 'central'}!`
-         : `PERDEU! O goleiro defendeu ou a bola foi fora!`;
-      
-      setPkMessage(msg);
-      addNarration(`${isHomeTurn ? 'PÊNALTI:' : 'PÊNALTI ADVERSÁRIO:'} ${msg}`, scored ? 'goal' : 'neutral', shooterTeam.id, 120);
-
-      // Check if finished
-      const hCount = isHomeTurn ? pkResults.home.length + 1 : pkResults.home.length;
-      const aCount = !isHomeTurn ? pkResults.away.length + 1 : pkResults.away.length;
-      
-      // Basic 5-kick rule check (simplification for now, common in games)
-      // Real rule is more complex (mathematical impossibility), but let's do simple turn advance
       if (isHomeTurn) {
          setPkTurn('AWAY');
-         // Auto-kick for AI after a short delay
-         setTimeout(() => {
-            const aiCorner = (['left', 'center', 'right'] as const)[Math.floor(Math.random() * 3)];
-            handlePenaltyKick(aiCorner);
-         }, 1000);
+         setTimeout(() => handlePenaltyKick('center'), 1000);
       } else {
          setPkTurn('HOME');
          setPkIndex(prev => prev + 1);
-
-         // Check if winner determined
-         const hGoals = pkResults.home.filter(r => r === 1).length + (scored && isHomeTurn ? 1 : 0);
-         const aGoals = pkResults.away.filter(r => r === 1).length + (scored && !isHomeTurn ? 1 : 0);
-         
-         // At least 5 kicks or more if tied
-         if (hCount >= 5 && aCount >= 5 && hGoals !== aGoals) {
-            setHomeScore(hGoals);
-            setAwayScore(aGoals);
-            setGameState('FT');
-            setIsFinished(true);
-            setIsPaused(true);
-            addNarration(`FIM DOS PÊNALTIS! Placar: ${hGoals} x ${aGoals}`, 'event');
-         }
       }
    };
 
+   const handleResumeMatch = () => {
+      impactMedium();
+      if (gameState === 'HT') {
+         setGameState('2H');
+         addNarration("COMEÇA O SEGUNDO TEMPO", 'event');
+         setIsPaused(false);
+         return;
+      }
+      if (gameState === 'ET_INT') {
+         setGameState('ET1');
+         addNarration("COMEÇA A PRORROGAÇÃO", 'event');
+         setIsPaused(false);
+         return;
+      }
+      if (gameState === 'ET2' || gameState === 'PK' || gameState === 'FT') return;
+      setIsPaused(!isPaused);
+   };
+
    return (
-      <div className="flex flex-col h-screen bg-background text-white relative font-sans overflow-hidden">
-
-         {/* 1. INFO HEADER (TV BROADCAST STYLE) */}
-         {!showSubModal && !showTacticsModal && (
-            <header className="bg-black py-4 px-8 flex justify-between items-center text-[10px] font-black uppercase tracking-[0.22em] border-b border-white/5 z-30 pt-safe">
-               <div className="text-white/40 flex items-center gap-4">
-                  {mode === 'worldcup' ? (
-                     <>
-                        <span className="text-primary italic tracking-tight">Copa do Mundo 2026</span>
-                        <div className="w-1 h-1 rounded-full bg-white/10" />
-                        <span>{wcPhase || `Rodada ${round}`}</span>
-                     </>
-                  ) : (
-                     <>
-                        <span className="text-white/60">Brasileiro • D1</span>
-                        <div className="w-1 h-1 rounded-full bg-white/10" />
-                        <span>Rodada {round}</span>
-                     </>
-                  )}
-               </div>
-               <div className="flex items-center gap-4">
-                  <span className="text-primary italic text-lg tracking-tighter">{minute}'</span>
-                  <div className="w-1 h-1 rounded-full bg-white/10" />
-                  <span className="text-white/40">
-                     {gameState === '1H' ? '1ºT' : 
-                      gameState === 'HT' ? 'INT' : 
-                      gameState === '2H' ? '2ºT' : 
-                      gameState === 'ET1' ? '1ºP' : 
-                      gameState === 'ET2' ? '2ºP' : 
-                      gameState === 'ET_INT' ? 'INT' : 
-                      gameState === 'PK' ? 'PEN' : 'FT'}
-                  </span>
-               </div>
-            </header>
-         )}
-
-         {/* 2. MODERN HORIZONTAL SCOREBOARD */}
-         {!showSubModal && !showTacticsModal && gameState !== 'PK' && (
-            <div className="bg-black/90 backdrop-blur-xl relative overflow-hidden py-4 px-6 flex justify-between items-center border-b border-white/10 shadow-2xl flex-none z-20">
-               <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 0.5px, transparent 0)', backgroundSize: '10px 10px' }} />
-
-               {/* Team Home */}
-               <div className="flex items-center gap-3 w-1/3">
-                  <TeamLogo team={homeTeam} size="md" className="border-primary/40 shadow-primary/20" />
-                  <div className="flex flex-col">
-                     <span className="text-[9px] font-black uppercase text-white/30 tracking-widest leading-none mb-1">CASA</span>
-                     <span className="text-sm font-black italic uppercase tracking-tighter text-white truncate max-w-[80px]">
-                       {homeTeam.shortName || homeTeam.name}
-                     </span>
-                  </div>
-                  <div className="ml-auto bg-primary/20 px-3 py-1 rounded-lg border border-primary/30">
-                     <span className="text-xl font-black text-white tabular-nums drop-shadow-sm">{homeScore}</span>
-                  </div>
-               </div>
-
-               {/* Divider */}
-               <div className="flex flex-col items-center justify-center px-4">
-                  <div className="w-[1px] h-8 bg-white/10" />
-               </div>
-
-               {/* Team Away */}
-               <div className="flex items-center gap-3 w-1/3 flex-row-reverse text-right">
-                  <TeamLogo team={initialAwayTeam} size="md" className="border-emerald-500/40 shadow-emerald-500/20" />
-                  <div className="flex flex-col items-end">
-                     <span className="text-[9px] font-black uppercase text-white/30 tracking-widest leading-none mb-1">FORA</span>
-                     <span className="text-sm font-black italic uppercase tracking-tighter text-white truncate max-w-[80px]">
-                       {initialAwayTeam.shortName || initialAwayTeam.name}
-                     </span>
-                  </div>
-                  <div className="mr-auto bg-emerald-500/20 px-3 py-1 rounded-lg border border-emerald-500/30">
-                     <span className="text-xl font-black text-white tabular-nums drop-shadow-sm">{awayScore}</span>
-                  </div>
-               </div>
-            </div>
-         )}
-
-         {/* 3. LIVE HIGHLIGHT & EVENTS */}
-         {!showSubModal && !showTacticsModal && (
-            <div className="px-6 py-4 space-y-3 flex-none z-10 bg-black/40 border-b border-white/5">
+      <div className="flex flex-col h-screen bg-[#020617] text-white relative font-sans overflow-hidden">
+         
+         {/* TV STYLE HEADER (PHASE 3) */}
+         <header className="px-6 py-4 pt-12 flex justify-between items-center z-50">
+            <div className="flex items-center gap-3">
                <div className={clsx(
-                  "rounded-[1.6rem] border px-4 py-3",
-                  matchPulse.tone === 'primary' ? "border-primary/20 bg-primary/10" :
-                  matchPulse.tone === 'danger' ? "border-rose-500/18 bg-rose-500/10" :
-                  "border-white/8 bg-white/5"
-               )}>
-                  <div className="flex items-start justify-between gap-4">
-                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-secondary">Leitura rápida</p>
-                        <h3 className="mt-1 text-[16px] font-black tracking-tight text-white">{matchPulse.title}</h3>
-                        <p className="mt-1 text-[12px] leading-5 text-white/68">{matchPulse.copy}</p>
-                     </div>
-                     <div className={clsx(
-                        "rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em]",
-                        matchPulse.tone === 'primary' ? "bg-primary/18 text-primary-light" :
-                        matchPulse.tone === 'danger' ? "bg-rose-500/16 text-rose-200" :
-                        "bg-white/8 text-white/55"
-                     )}>
-                        {isPaused ? 'Pausado' : `${speed}x`}
-                     </div>
-                  </div>
+                  "h-2 w-2 rounded-full",
+                  isPaused ? "bg-white/20" : "bg-primary animate-pulse shadow-[0_0_8px_rgba(31,177,133,0.8)]"
+               )} />
+               <span className="ui-label-caps text-[9px] text-white opacity-60 tracking-[0.2em]">{wcPhase || `Rodada ${round}`}</span>
+            </div>
+            
+            {/* CENTRAL SCOREBOARD (GLASS-PREMIUM) */}
+            <div className="absolute left-1/2 -translate-x-1/2 flex items-center bg-white/[0.03] backdrop-blur-3xl px-1.5 py-1 rounded-[1.5rem] border border-white/10 shadow-2xl">
+               <div className="flex items-center gap-4 px-4 py-2.5 border-r border-white/5">
+                  <TeamLogo team={homeTeam} size="xs" />
+                  <span className="text-2xl font-black tabular-nums tracking-tighter">{homeScore}</span>
                </div>
-
-               <div className="grid grid-cols-2 gap-4">
-                  {/* Home Events */}
-                  <div className="bg-white/5 rounded-2xl p-3 border border-white/10 min-h-[62px] max-h-[92px] overflow-y-auto no-scrollbar flex flex-col gap-2 shadow-inner">
-                     {matchEvents.filter(e => e.teamId === homeTeam.id).length === 0 && (
-                        <span className="text-[11px] text-white/18 font-bold uppercase tracking-[0.14em] text-center py-2 opacity-60">Sem lances decisivos</span>
-                     )}
-                     {matchEvents.filter(e => e.teamId === homeTeam.id).map((event, idx) => (
-                        <div key={idx} className="flex items-center gap-2 animate-in slide-in-from-left-2 duration-300">
-                           <span className="text-sm">{event.type === 'goal' ? '⚽' : event.type === 'card' ? (event.description.includes('vermelho') ? '🟥' : '🟨') : '🚑'}</span>
-                           <span className="text-[12px] font-black text-white/70 truncate tracking-tight">{event.description.split(' - ')[0].replace('GOOOOOOOOOOOL! ', 'GOL! ')}</span>
-                           <span className="text-[11px] font-bold text-primary/60 tabular-nums ml-auto">{event.minute}'</span>
-                        </div>
-                     ))}
-                  </div>
-
-                  {/* Away Events */}
-                  <div className="bg-white/5 rounded-2xl p-3 border border-white/10 min-h-[62px] max-h-[92px] overflow-y-auto no-scrollbar flex flex-col gap-2 shadow-inner">
-                     {matchEvents.filter(e => e.teamId === initialAwayTeam.id).length === 0 && (
-                        <span className="text-[11px] text-white/18 font-bold uppercase tracking-[0.14em] text-center py-2 opacity-60">Sem lances decisivos</span>
-                     )}
-                     {matchEvents.filter(e => e.teamId === initialAwayTeam.id).map((event, idx) => (
-                        <div key={idx} className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
-                           <span className="text-[11px] font-bold text-emerald-400/60 tabular-nums">{event.minute}'</span>
-                           <span className="text-[12px] font-black text-white/70 truncate tracking-tight flex-1 text-right">{event.description.split(' - ')[0].replace('GOOOOOOOOOOOL! ', 'GOL! ')}</span>
-                           <span className="text-sm ml-1">{event.type === 'goal' ? '⚽' : event.type === 'card' ? (event.description.includes('vermelho') ? '🟥' : '🟨') : '🚑'}</span>
-                        </div>
-                     ))}
-                  </div>
+               <div className="px-5 py-2 flex flex-col items-center min-w-[85px] bg-white/[0.02] mx-1 rounded-xl">
+                  <span className={clsx(
+                     "text-sm font-black italic tracking-tighter leading-none transition-colors",
+                     isPaused ? "text-white/40" : "text-primary"
+                  )}>
+                     {minute === 45 || minute === 90 || minute === 105 || minute === 120 ? `${minute}'+${stoppageTime}` : `${minute}'`}
+                  </span>
+                  <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em] mt-1">{gameState}</span>
+               </div>
+               <div className="flex items-center gap-4 px-4 py-2.5 border-l border-white/5">
+                  <span className="text-2xl font-black tabular-nums tracking-tighter">{awayScore}</span>
+                  <TeamLogo team={initialAwayTeam} size="xs" />
                </div>
             </div>
-         )}
 
-         {/* --- PENALTY SHOOTOUT OVERLAY --- */}
-         {gameState === 'PK' && (
-            <div className="flex-1 flex flex-col items-center justify-center p-6 bg-black/60 backdrop-blur-2xl animate-in fade-in duration-700">
-               <div className="w-full max-w-md text-center space-y-8">
-                  <div>
-                     <h2 className="text-3xl font-black italic tracking-tighter mb-2 text-primary">DISPUTA DE PÊNALTIS</h2>
-                     <p className="text-white/60 text-sm font-medium">{pkMessage}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-8 mb-8">
-                     <div className="space-y-3">
-                        <div className="flex items-center gap-2 justify-center">
-                           <TeamLogo team={homeTeam} size="sm" />
-                           <span className="font-bold text-sm">{pkResults.home.filter(r => r === 1).length}</span>
-                        </div>
-                        <div className="flex gap-1 justify-center">
-                           {[...Array(5)].map((_, i) => (
-                              <div key={i} className={clsx(
-                                 "w-3 h-3 rounded-full border border-white/20",
-                                 pkResults.home[i] === 1 && "bg-emerald-500 border-none shadow-[0_0_10px_#10b981]",
-                                 pkResults.home[i] === 2 && "bg-red-500 border-none shadow-[0_0_10px_#ef4444]"
-                              )} />
-                           ))}
-                        </div>
-                     </div>
-                     <div className="space-y-3">
-                        <div className="flex items-center gap-2 justify-center">
-                           <span className="font-bold text-sm">{pkResults.away.filter(r => r === 1).length}</span>
-                           <TeamLogo team={initialAwayTeam} size="sm" />
-                        </div>
-                        <div className="flex gap-1 justify-center">
-                           {[...Array(5)].map((_, i) => (
-                              <div key={i} className={clsx(
-                                 "w-3 h-3 rounded-full border border-white/20",
-                                 pkResults.away[i] === 1 && "bg-emerald-500 border-none shadow-[0_0_10px_#10b981]",
-                                 pkResults.away[i] === 2 && "bg-red-500 border-none shadow-[0_0_10px_#ef4444]"
-                              )} />
-                           ))}
-                        </div>
-                     </div>
-                  </div>
-
-                  {pkTurn === 'HOME' ? (
-                     <div className="space-y-6">
-                        <p className="text-white font-bold tracking-widest uppercase text-xs">Sua Vez! Escolha onde bater:</p>
-                        <div className="grid grid-cols-3 gap-3">
-                           <button onClick={() => handlePenaltyKick('left')} className="aspect-square rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center hover:bg-primary/20 hover:border-primary transition-all group">
-                              <ArrowRightLeft className="w-6 h-6 mb-2 -rotate-45 group-hover:scale-110 transition-transform" />
-                              <span className="text-[10px] font-bold">ESQUERDO</span>
-                           </button>
-                           <button onClick={() => handlePenaltyKick('center')} className="aspect-square rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center hover:bg-primary/20 hover:border-primary transition-all group">
-                              <Target className="w-6 h-6 mb-2 group-hover:scale-110 transition-transform" />
-                              <span className="text-[10px] font-bold">CENTRO</span>
-                           </button>
-                           <button onClick={() => handlePenaltyKick('right')} className="aspect-square rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center hover:bg-primary/20 hover:border-primary transition-all group">
-                              <ArrowRightLeft className="w-6 h-6 mb-2 rotate-45 group-hover:scale-110 transition-transform" />
-                              <span className="text-[10px] font-bold">DIREITO</span>
-                           </button>
-                        </div>
-                     </div>
-                  ) : (
-                     <div className="h-24 flex items-center justify-center text-white/40 italic text-sm animate-pulse">
-                        Aguardando cobrança adversária...
-                     </div>
-                  )}
-               </div>
-            </div>
-         )}
-
-         {/* 3. CENTER ENGINE (PULSE CARD + PITCH) */}
-         {!showSubModal && !showTacticsModal && gameState !== 'PK' && (
-            <main className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
-               <Pitch2D isDanger={isDanger} attackingTeamId={dangerTeamId} homeTeamId={homeTeam.id} momentum={stats.momentum} isGoalAnimation={isGoalAnimation} shoutActive={shoutActive} />
-
-               {/* Momentum Strip */}
-               <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-5 border border-white/10 shadow-2xl">
-                  <div className="flex justify-between items-center text-[11px] font-black uppercase text-white/30 mb-3 tracking-[0.14em] px-1">
-                     <span className="text-primary/60">{homeTeam.shortName}</span>
-                     <span className="opacity-50">Momentum</span>
-                     <span className="text-emerald-400/60">{initialAwayTeam.shortName}</span>
-                  </div>
-                  <div className="h-1.5 bg-black/60 rounded-full overflow-hidden relative shadow-inner">
-                     <div
-                        className="absolute inset-y-0 bg-gradient-to-r from-primary to-emerald-500 transition-all duration-1000 ease-in-out"
-                        style={{ left: '0', width: `${stats.momentum}%` }}
-                     ></div>
-                  </div>
-                  <div className="grid grid-cols-3 mt-5 px-2">
-                     <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-black tabular-nums text-white/90">{stats.possession}%</span>
-                        <span className="text-[10px] text-white/28 uppercase font-black tracking-[0.14em]">Posse</span>
-                     </div>
-                     <div className="flex flex-col gap-0.5 border-x border-white/5 text-center">
-                        <span className="text-[12px] font-bold uppercase tracking-tight italic text-primary/80">{currentStyle}</span>
-                        <span className="text-[10px] text-white/28 uppercase font-black tracking-[0.14em]">Estilo</span>
-                     </div>
-                     <div className="flex flex-col gap-0.5 text-right">
-                        <span className="text-sm font-black tabular-nums text-white/90">{stats.homeShots} - {stats.awayShots}</span>
-                        <span className="text-[10px] text-white/28 uppercase font-black tracking-[0.14em]">Finaliz.</span>
-                     </div>
-                  </div>
-               </div>
-
-               {/* Narration Feed */}
-               <div
-                  ref={feedRef}
-                  className="flex-1 bg-black/20 rounded-[40px] border border-white/5 overflow-y-auto p-6 space-y-4 no-scrollbar shadow-inner relative"
+            <div className="flex gap-3">
+               <button 
+                  onClick={() => { hapticSelection(); setSpeed(s => s === 1 ? 10 : (s === 10 ? 100 : 1)); }} 
+                  className="ui-label-caps text-[9px] bg-white/5 px-4 py-2 rounded-full border border-white/10 active:scale-90 transition-all"
                >
-                  {feed.length === 0 && (
-                     <div className="h-full flex flex-col items-center justify-center text-white/8 gap-6">
-                        <MessageSquare size={56} strokeWidth={1} />
-                        <p className="text-[11px] font-black uppercase tracking-[0.28em] italic text-center px-10 leading-relaxed">
-                           O jogo vai começar...
-                        </p>
-                     </div>
-                  )}
+                  {speed}X
+               </button>
+            </div>
+         </header>
+
+         <main className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
+            
+            {/* CRITICAL PULSE CARD (STANDARDIZED) */}
+            <section className={clsx(
+               "ui-card-premium p-6 border transition-all duration-700 relative overflow-hidden",
+               matchPulse.tone === 'primary' ? "border-primary/20 bg-primary/5" :
+               matchPulse.tone === 'danger' ? "border-rose-500/20 bg-rose-500/5 shadow-[0_0_30px_rgba(244,63,94,0.05)]" : "border-white/5"
+            )}>
+               {/* Ambient Glow */}
+               <div className={clsx(
+                  "absolute -right-10 -top-10 w-32 h-32 blur-[60px] opacity-20",
+                  matchPulse.tone === 'primary' ? "bg-primary" :
+                  matchPulse.tone === 'danger' ? "bg-rose-500" : "bg-white/5"
+               )} />
+
+               <div className="flex justify-between items-center mb-4 relative z-10">
+                  <span className="ui-label-caps text-[9px]">Status em Tempo Real</span>
+                  <div className="flex gap-1.5">
+                     {[0, 1, 2].map(i => (
+                        <div key={i} className={clsx(
+                           "h-1 w-5 rounded-full transition-all duration-500", 
+                           matchPulse.tone === 'primary' ? (i === 0 ? "bg-primary w-8" : "bg-primary/20") : 
+                           matchPulse.tone === 'danger' ? (i === 2 ? "bg-rose-500 w-8" : "bg-rose-500/20") : "bg-white/10"
+                        )} />
+                     ))}
+                  </div>
+               </div>
+               <h3 className="text-xl font-black italic tracking-tighter uppercase mb-2 relative z-10">{matchPulse.title}</h3>
+               <p className="text-[12px] text-secondary font-medium leading-relaxed opacity-80 relative z-10">{matchPulse.copy}</p>
+            </section>
+
+            {/* PITCH 2D */}
+            <Pitch2D 
+               isDanger={isDanger} 
+               attackingTeamId={dangerTeamId} 
+               homeTeamId={homeTeam.id} 
+               momentum={stats.momentum} 
+               isGoalAnimation={isGoalAnimation} 
+               shoutActive={shoutActive} 
+               speed={speed}
+            />
+
+            {/* LIVE COMMENTARY FEED (CINEMATIC) */}
+            <div 
+               ref={feedRef}
+               className="flex-1 ui-card-premium p-6 overflow-y-auto no-scrollbar space-y-5 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)]"
+            >
+               {feed.length === 0 && (
+                  <div className="h-full flex flex-col items-center justify-center opacity-10 gap-6">
+                     <Timer size={64} className="animate-pulse" />
+                     <span className="ui-label-caps text-xs tracking-[0.5em]">Escalando Times</span>
+                  </div>
+               )}
+               <AnimatePresence>
                   {feed.map((msg, i) => (
-                     <div key={i} className={clsx(
-                        "animate-in fade-in slide-in-from-bottom-4 duration-500",
-                        msg.type === 'goal' ? "bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-3xl shadow-xl shadow-emerald-500/5" :
-                           msg.type === 'danger' ? "bg-rose-500/10 border-l-4 border-rose-500 px-5 py-3 rounded-r-2xl" :
-                           msg.type === 'event' ? "bg-white/4 border border-white/6 px-5 py-3 rounded-2xl" : "px-2"
-                     )}>
-                        <div className="flex items-start gap-4">
-                           <span className="text-[11px] font-black text-white/28 mt-1 tabular-nums tracking-tight">{msg.minute}'</span>
+                     <motion.div 
+                        key={`${i}-${msg.minute}`}
+                        initial={{ opacity: 0, x: -10, y: 10 }}
+                        animate={{ opacity: 1, x: 0, y: 0 }}
+                        className={clsx(
+                           "relative overflow-hidden transition-all duration-500",
+                           msg.type === 'goal' ? "ui-card-premium bg-emerald-500/10 border-emerald-500/20 p-8 shadow-[0_0_50px_rgba(31,177,133,0.15)] text-center my-8" :
+                           msg.type === 'danger' ? "bg-rose-500/5 border border-rose-500/10 px-6 py-4 rounded-[2rem]" : "px-3"
+                        )}
+                     >
+                        <div className={clsx(
+                           "flex",
+                           msg.type === 'goal' ? "flex-col items-center gap-4" : "gap-5 items-start"
+                        )}>
+                           {msg.type === 'goal' && <div className="ui-label-caps bg-emerald-500/20 text-emerald-400 px-4 py-1.5 rounded-full border border-emerald-500/20">GOL</div>}
+                           
+                           <span className={clsx(
+                              "text-[10px] font-black text-white/30 tabular-nums uppercase tracking-widest",
+                              msg.type === 'goal' ? "order-2" : "mt-1.5"
+                           )}>
+                              {msg.minute}'
+                           </span>
+                           
                            <p className={clsx(
                               "leading-relaxed tracking-tight",
-                              msg.type === 'goal' ? "text-emerald-300 font-black italic text-[22px]" :
-                                 msg.type === 'danger' ? "text-rose-200 font-bold text-[15px]" :
-                                    msg.type === 'event' ? "text-primary-light font-black text-[13px] uppercase tracking-[0.12em]" : "text-white/84 font-medium text-[15px]"
+                              msg.type === 'goal' ? "text-3xl font-black italic uppercase leading-none text-white drop-shadow-2xl" :
+                              msg.type === 'danger' ? "text-rose-200 font-bold text-sm" : "text-secondary font-medium text-[13.5px]"
                            )}>
                               {msg.text}
                            </p>
+
+                           {msg.type === 'event' && <div className="h-1.5 w-1.5 rounded-full bg-white/20 mt-3" />}
                         </div>
-                     </div>
+                     </motion.div>
                   ))}
-               </div>
-            </main>
-         )}
-
-         {/* Speed controls */}
-         {!showSubModal && !showTacticsModal && (
-            <div className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col gap-2 z-10">
-               <button onClick={() => setIsPaused(!isPaused)} className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all">
-                  {isPaused ? <Play size={20} fill="currentColor" /> : <Pause size={20} fill="currentColor" />}
-               </button>
-               <button onClick={() => setSpeed(s => s === 1 ? 10 : (s === 10 ? 100 : 1))} className="w-12 h-12 bg-surface border border-white/10 rounded-full flex items-center justify-center text-[10px] font-black shadow-xl">
-                  {speed}x
-               </button>
+               </AnimatePresence>
             </div>
-         )}
+         </main>
 
-         {/* Real-time Footer Management */}
-         {!isFinished && !showSubModal && !showTacticsModal && (
-            <div className="p-6 bg-surface/60 backdrop-blur-3xl border-t border-white/5 space-y-4 pb-safe z-40">
-               <div className="flex gap-2.5">
-                  {['Pressionar', 'Acalmar', 'Explorar Alas'].map(shout => (
-                     <button key={shout} onClick={() => {
-                           setShoutActive(shout === shoutActive ? null : shout);
-                           if (shout !== shoutActive) toast(`Gritando: ${shout.toUpperCase()}!`, { icon: '📣' });
-                        }}
-                        className={clsx(
-                           "flex-1 py-4.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.14em] transition-all active:scale-95 border",
-                           shoutActive === shout ? "bg-primary border-primary text-white shadow-xl shadow-primary/20" : "bg-white/5 text-secondary border-white/5"
-                        )}
-                     >
-                        {shout}
-                     </button>
-                  ))}
-               </div>
-               <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => { setIsPaused(true); setShowTacticsModal(true); }} className="bg-surface/40 py-4.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.12em] flex items-center justify-center gap-3 border border-white/5 active:bg-white/5 transition-all">
-                     <Settings2 size={16} className="text-primary" /> MUDAR TÁTICA
-                  </button>
-                  <button onClick={() => { setIsPaused(true); setShowSubModal(true); }} className="bg-emerald-500/10 text-emerald-500 py-4.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.12em] flex items-center justify-center gap-3 border border-emerald-500/20 active:bg-emerald-500/20 transition-all">
-                     <ArrowRightLeft size={16} /> SUBSTITUIR
-                  </button>
-               </div>
-            </div>
-         )}
-
-         {/* MODAL: INTERVALO */}
-         {(gameState === 'HT' || gameState === 'ET_INT') && !showTacticsModal && !showSubModal && (
-            <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-2xl animate-in fade-in duration-300 flex items-center justify-center p-8">
-               <div className="w-full max-w-sm bg-surface border border-white/10 rounded-[40px] p-8 flex flex-col items-center gap-8 shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent" />
-                  <div className="flex flex-col items-center gap-2">
-                     <h4 className="text-3xl font-black italic tracking-tighter text-yellow-500 uppercase leading-none">
-                        {gameState === 'HT' ? 'Intervalo' : 'Prorrogação'}
-                     </h4>
-                     <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.3em]">Instruções no Vestiário</p>
+         {/* MATCH ACTION BAR (PHASE 3: MODERNA) */}
+         <footer className="p-6 bg-slate-950/80 backdrop-blur-3xl border-t border-white/5 pb-12 relative z-40">
+            {/* Action Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+               <motion.button 
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { hapticSelection(); setIsPaused(true); setShowTacticsModal(true); }} 
+                  className="flex flex-col items-center justify-center gap-2 py-5 bg-white/[0.03] rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all group"
+               >
+                  <div className="h-10 w-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                     <Target size={18} />
                   </div>
-                  <div className="grid grid-cols-2 gap-4 w-full">
-                     <button onClick={() => setShowTacticsModal(true)} className="bg-white/5 py-5 rounded-3xl text-[11px] font-black uppercase flex flex-col items-center gap-3 border border-white/5 active:bg-white/10 transition-all group">
-                        <Settings2 size={24} className="text-primary group-active:scale-90 transition-transform" />
-                        <span>Tática</span>
-                     </button>
-                     <button onClick={() => setShowSubModal(true)} className="bg-white/5 py-5 rounded-3xl text-[11px] font-black uppercase flex flex-col items-center gap-3 border border-white/5 active:bg-white/10 transition-all group">
-                        <ArrowRightLeft size={24} className="text-emerald-500 group-active:scale-90 transition-transform" />
-                        <span>Trocas</span>
-                     </button>
-                  </div>
-                  <button onClick={() => {
-                        if (gameState === 'HT') {
-                           setGameState('2H');
-                           setMinute(45);
-                           setStoppageTime(Math.floor(Math.random() * 5) + 2);
-                        } else {
-                           setGameState('ET1');
-                           setMinute(90);
-                        }
-                        setIsPaused(false);
-                        addNarration("Voltamos para o jogo!", 'event');
-                     }}
-                     className="w-full py-5 bg-white text-black rounded-[24px] font-black uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all text-xs"
-                  >
-                     Continuar Jogo
-                  </button>
-               </div>
-            </div>
-         )}
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Estratégia</span>
+               </motion.button>
 
-         {/* MODAL: FIM DE PARTIDA */}
-         {isFinished && !showTacticsModal && !showSubModal && (
-            <div className="fixed inset-0 z-[160] bg-slate-950/95 backdrop-blur-3xl animate-in fade-in duration-500 flex items-center justify-center p-8">
-               <div className="w-full max-w-sm flex flex-col items-center gap-10">
-                  <div className="flex flex-col items-center gap-6 text-center">
-                     <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center border border-white/20 animate-pulse">
-                        <Activity size={40} className="text-white" />
+               <motion.button 
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { hapticSelection(); setIsPaused(true); setShowSubModal(true); }} 
+                  className="flex flex-col items-center justify-center gap-2 py-5 bg-white/[0.03] rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all group"
+               >
+                  <div className="h-10 w-10 bg-emerald-400/10 rounded-2xl flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                     <ArrowRightLeft size={18} />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Substituir</span>
+               </motion.button>
+            </div>
+
+            {/* Main Play/Pause Button */}
+            <motion.button 
+               whileHover={{ scale: 1.01 }}
+               whileTap={{ scale: 0.97 }}
+               onClick={handleResumeMatch}
+               className={clsx(
+                  "w-full h-18 rounded-[2.25rem] flex items-center justify-center gap-4 shadow-2xl transition-all relative overflow-hidden group",
+                  isPaused ? "bg-white text-black" : "bg-white/5 text-white border border-white/10"
+               )}
+            >
+               {isPaused && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent animate-shimmer" />}
+               
+               <div className={clsx(
+                  "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
+                  isPaused ? "bg-black/10" : "bg-white/10 text-white"
+               )}>
+                  {isPaused ? <Play size={18} fill="currentColor" /> : <Pause size={18} fill="currentColor" />}
+               </div>
+               
+               <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">
+                  {gameState === 'HT' ? 'Iniciar 2º Tempo' : 
+                   gameState === 'ET_INT' ? 'Iniciar Prorrogação' : 
+                   isPaused ? 'Retomar Combate' : 'Pausar Simulação'}
+               </span>
+            </motion.button>
+         </footer>
+
+         {/* PENALTY SHOOTOUT OVERLAY (CINEMATIC) */}
+         <AnimatePresence>
+            {gameState === 'PK' && !isFinished && (
+               <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-8"
+               >
+                  <div className="w-full max-w-sm flex flex-col items-center gap-12">
+                     <div className="flex flex-col items-center gap-4">
+                        <div className="h-16 w-16 bg-rose-500/10 rounded-full border border-rose-500/20 flex items-center justify-center text-rose-500 mb-2 animate-pulse">
+                           <Target size={32} />
+                        </div>
+                        <h2 className="text-4xl font-black italic tracking-tighter uppercase leading-none">Pênaltis</h2>
+                        <span className="ui-label-caps text-secondary opacity-60 text-center px-4">{pkMessage}</span>
                      </div>
-                     <h4 className="text-3xl font-black italic tracking-tighter text-white uppercase leading-none">Fim de Jogo</h4>
 
-                     <div className="flex items-center gap-6 mt-4 bg-white/5 p-6 rounded-[40px] border border-white/5">
+                     <div className="w-full flex justify-between items-center px-4">
                         <div className="flex flex-col items-center gap-3">
                            <TeamLogo team={homeTeam} size="lg" />
-                           <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{homeTeam.shortName}</span>
-                           <span className="text-5xl font-black text-white tabular-nums">{homeScore}</span>
+                           <div className="flex gap-1.5">
+                              {Array.from({ length: Math.max(5, pkResults.home.length) }).map((_, i) => (
+                                 <div key={i} className={clsx(
+                                    "h-2.5 w-2.5 rounded-full border border-white/10",
+                                    pkResults.home[i] === 1 ? "bg-primary border-primary shadow-[0_0_8px_rgba(31,177,133,0.5)]" :
+                                    pkResults.home[i] === 2 ? "bg-rose-500 border-rose-500" : "bg-white/5"
+                                 )} />
+                              ))}
+                           </div>
+                           <span className="text-4xl font-black italic mt-2">{penaltyScore.home}</span>
                         </div>
-                        <span className="text-3xl font-black text-white/10 mt-10">-</span>
+
+                        <div className="text-white/10 font-black text-3xl">VS</div>
+
                         <div className="flex flex-col items-center gap-3">
                            <TeamLogo team={initialAwayTeam} size="lg" />
-                           <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{initialAwayTeam.shortName}</span>
-                           <span className="text-5xl font-black text-white tabular-nums">{awayScore}</span>
+                           <div className="flex gap-1.5">
+                              {Array.from({ length: Math.max(5, pkResults.away.length) }).map((_, i) => (
+                                 <div key={i} className={clsx(
+                                    "h-2.5 w-2.5 rounded-full border border-white/10",
+                                    pkResults.away[i] === 1 ? "bg-primary border-primary shadow-[0_0_8px_rgba(31,177,133,0.5)]" :
+                                    pkResults.away[i] === 2 ? "bg-rose-500 border-rose-500" : "bg-white/5"
+                                 )} />
+                              ))}
+                           </div>
+                           <span className="text-4xl font-black italic mt-2">{penaltyScore.away}</span>
                         </div>
                      </div>
-                  </div>
 
-                  <button onClick={() => {
-                        const commentary: MatchEvent[] = feed
-                           .filter(f => f.type !== 'goal')
-                           .slice(-12)
-                           .map(f => ({ minute: f.minute, type: 'commentary', description: f.text }));
-                        
-                        const pkHome = pkResults.home.filter(r => r === 1).length;
-                        const pkAway = pkResults.away.filter(r => r === 1).length;
-
-                        onFinish(homeScore, awayScore, [...matchEvents, ...commentary], pkHome > 0 || pkAway > 0 ? pkHome : undefined, pkHome > 0 || pkAway > 0 ? pkAway : undefined);
-                     }}
-                     className="w-full py-5 bg-white text-slate-900 rounded-[32px] font-black uppercase tracking-[0.3em] shadow-2xl active:scale-95 transition-all text-xs"
-                  >
-                     {mode === 'worldcup' ? 'Continuar Torneio' : 'Sair para o CT'}
-                  </button>
-               </div>
-            </div>
-         )}
-
-         {/* Modal Tactics */}
-         {showTacticsModal && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-950/95 backdrop-blur-md">
-               <div className="w-full max-w-sm bg-surface border border-white/10 rounded-[48px] p-10 space-y-8 animate-in zoom-in duration-300">
-                  <div className="flex justify-between items-center">
-                     <h3 className="text-xl font-black italic tracking-tighter">PRANCHETA</h3>
-                     <button onClick={() => setShowTacticsModal(false)}><X size={20} /></button>
-                  </div>
-                  <div className="space-y-6">
-                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Mentalidade</label>
-                        <div className="grid grid-cols-2 gap-2">
-                           {['Ultra-Defensivo', 'Defensivo', 'Equilibrado', 'Ofensivo', 'Tudo-ou-Nada'].map(s => (
-                              <button key={s} onClick={() => setCurrentStyle(s as any)}
-                                 className={clsx("py-3 rounded-xl text-[11px] font-black border transition-all", currentStyle === s ? "bg-primary border-primary text-white" : "bg-background border-white/5 text-secondary")}
-                              >
-                                 {s}
-                              </button>
-                           ))}
-                        </div>
-                     </div>
-                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Formação</label>
-                        <div className="grid grid-cols-3 gap-2">
-                           {['4-4-2', '4-3-3', '3-5-2', '5-4-1', '4-5-1', '5-3-2', '4-2-3-1'].map((formation) => (
+                     <div className="w-full space-y-4">
+                        <span className="ui-label-caps text-[9px] block text-center opacity-40">Escolha o canto do chute</span>
+                        <div className="grid grid-cols-3 gap-3">
+                           {['left', 'center', 'right'].map((corner) => (
                               <button
-                                 key={formation}
-                                 onClick={() => setCurrentFormation(formation as any)}
+                                 key={corner}
+                                 onClick={() => { hapticSelection(); handlePenaltyKick(corner as any); }}
+                                 disabled={pkTurn !== 'HOME'}
                                  className={clsx(
-                                    "py-3 rounded-xl text-[11px] font-black border transition-all",
-                                    currentFormation === formation ? "bg-primary border-primary text-white" : "bg-background border-white/5 text-secondary"
+                                    "py-6 rounded-3xl border transition-all flex items-center justify-center bg-white/5 border-white/10 active:scale-95",
+                                    pkTurn !== 'HOME' && "opacity-20 pointer-events-none"
                                  )}
                               >
-                                 {formation}
+                                 <div className={clsx(
+                                    "h-3 w-3 rounded-full bg-white/40",
+                                    corner === 'left' ? "mr-auto ml-4" : corner === 'right' ? "ml-auto mr-4" : ""
+                                 )} />
                               </button>
                            ))}
                         </div>
                      </div>
-                     {/* Simplified Pressing Selection */}
-                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Postura</label>
-                        <p className="text-[10px] text-white/40 italic">As instruções detalhadas podem ser ajustadas no CT.</p>
-                     </div>
                   </div>
-                  <button
-                     onClick={() => {
-                        setHomeTeam((prev) => ({
-                           ...prev,
-                           style: currentStyle,
-                           formation: currentFormation,
-                        }));
-                        setShowTacticsModal(false);
-                        setIsPaused(false);
-                     }}
-                     className="w-full py-5 bg-white text-slate-900 rounded-3xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
-                  >
-                     Confirmar
-                  </button>
-               </div>
-            </div>
-         )}
+               </motion.div>
+            )}
+         </AnimatePresence>
 
-         {/* Modal Subs */}
-         {showSubModal && (
-            <div className="fixed inset-0 z-[200] bg-slate-950 pt-safe flex flex-col">
-               <header className="p-6 border-b border-white/10 flex items-center justify-between">
-                  <button onClick={() => { setShowSubModal(false); setIsPaused(false); }} className="p-2"><X size={24} /></button>
-                  <h3 className="text-xl font-black italic tracking-tighter">SUBSTITUIÇÕES</h3>
-                  <div className="w-10"></div>
-               </header>
-               <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
-                  <div className="space-y-2">
-                     <h4 className="text-[10px] font-black text-secondary uppercase tracking-widest px-2">Quem sai?</h4>
-                     {homeTeam.lineup.map(id => homeTeam.roster.find(p => p.id === id)).filter(Boolean).map(player => (
-                        <button key={player!.id} onClick={() => setSelectedSubOut(player!.id)}
-                           className={clsx("w-full p-4 rounded-2xl border flex items-center justify-between transition-all", selectedSubOut === player!.id ? "bg-rose-500/10 border-rose-500" : "bg-surface border-white/5")}
-                        >
-                           <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center font-black text-[10px] border border-white/10">{player!.position}</div>
-                              <div className="text-left">
-                                 <p className="text-sm font-bold">{player!.name}</p>
-                                 <span className="text-[10px] text-secondary">⚡ {Math.round(player!.energy)}%</span>
+         {/* POST-MATCH MODAL (CINEMATIC) */}
+         <AnimatePresence>
+            {isFinished && (
+               <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-4xl flex items-center justify-center p-8 overflow-y-auto"
+               >
+                  <motion.div 
+                     initial={{ scale: 0.9, y: 30 }}
+                     animate={{ scale: 1, y: 0 }}
+                     className="w-full max-w-sm flex flex-col items-center gap-12 py-12"
+                  >
+                     <div className="flex flex-col items-center gap-4 text-center">
+                        <div className="h-20 w-20 bg-primary/10 rounded-full border border-primary/20 flex items-center justify-center text-primary mb-2 shadow-[0_0_40px_rgba(31,177,133,0.1)]">
+                           <Trophy size={40} className="animate-float" />
+                        </div>
+                        <h2 className="text-5xl font-black italic tracking-tighter uppercase leading-none">Placar Final</h2>
+                        <span className="ui-label-caps text-secondary opacity-40">O apito final soou</span>
+                     </div>
+
+                     <div className="w-full ui-card-premium p-10 border-white/10 bg-white/[0.02] shadow-[0_40px_80px_rgba(0,0,0,0.6)] relative overflow-hidden">
+                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                        
+                        <div className="flex items-center justify-between relative z-10">
+                           <div className="flex flex-col items-center gap-6 flex-1">
+                              <div className="relative">
+                                 <div className={clsx(
+                                    "absolute inset-0 blur-2xl rounded-full opacity-60",
+                                    homeScore >= awayScore ? "bg-primary/20" : "bg-transparent"
+                                 )} />
+                                 <TeamLogo team={homeTeam} size="xl" className="relative z-10" />
+                              </div>
+                              <span className="text-6xl font-black italic tracking-tighter tabular-nums">{homeScore}</span>
+                           </div>
+                           
+                           <div className="flex flex-col items-center gap-2 px-4">
+                              <span className="text-white/10 font-black text-3xl italic">VS</span>
+                              <div className="h-10 w-[1px] bg-white/5" />
+                           </div>
+
+                           <div className="flex flex-col items-center gap-6 flex-1">
+                              <div className="relative">
+                                 <div className={clsx(
+                                    "absolute inset-0 blur-2xl rounded-full opacity-60",
+                                    awayScore >= homeScore ? "bg-primary/20" : "bg-transparent"
+                                 )} />
+                                 <TeamLogo team={initialAwayTeam} size="xl" className="relative z-10" />
+                              </div>
+                              <span className="text-6xl font-black italic tracking-tighter tabular-nums">{awayScore}</span>
+                           </div>
+                        </div>
+
+                        {/* Penalty Sub-score (Standardized) */}
+                        {(penaltyScore.home > 0 || penaltyScore.away > 0) && (
+                           <div className="mt-10 pt-8 border-t border-white/5 flex flex-col items-center gap-3">
+                              <span className="ui-label-caps text-[9px] opacity-40 tracking-[0.5em]">Disputa por Pênaltis</span>
+                              <div className="text-3xl font-black italic flex items-center gap-6">
+                                 <span>{penaltyScore.home}</span>
+                                 <div className="h-1 w-1 rounded-full bg-white/10" />
+                                 <span>{penaltyScore.away}</span>
                               </div>
                            </div>
-                        </button>
-                     ))}
-                  </div>
-                  {selectedSubOut && (
-                     <div className="space-y-2 animate-in slide-in-from-bottom">
-                        <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest px-2">Quem entra?</h4>
-                        {homeTeam.roster.filter(p => !homeTeam.lineup.includes(p.id) && p.status === 'fit').map(player => (
-                           <button key={player.id} onClick={() => handleSubstitution(selectedSubOut, player.id)}
-                              className="w-full p-4 bg-surface rounded-2xl border border-emerald-500/20 flex items-center justify-between active:scale-95 transition-all"
-                           >
-                              <div className="flex items-center gap-3">
-                                 <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-black text-[10px] border border-emerald-500/20">{player.position}</div>
-                                 <div className="text-left">
-                                    <p className="text-sm font-bold">{player.name}</p>
-                                    <span className="text-[10px] text-secondary">OVR {player.overall}</span>
-                                 </div>
-                              </div>
-                           </button>
-                        ))}
+                        )}
+                        
+                        {/* Match Stats Mini-Summary */}
+                        <div className="mt-10 grid grid-cols-2 gap-4">
+                           <div className="bg-white/5 rounded-2xl p-4 border border-white/5 text-center">
+                              <span className="ui-label-caps text-[8px] block mb-1 opacity-30">Chutes</span>
+                              <span className="text-lg font-black italic tabular-nums">{stats.homeShots} - {stats.awayShots}</span>
+                           </div>
+                           <div className="bg-white/5 rounded-2xl p-4 border border-white/5 text-center">
+                              <span className="ui-label-caps text-[8px] block mb-1 opacity-30">Posse</span>
+                              <span className="text-lg font-black italic tabular-nums">{stats.possession}% - {100 - stats.possession}%</span>
+                           </div>
+                        </div>
                      </div>
-                  )}
-               </div>
-            </div>
-         )}
+
+                     <motion.button 
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                           hapticSelection();
+                           const commentary = feed.map(f => ({ minute: f.minute, type: 'commentary', description: f.text }));
+                           onFinish(homeScore, awayScore, [...matchEvents, ...commentary.slice(-5)], penaltyScore.home || undefined, penaltyScore.away || undefined);
+                        }}
+                        className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase tracking-[0.4em] text-[11px] shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-95 transition-all"
+                     >
+                        Prosseguir
+                     </motion.button>
+                  </motion.div>
+               </motion.div>
+            )}
+         </AnimatePresence>
+
+         {/* TACTICS OVERLAY (CINEMATIC) */}
+         <AnimatePresence>
+            {showTacticsModal && (
+               <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6"
+               >
+                  <motion.div 
+                     initial={{ scale: 0.95, y: 20 }}
+                     animate={{ scale: 1, y: 0 }}
+                     className="w-full max-w-sm space-y-12"
+                  >
+                     <div className="flex justify-between items-center">
+                        <div>
+                           <h3 className="text-3xl font-black italic tracking-tighter uppercase leading-none mb-1">Estratégia</h3>
+                           <span className="ui-label-caps text-[9px]">Comando do Vestiário</span>
+                        </div>
+                        <button 
+                           onClick={() => setShowTacticsModal(false)} 
+                           className="h-12 w-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 active:scale-90 transition-all"
+                        >
+                           <X size={20} />
+                        </button>
+                     </div>
+                     
+                     <div className="space-y-10 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 px-1">
+                        <section className="space-y-4">
+                           <span className="ui-label-caps text-[9px] opacity-40">Mentalidade</span>
+                           <div className="grid grid-cols-2 gap-3">
+                              {['Ultra-Defensivo', 'Defensivo', 'Equilibrado', 'Ofensivo', 'Tudo-ou-Nada'].map(s => (
+                                 <button 
+                                    key={s} 
+                                    onClick={() => { hapticSelection(); setCurrentStyle(s as any); }}
+                                    className={clsx(
+                                       "py-4.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all",
+                                       currentStyle === s ? "bg-primary border-primary text-white shadow-xl shadow-primary/20" : "bg-white/5 border-white/5 text-secondary"
+                                    )}
+                                 >
+                                    {s}
+                                 </button>
+                              ))}
+                           </div>
+                        </section>
+
+                        <section className="space-y-4">
+                           <span className="ui-label-caps text-[9px] opacity-40">Estrutura (Formação)</span>
+                           <div className="grid grid-cols-3 gap-3">
+                              {MATCH_FORMATIONS.map(formation => (
+                                 <button
+                                    key={formation}
+                                    onClick={() => { hapticSelection(); setCurrentFormation(formation); }}
+                                    className={clsx(
+                                       "py-4 rounded-xl text-[9px] font-black uppercase border transition-all",
+                                       currentFormation === formation ? "bg-white text-black border-white shadow-xl" : "bg-white/5 border-white/5 text-secondary"
+                                    )}
+                                 >
+                                    {formation}
+                                 </button>
+                              ))}
+                           </div>
+                        </section>
+
+                        <section className="space-y-5">
+                           <span className="ui-label-caps text-[9px] opacity-40">Instruções Pragmáticas</span>
+                           <div className="space-y-4">
+                              <div className="grid grid-cols-3 gap-2">
+                                 {(['BAIXA', 'MEDIA', 'ALTA'] as const).map(pressing => (
+                                    <button
+                                       key={pressing}
+                                       onClick={() => { hapticSelection(); setCurrentInstructions(prev => ({ ...prev, pressing })); }}
+                                       className={clsx(
+                                          "py-3.5 rounded-2xl text-[9px] font-black uppercase border transition-all",
+                                          currentInstructions.pressing === pressing ? "bg-sky-500 border-sky-400 text-white" : "bg-white/5 border-white/5 text-secondary"
+                                       )}
+                                    >
+                                       {pressing}
+                                    </button>
+                                 ))}
+                              </div>
+                              <div className="grid grid-cols-3 gap-2">
+                                 {(['CURTO', 'MISTO', 'LONGO'] as const).map(passing => (
+                                    <button
+                                       key={passing}
+                                       onClick={() => { hapticSelection(); setCurrentInstructions(prev => ({ ...prev, passing })); }}
+                                       className={clsx(
+                                          "py-3.5 rounded-2xl text-[9px] font-black uppercase border transition-all",
+                                          currentInstructions.passing === passing ? "bg-violet-500 border-violet-400 text-white" : "bg-white/5 border-white/5 text-secondary"
+                                       )}
+                                    >
+                                       {passing}
+                                    </button>
+                                 ))}
+                              </div>
+                              <div className="grid grid-cols-3 gap-2">
+                                 {(['LENTO', 'PADRAO', 'VELOZ'] as const).map(tempo => (
+                                    <button
+                                       key={tempo}
+                                       onClick={() => { hapticSelection(); setCurrentInstructions(prev => ({ ...prev, tempo })); }}
+                                       className={clsx(
+                                          "py-3.5 rounded-2xl text-[9px] font-black uppercase border transition-all",
+                                          currentInstructions.tempo === tempo ? "bg-amber-500 border-amber-400 text-white" : "bg-white/5 border-white/5 text-secondary"
+                                       )}
+                                    >
+                                       {tempo}
+                                    </button>
+                                 ))}
+                              </div>
+                           </div>
+                        </section>
+                     </div>
+
+                     <button 
+                        onClick={() => {
+                           impactMedium();
+                           setHomeTeam(prev => ({ ...prev, style: currentStyle, formation: currentFormation, instructions: currentInstructions }));
+                           addNarration(`AJUSTE TÁTICO: ${currentFormation} • ${currentStyle}`, 'event', homeTeam.id);
+                           setShowTacticsModal(false);
+                           setIsPaused(false);
+                        }}
+                        className="w-full py-6 bg-primary text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl shadow-primary/20 active:scale-95 transition-all"
+                     >
+                        Confirmar Plano
+                     </button>
+                  </motion.div>
+               </motion.div>
+            )}
+         </AnimatePresence>
+
+         {/* SUBSTITUTIONS OVERLAY (CINEMATIC) */}
+         <AnimatePresence>
+            {showSubModal && (
+               <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6"
+               >
+                  <motion.div 
+                     initial={{ scale: 0.95, y: 20 }}
+                     animate={{ scale: 1, y: 0 }}
+                     className="w-full max-w-sm space-y-10"
+                  >
+                     <div className="flex justify-between items-center">
+                        <div>
+                           <h3 className="text-3xl font-black italic tracking-tighter uppercase leading-none mb-1">Substituições</h3>
+                           <span className="ui-label-caps text-[9px]">Oxigênio para o Time</span>
+                        </div>
+                        <button 
+                           onClick={() => { setShowSubModal(false); setSelectedSubOut(null); }} 
+                           className="h-12 w-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 active:scale-90 transition-all"
+                        >
+                           <X size={20} />
+                        </button>
+                     </div>
+
+                     <div className="space-y-8 max-h-[60vh] overflow-y-auto no-scrollbar px-1">
+                        {!selectedSubOut ? (
+                           <section className="space-y-4">
+                              <span className="ui-label-caps text-[9px] opacity-40">Quem sai da partida?</span>
+                              <div className="grid grid-cols-1 gap-2">
+                                 {homeTeam.roster.filter(p => homeTeam.lineup.includes(p.id)).map(player => (
+                                    <button
+                                       key={player.id}
+                                       onClick={() => { hapticSelection(); setSelectedSubOut(player.id); }}
+                                       className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all group"
+                                    >
+                                       <div className="flex flex-col items-start">
+                                          <span className="text-[12px] font-black uppercase tracking-tight text-white">{player.name}</span>
+                                          <span className="text-[9px] font-bold text-secondary flex items-center gap-2 mt-0.5">
+                                             <Sparkles size={10} className="text-amber-400" />
+                                             OVR {player.overall} • {player.position}
+                                          </span>
+                                       </div>
+                                       <div className="h-8 w-8 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all">
+                                          <TrendingDown size={14} />
+                                       </div>
+                                    </button>
+                                 ))}
+                              </div>
+                           </section>
+                        ) : (
+                           <section className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+                              <div className="flex items-center gap-3 mb-6">
+                                 <button onClick={() => setSelectedSubOut(null)} className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center"><ArrowRightLeft size={14} className="rotate-180" /></button>
+                                 <span className="ui-label-caps text-[9px] opacity-40">Quem entra no lugar?</span>
+                              </div>
+                              <div className="grid grid-cols-1 gap-2">
+                                 {homeTeam.roster.filter(p => !homeTeam.lineup.includes(p.id)).map(player => (
+                                    <button
+                                       key={player.id}
+                                       onClick={() => { hapticSelection(); handleSubstitution(selectedSubOut, player.id); }}
+                                       className="flex items-center justify-between p-4 bg-primary/5 border border-primary/10 rounded-2xl hover:bg-primary/20 transition-all group"
+                                    >
+                                       <div className="flex flex-col items-start">
+                                          <span className="text-[12px] font-black uppercase tracking-tight text-white">{player.name}</span>
+                                          <span className="text-[9px] font-bold text-secondary flex items-center gap-2 mt-0.5">
+                                             <Zap size={10} className="text-primary" />
+                                             OVR {player.overall} • {player.position}
+                                          </span>
+                                       </div>
+                                       <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-primary group-hover:text-white transition-all">
+                                          <TrendingUp size={14} />
+                                       </div>
+                                    </button>
+                                 ))}
+                              </div>
+                           </section>
+                        )}
+                     </div>
+                  </motion.div>
+               </motion.div>
+            )}
+         </AnimatePresence>
       </div>
    );
 }

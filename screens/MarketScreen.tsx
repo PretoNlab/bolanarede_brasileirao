@@ -1,20 +1,24 @@
 import React, { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { TeamLogo } from '../components/TeamLogo';
+import { Header } from '../components/Header';
 import { Player, Team, TransferLog, TransferOffer } from '../types';
 import {
-  ArrowLeft,
   Briefcase,
-  CalendarDays,
-  DollarSign,
-  History,
   Search,
   ShieldAlert,
+  History,
   Tags,
+  DollarSign,
+  CalendarDays,
   TrendingUp,
-  X
+  X,
+  Target,
+  Users
 } from 'lucide-react';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
+import { hapticSelection, impactHeavy } from '../haptics';
 
 interface Props {
   userTeam: Team;
@@ -182,513 +186,543 @@ export default function MarketScreen({
   };
 
   const renderEmptyState = (title: string, copy: string) => (
-    <div className="rounded-[2rem] border border-white/8 bg-surface/70 p-6 text-center">
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5">
-        <ShieldAlert size={20} className="text-secondary" />
+    <div className="rounded-[2.5rem] border border-white/8 bg-surface/70 p-8 text-center backdrop-blur-md">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-white/5 border border-white/5">
+        <ShieldAlert size={28} className="text-secondary opacity-40" />
       </div>
-      <h3 className="text-lg font-black tracking-tight text-white">{title}</h3>
-      <p className="mx-auto mt-2 max-w-sm text-[13px] leading-6 text-white/60">{copy}</p>
+      <h3 className="text-xl font-black tracking-tight text-white mb-2">{title}</h3>
+      <p className="mx-auto max-w-sm text-[13px] leading-relaxed text-white/40">{copy}</p>
     </div>
   );
 
   return (
-    <div className="relative flex h-screen flex-col bg-background font-sans text-white">
-      <header className="fixed left-0 top-0 z-40 w-full border-b border-white/5 bg-background/92 pt-safe backdrop-blur-xl">
-        <div className="px-6 pb-5 pt-6">
-          <div className="mb-5 flex items-center justify-between">
-            <button
-              onClick={onBack}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 transition-all active:scale-95"
-            >
-              <ArrowLeft size={20} />
-            </button>
+    <div className="flex h-screen flex-col bg-background font-sans text-white overflow-hidden">
+      <Header 
+        title="Mercado"
+        subtitle="Transferências"
+        onBack={onBack}
+        rightAction={<div className="px-3 py-1.5 bg-primary/10 rounded-xl border border-primary/20 text-primary font-black text-xs">{formatMoney(funds)}</div>}
+      />
 
-            <div className="text-center">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">Mercado</p>
-              <p className="mt-1 text-xl font-black tracking-tight text-emerald-400">{formatMoney(funds)}</p>
+      <main className="flex-1 space-y-6 overflow-y-auto p-6 pb-28 no-scrollbar">
+        {/* Market Pulse Card */}
+        <section className="ui-card-premium p-8 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
+          <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 blur-[100px] rounded-full group-hover:bg-primary/10 transition-colors duration-1000" />
+          
+          <div className="relative z-10 flex items-start justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-4">
+                <div className={clsx(
+                  "w-2 h-2 rounded-full animate-pulse",
+                  marketPulse.tone === 'green' && 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]',
+                  marketPulse.tone === 'amber' && 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]',
+                  marketPulse.tone === 'red' && 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]',
+                  marketPulse.tone === 'blue' && 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]'
+                )} />
+                <p className="ui-label-caps opacity-60">Status do Mercado</p>
+              </div>
+              <h2 className="text-3xl font-black tracking-tighter text-white leading-none mb-3 italic uppercase">{marketPulse.title}</h2>
+              <p className="text-[13px] leading-relaxed text-secondary font-medium max-w-md">{marketPulse.copy}</p>
             </div>
-
             <div
               className={clsx(
-                'rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em]',
-                isWindowOpen ? 'bg-emerald-500/15 text-emerald-300' : 'bg-blue-500/15 text-blue-300'
+                'shrink-0 rounded-2xl px-5 py-4 text-[10px] font-black uppercase tracking-[0.2em] border backdrop-blur-xl shadow-2xl transition-all duration-500',
+                marketPulse.tone === 'green' && 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/10',
+                marketPulse.tone === 'amber' && 'bg-amber-500/10 text-amber-300 border-amber-500/20 shadow-amber-500/10',
+                marketPulse.tone === 'red' && 'bg-rose-500/10 text-rose-300 border-rose-500/20 shadow-rose-500/10',
+                marketPulse.tone === 'blue' && 'bg-blue-500/10 text-blue-300 border-blue-500/20 shadow-blue-500/10'
               )}
             >
-              {isWindowOpen ? 'Janela aberta' : 'Janela fechada'}
+              {isWindowOpen ? 'Janela Aberta' : 'Janela Fechada'}
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/8 bg-surface/80 p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Pulso da janela</p>
-                <h1 className="mt-2 text-2xl font-black tracking-tight text-white">{marketPulse.title}</h1>
-                <p className="mt-2 max-w-xl text-[13px] leading-6 text-white/65">{marketPulse.copy}</p>
-              </div>
-              <div
-                className={clsx(
-                  'rounded-2xl px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em]',
-                  marketPulse.tone === 'green' && 'bg-emerald-500/15 text-emerald-300',
-                  marketPulse.tone === 'amber' && 'bg-amber-500/15 text-amber-200',
-                  marketPulse.tone === 'red' && 'bg-rose-500/15 text-rose-200',
-                  marketPulse.tone === 'blue' && 'bg-blue-500/15 text-blue-300'
-                )}
-              >
-                {offers.length > 0 ? 'Responder propostas' : isWindowOpen ? 'Momento de agir' : 'Planejamento'}
-              </div>
-            </div>
-
-            <div className="mt-5 grid grid-cols-3 gap-3">
-              <div className="rounded-2xl border border-white/6 bg-background/60 p-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-secondary">Agentes livres</p>
-                <p className="mt-2 text-lg font-black tracking-tight text-white">{freeAgentsCount}</p>
-              </div>
-              <div className="rounded-2xl border border-white/6 bg-background/60 p-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-secondary">Alvos viáveis</p>
-                <p className="mt-2 text-lg font-black tracking-tight text-white">{affordableTargets.length}</p>
-              </div>
-              <div className="rounded-2xl border border-white/6 bg-background/60 p-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-secondary">Média do elenco</p>
-                <p className="mt-2 text-lg font-black tracking-tight text-white">{squadAverage}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+          <div className="relative z-10 mt-10 grid grid-cols-3 gap-4">
             {[
-              { id: 'EXPLORE', label: 'Explorar', icon: <Search size={16} /> },
-              { id: 'OFFERS', label: 'Propostas', icon: <Tags size={16} />, badge: offers.length },
-              { id: 'HISTORY', label: 'Histórico', icon: <History size={16} />, badge: logs.length },
-              { id: 'LISTED', label: 'Meu elenco', icon: <Briefcase size={16} />, badge: listedPlayers.length }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as MarketTab)}
-                className={clsx(
-                  'flex shrink-0 items-center gap-3 rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-[0.16em] transition-all',
-                  activeTab === tab.id
-                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                    : 'border border-white/6 bg-white/5 text-secondary'
-                )}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-                {tab.badge ? (
-                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] text-white">
-                    {tab.badge}
-                  </span>
-                ) : null}
-              </button>
+              { label: 'Agentes Livres', value: freeAgentsCount, icon: <Users size={12} /> },
+              { label: 'Alvos Viáveis', value: affordableTargets.length, icon: <Target size={12} /> },
+              { label: 'Média OVR', value: squadAverage, icon: <TrendingUp size={12} /> }
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-3xl border border-white/5 bg-black/40 p-5 hover:bg-black/60 transition-colors group/stat">
+                <div className="flex items-center gap-2 mb-2 opacity-40 group-hover/stat:opacity-80 transition-opacity">
+                  <span className="text-primary">{stat.icon}</span>
+                  <p className="ui-label-caps text-[8px]">{stat.label}</p>
+                </div>
+                <p className="text-2xl font-black tracking-tighter text-white">{stat.value}</p>
+              </div>
             ))}
           </div>
+        </section>
+
+        {/* Navigation Tabs */}
+        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar sticky top-0 z-40 -mx-6 px-6 bg-background/80 backdrop-blur-2xl py-4 border-b border-white/5">
+          {[
+            { id: 'EXPLORE', label: 'Explorar', icon: <Search size={14} /> },
+            { id: 'OFFERS', label: 'Propostas', icon: <Tags size={14} />, badge: offers.length },
+            { id: 'HISTORY', label: 'Histórico', icon: <History size={14} />, badge: logs.length },
+            { id: 'LISTED', label: 'Meu elenco', icon: <Briefcase size={14} />, badge: listedPlayers.length }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => { hapticSelection(); setActiveTab(tab.id as MarketTab); }}
+              className={clsx(
+                'flex shrink-0 items-center gap-3 rounded-[1.25rem] px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all border relative',
+                activeTab === tab.id
+                  ? 'bg-primary text-white border-primary shadow-[0_0_25px_rgba(var(--primary-rgb),0.3)] scale-105 z-10'
+                  : 'bg-white/5 text-secondary border-white/5 hover:bg-white/10 hover:border-white/10'
+              )}
+            >
+              {tab.icon}
+              <span className="whitespace-nowrap">{tab.label}</span>
+              {tab.badge ? (
+                <div className="absolute -top-1.5 -right-1.5 h-6 min-w-[24px] px-1.5 flex items-center justify-center rounded-full bg-emerald-500 border-2 border-background text-[9px] text-white font-black shadow-lg">
+                  {tab.badge}
+                </div>
+              ) : null}
+            </button>
+          ))}
         </div>
-      </header>
 
-      <main className="flex-1 space-y-6 overflow-y-auto px-6 pb-28 pt-[290px] no-scrollbar">
-        {activeTab === 'EXPLORE' && (
-          <div className="space-y-6">
-            <div className="rounded-[2rem] border border-white/8 bg-surface/70 p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Busca dirigida</p>
-                  <h2 className="mt-2 text-xl font-black tracking-tight text-white">Encontre reforços pelo contexto certo</h2>
-                  <p className="mt-2 text-[13px] leading-6 text-white/60">
-                    Procure por nome, posição ou clube. Se o caixa estiver apertado, reduza o escopo para alvos viáveis.
-                  </p>
+        {/* Tab Content */}
+        <section className="space-y-6">
+          {activeTab === 'EXPLORE' && (
+            <div className="space-y-6">
+              <div className="ui-card-premium p-8 relative overflow-hidden">
+                <div className="absolute right-0 top-0 w-32 h-32 bg-primary/5 blur-[60px] rounded-full pointer-events-none" />
+                
+                <div className="flex items-start justify-between gap-4 mb-8">
+                  <div className="flex-1">
+                    <p className="ui-label-caps text-primary mb-2">Busca Avançada</p>
+                    <h3 className="text-2xl font-black tracking-tighter text-white uppercase italic">Qualidade Técnica</h3>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-black/40 px-5 py-3 text-right group/res hover:border-primary/30 transition-all">
+                    <p className="text-[9px] font-black text-secondary uppercase tracking-[0.2em] mb-1 opacity-50">Disponíveis</p>
+                    <p className="text-xl font-black text-white tabular-nums tracking-tighter">{availablePlayers.length}</p>
+                  </div>
                 </div>
-                <div className="rounded-2xl border border-white/8 bg-background/50 px-3 py-2 text-right">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-secondary">Resultados</p>
-                  <p className="mt-1 text-lg font-black tracking-tight text-white">{availablePlayers.length}</p>
-                </div>
-              </div>
 
-              <div className="mt-5 flex gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary" size={18} />
+                <div className="relative group">
+                  <div className="absolute left-6 top-1/2 -translate-y-1/2 text-primary opacity-40 group-focus-within:opacity-100 transition-all duration-300">
+                    <Search className="group-focus-within:scale-110 transition-transform" size={20} />
+                  </div>
                   <input
                     type="text"
-                    placeholder="Buscar jogador, posição ou clube..."
+                    placeholder="Filtrar por nome, posição ou clube..."
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    className="w-full rounded-[20px] border border-white/5 bg-background/60 py-4 pl-12 pr-4 text-sm font-medium outline-none transition-all focus:border-primary/30 focus:ring-2 focus:ring-primary/20"
+                    className="w-full rounded-[2rem] border border-white/5 bg-black/50 py-6 pl-16 pr-8 text-[15px] font-bold text-white outline-none transition-all focus:border-primary/40 focus:ring-[12px] focus:ring-primary/5 placeholder:text-white/10"
                   />
                 </div>
+
+                <div className="mt-8 flex gap-4 overflow-x-auto no-scrollbar">
+                  {[
+                    { label: 'Só Agentes Livres', active: onlyFreeAgents, toggle: () => setOnlyFreeAgents(!onlyFreeAgents), color: 'emerald' },
+                    { label: 'Cabe no Caixa', active: onlyAffordable, toggle: () => setOnlyAffordable(!onlyAffordable), color: 'blue' }
+                  ].map((filter) => (
+                    <button
+                      key={filter.label}
+                      onClick={() => { hapticSelection(); filter.toggle(); }}
+                      className={clsx(
+                        'rounded-2xl px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all border whitespace-nowrap flex items-center gap-3',
+                        filter.active 
+                          ? filter.color === 'emerald' ? 'bg-emerald-500 text-white border-emerald-400 shadow-xl shadow-emerald-500/20' : 'bg-blue-500 text-white border-blue-400 shadow-xl shadow-blue-500/20' 
+                          : 'bg-white/5 text-secondary border-white/5 hover:bg-white/10'
+                      )}
+                    >
+                      <div className={clsx("w-1.5 h-1.5 rounded-full", filter.active ? "bg-white" : "bg-white/20")} />
+                      {filter.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <div className="mt-4 flex gap-3 overflow-x-auto no-scrollbar">
-                <button
-                  onClick={() => setOnlyFreeAgents((value) => !value)}
-                  className={clsx(
-                    'rounded-full px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.16em] transition-all',
-                    onlyFreeAgents ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'border border-white/8 bg-white/5 text-secondary'
-                  )}
-                >
-                  Só agentes livres
-                </button>
-                <button
-                  onClick={() => setOnlyAffordable((value) => !value)}
-                  className={clsx(
-                    'rounded-full px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.16em] transition-all',
-                    onlyAffordable ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'border border-white/8 bg-white/5 text-secondary'
-                  )}
-                >
-                  Cabe no caixa
-                </button>
-              </div>
-            </div>
+              <div className="space-y-4">
+                {availablePlayers.length === 0 && renderEmptyState(
+                  'Nenhum alvo encontrado',
+                  'Ajuste os filtros ou o termo de busca para encontrar atletas para o seu clube.'
+                )}
 
-            <div className="space-y-3">
-              {availablePlayers.length === 0 && renderEmptyState(
-                'Nenhum alvo encontrado',
-                'Tente limpar os filtros ou buscar por outro nome. Se a janela estiver fechada, use esta etapa só para mapeamento.'
-              )}
+                {availablePlayers.slice(0, 50).map(({ p, t }) => {
+                  const isFreeAgent = t.id === 'free_agent';
+                  const canAfford = p.marketValue <= funds;
+                  const trendTone = p.valueTrend === 'up' ? 'text-amber-400' : p.valueTrend === 'down' ? 'text-emerald-400' : 'text-blue-400';
 
-              {availablePlayers.slice(0, 80).map(({ p, t }) => {
-                const isFreeAgent = t.id === 'free_agent';
-                const canAfford = p.marketValue <= funds;
-                const trendTone =
-                  p.valueTrend === 'up' ? 'text-amber-300' : p.valueTrend === 'down' ? 'text-emerald-300' : 'text-blue-300';
-
-                return (
-                  <div
-                    key={p.id}
-                    className="rounded-[2rem] border border-white/8 bg-surface/70 p-5 transition-all"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/6 bg-background/70 text-xs font-black text-primary">
-                          {p.position}
+                  return (
+                    <div key={p.id} className="ui-card-premium p-5 group hover:bg-white/[0.12] transition-all cursor-pointer">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className={clsx(
+                            "flex h-14 w-14 items-center justify-center rounded-[1.25rem] border-2 font-black text-xs shadow-inner",
+                            p.position === 'GOL' ? 'border-yellow-500/20 text-yellow-500 bg-yellow-500/5' :
+                            ['ZAG', 'LAT'].includes(p.position) ? 'border-blue-500/20 text-blue-500 bg-blue-500/5' :
+                            ['VOL', 'MEI'].includes(p.position) ? 'border-green-500/20 text-green-500 bg-green-500/5' :
+                            'border-red-500/20 text-red-500 bg-red-500/5'
+                          )}>
+                            {p.position}
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-black tracking-tight text-white mb-1">{p.name}</h4>
+                            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-secondary">
+                              OVR {p.overall} • {p.age} anos • {isFreeAgent ? 'Sem clube' : t.shortName}
+                            </p>
+                          </div>
                         </div>
-                        {!isFreeAgent && <TeamLogo team={t} size="md" />}
-                        <div>
-                          <h3 className="text-lg font-black tracking-tight text-white">{p.name}</h3>
-                          <p className="mt-1 text-[11px] font-black uppercase tracking-[0.16em] text-secondary">
-                            OVR {p.overall} • {p.age} anos • {isFreeAgent ? 'Agente livre' : t.shortName}
+
+                        <div className="text-right">
+                          <p className="ui-label-caps mb-1">Valor</p>
+                          <p className="text-lg font-black text-emerald-400 tracking-tight">{formatMoney(p.marketValue)}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 grid grid-cols-3 gap-3">
+                        <div className="rounded-2xl border border-white/5 bg-black/30 p-3 text-center">
+                          <p className="text-[9px] font-black uppercase text-secondary tracking-widest mb-1">Potencial</p>
+                          <p className="text-xs font-black text-white">{p.potential}</p>
+                        </div>
+                        <div className="rounded-2xl border border-white/5 bg-black/30 p-3 text-center">
+                          <p className="text-[9px] font-black uppercase text-secondary tracking-widest mb-1">Tendência</p>
+                          <p className={clsx('text-[9px] font-black uppercase', trendTone)}>
+                            {p.valueTrend === 'up' ? 'Alta' : p.valueTrend === 'down' ? 'Queda' : 'Estável'}
                           </p>
                         </div>
+                        <div className="rounded-2xl border border-white/5 bg-black/30 p-3 text-center">
+                          <p className="text-[9px] font-black uppercase text-secondary tracking-widest mb-1">Energia</p>
+                          <p className="text-xs font-black text-white">{p.energy}%</p>
+                        </div>
                       </div>
 
-                      <div className="text-right">
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-secondary">Valor</p>
-                        <p className="mt-1 text-base font-black tracking-tight text-emerald-400">{formatMoney(p.marketValue)}</p>
-                        <p className={clsx('mt-1 text-[10px] font-black uppercase tracking-[0.14em]', trendTone)}>
-                          {p.valueTrend === 'up' ? 'Valorizando' : p.valueTrend === 'down' ? 'Desvalorizando' : 'Estável'}
-                        </p>
+                      <div className="mt-5 flex gap-3">
+                        <button
+                          onClick={() => handleStartNegotiation(p, t)}
+                          disabled={!isWindowOpen}
+                          className="flex-1 rounded-[1.25rem] bg-primary py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-20"
+                        >
+                          {isFreeAgent ? 'Contratar agora' : 'Negociar'}
+                        </button>
+                        <div className={clsx(
+                          "rounded-[1.25rem] border px-4 py-4 text-[10px] font-black uppercase tracking-widest flex items-center justify-center min-w-[100px]",
+                          canAfford ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/5' : 'border-white/5 text-secondary bg-white/5'
+                        )}>
+                          {canAfford ? 'Viável' : 'Caro'}
+                        </div>
                       </div>
                     </div>
-
-                    <div className="mt-4 grid grid-cols-3 gap-3">
-                      <div className="rounded-2xl border border-white/6 bg-background/55 p-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-secondary">Potencial</p>
-                        <p className="mt-1 text-sm font-black text-white">{p.potential}</p>
-                      </div>
-                      <div className="rounded-2xl border border-white/6 bg-background/55 p-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-secondary">Contrato</p>
-                        <p className="mt-1 text-sm font-black text-white">{p.contractRounds} rod.</p>
-                      </div>
-                      <div className="rounded-2xl border border-white/6 bg-background/55 p-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-secondary">Situação</p>
-                        <p className="mt-1 text-sm font-black text-white">{canAfford ? 'Viável' : 'Acima do caixa'}</p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 flex gap-3">
-                      <button
-                        onClick={() => handleStartNegotiation(p, t)}
-                        disabled={!isWindowOpen}
-                        className="flex-1 rounded-2xl bg-primary px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-white shadow-lg shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-35"
-                      >
-                        {isFreeAgent ? 'Tentar contratar' : 'Fazer proposta'}
-                      </button>
-                      <div
-                        className={clsx(
-                          'rounded-2xl border px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em]',
-                          canAfford ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300' : 'border-white/8 bg-white/5 text-secondary'
-                        )}
-                      >
-                        {canAfford ? 'Cabe no caixa' : 'Exige venda'}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'OFFERS' && (
-          <div className="space-y-4">
-            <div className="rounded-[2rem] border border-white/8 bg-surface/70 p-5">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Entradas pendentes</p>
-              <h2 className="mt-2 text-xl font-black tracking-tight text-white">Decisões que mexem no caixa e no elenco</h2>
-              <p className="mt-2 text-[13px] leading-6 text-white/60">
-                Responda primeiro o que já está em cima da mesa. Depois disso, volte a explorar reforços.
-              </p>
-            </div>
-
-            {offers.length === 0 && renderEmptyState(
-              'Nenhuma proposta recebida',
-              'Quando outros clubes se movimentarem pelo seu elenco, as ofertas aparecem aqui com valor e ação direta.'
-            )}
-
-            {offers.map((offer) => {
-              const offeringTeam = allTeams.find((team) => team.id === offer.offeringTeamId);
-
-              return (
-                <div key={offer.id} className="rounded-[2rem] border border-primary/20 bg-surface/75 p-5">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      {offeringTeam ? <TeamLogo team={offeringTeam} size="sm" /> : null}
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-primary">Interesse formal</p>
-                        <h3 className="mt-1 text-lg font-black tracking-tight text-white">{offer.playerName}</h3>
-                      </div>
-                    </div>
-                    <div className="rounded-2xl border border-white/8 bg-background/60 px-3 py-2 text-right">
-                      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-secondary">Oferta</p>
-                      <p className="mt-1 text-base font-black text-emerald-400">{formatMoney(offer.value)}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-between rounded-2xl border border-white/6 bg-background/50 p-4">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-secondary">Clube interessado</p>
-                      <p className="mt-1 text-sm font-black text-white">{offer.offeringTeamName}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-secondary">Rodada</p>
-                      <p className="mt-1 text-sm font-black text-white">{offer.round}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => onAcceptOffer(offer)}
-                      className="rounded-2xl bg-emerald-500 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-white transition-all active:scale-[0.98]"
-                    >
-                      Aceitar
-                    </button>
-                    <button
-                      onClick={() => onDeclineOffer(offer.id)}
-                      className="rounded-2xl border border-white/8 bg-white/5 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-white transition-all active:scale-[0.98]"
-                    >
-                      Recusar
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {activeTab === 'HISTORY' && (
-          <div className="space-y-4">
-            <div className="rounded-[2rem] border border-white/8 bg-surface/70 p-5">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Leitura de mercado</p>
-              <h2 className="mt-2 text-xl font-black tracking-tight text-white">Movimentações recentes</h2>
-              <p className="mt-2 text-[13px] leading-6 text-white/60">
-                Use o histórico para entender o nível de agressividade da janela e calibrar o preço dos seus alvos.
-              </p>
-            </div>
-
-            {logs.length === 0 && renderEmptyState(
-              'Sem movimentações registradas',
-              'Quando compras, vendas ou empréstimos acontecerem, este histórico ajuda a ler o ritmo da janela.'
-            )}
-
-            {logs.map((log) => (
-              <div key={log.id} className="rounded-[2rem] border border-white/8 bg-surface/70 p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-secondary">Rodada {log.round}</p>
-                    <h3 className="mt-1 text-lg font-black tracking-tight text-white">{log.playerName}</h3>
-                    <p className="mt-2 text-[13px] leading-6 text-white/60">
-                      {log.fromTeamName} {log.type === 'loan' ? 'emprestou' : 'negociou'} com {log.toTeamName}.
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-white/8 bg-background/60 px-3 py-2 text-right">
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-secondary">Valor</p>
-                    <p className="mt-1 text-base font-black text-emerald-400">{formatMoney(log.value)}</p>
-                  </div>
-                </div>
-
-                <div className="mt-4 inline-flex rounded-full border border-white/8 bg-white/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white/70">
-                  {log.type === 'buy' ? 'Compra concluída' : log.type === 'sell' ? 'Venda concluída' : 'Empréstimo'}
-                </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'LISTED' && (
-          <div className="space-y-4">
-            <div className="rounded-[2rem] border border-white/8 bg-surface/70 p-5">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Saídas do elenco</p>
-              <h2 className="mt-2 text-xl font-black tracking-tight text-white">Vitrine e empréstimos</h2>
-              <p className="mt-2 text-[13px] leading-6 text-white/60">
-                Coloque jogadores no mercado quando precisar abrir caixa, reduzir folha ou destravar espaço para reforços.
-              </p>
             </div>
+          )}
 
-            {userTeam.roster.map((player) => (
-              <div key={player.id} className="rounded-[2rem] border border-white/8 bg-surface/70 p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/6 bg-background/70 text-xs font-black text-primary">
-                      {player.position}
+          {activeTab === 'OFFERS' && (
+            <div className="space-y-6">
+              <div className="ui-card-premium p-6">
+                <p className="ui-label-caps mb-2">Entradas pendentes</p>
+                <h3 className="text-xl font-black tracking-tight text-white mb-2">Propostas recebidas</h3>
+                <p className="text-[13px] leading-relaxed text-white/50">Clubes interessados em atletas do seu elenco profissional.</p>
+              </div>
+
+              {offers.length === 0 && renderEmptyState(
+                'Sem ofertas no momento',
+                'Coloque jogadores à venda ou aguarde o interesse natural de outros clubes durante a janela.'
+              )}
+
+              <div className="space-y-4">
+                {offers.map((offer) => (
+                  <div key={offer.id} className="ui-card-premium p-6 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                          <Tags size={20} />
+                        </div>
+                        <div>
+                          <p className="ui-label-caps mb-1 opacity-60">Interesse em</p>
+                          <h4 className="text-lg font-black text-white">{offer.playerName}</h4>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="ui-label-caps mb-1">Oferta</p>
+                        <p className="text-xl font-black text-emerald-400 tracking-tight">{formatMoney(offer.value)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-black tracking-tight text-white">{player.name}</h3>
-                      <p className="mt-1 text-[11px] font-black uppercase tracking-[0.16em] text-secondary">
-                        OVR {player.overall} • {player.age} anos • {formatMoney(player.marketValue)}
+
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="rounded-2xl border border-white/5 bg-black/30 p-4">
+                        <p className="ui-label-caps mb-1 opacity-40">Proponente</p>
+                        <p className="text-sm font-black text-white leading-none">{offer.offeringTeamName}</p>
+                      </div>
+                      <div className="rounded-2xl border border-white/5 bg-black/30 p-4">
+                        <p className="ui-label-caps mb-1 opacity-40">Expira em</p>
+                        <p className="text-sm font-black text-white leading-none">2 rodadas</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => onAcceptOffer(offer)}
+                        className="flex-1 rounded-2xl bg-emerald-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all"
+                      >
+                        Aceitar
+                      </button>
+                      <button
+                        onClick={() => onDeclineOffer(offer.id)}
+                        className="flex-1 rounded-2xl border border-white/10 bg-white/5 py-4 text-[11px] font-black uppercase tracking-widest text-white hover:bg-white/10 active:scale-[0.98] transition-all"
+                      >
+                        Recusar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'HISTORY' && (
+            <div className="space-y-6">
+              <div className="ui-card-premium p-6">
+                <p className="ui-label-caps mb-2">Monitor de mercado</p>
+                <h3 className="text-xl font-black tracking-tight text-white">Últimas transações</h3>
+              </div>
+
+              {logs.length === 0 && renderEmptyState(
+                'Mercado estagnado',
+                'Nenhuma movimentação relevante registrada nas últimas rodadas.'
+              )}
+
+              <div className="space-y-3">
+                {logs.map((log) => (
+                  <div key={log.id} className="ui-card-premium p-4 flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={clsx(
+                          "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border",
+                          log.type === 'buy' ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/5' :
+                          log.type === 'sell' ? 'border-amber-500/20 text-amber-400 bg-amber-500/5' :
+                          'border-blue-500/20 text-blue-400 bg-blue-500/5'
+                        )}>
+                          {log.type === 'buy' ? 'Compra' : log.type === 'sell' ? 'Venda' : 'Empréstimo'}
+                        </span>
+                        <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-40">RD {log.round}</span>
+                      </div>
+                      <h4 className="text-base font-black text-white">{log.playerName}</h4>
+                      <p className="text-[11px] text-white/40 leading-relaxed mt-1">
+                         {log.fromTeamName} → {log.toTeamName}
                       </p>
                     </div>
+                    <div className="text-right shrink-0">
+                       <p className="text-base font-black text-emerald-400">{formatMoney(log.value)}</p>
+                    </div>
                   </div>
-
-                  <div className="flex flex-col items-end gap-2">
-                    {player.isForSale ? (
-                      <span className="rounded-full bg-amber-500/15 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-amber-200">
-                        À venda
-                      </span>
-                    ) : null}
-                    {player.isListedForLoan ? (
-                      <span className="rounded-full bg-blue-500/15 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-blue-200">
-                        Para empréstimo
-                      </span>
-                    ) : null}
-                    {!player.isForSale && !player.isListedForLoan ? (
-                      <span className="rounded-full bg-white/8 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white/55">
-                        Não listado
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-3 gap-3">
-                  <div className="rounded-2xl border border-white/6 bg-background/55 p-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-secondary">Energia</p>
-                    <p className="mt-1 text-sm font-black text-white">{player.energy}</p>
-                  </div>
-                  <div className="rounded-2xl border border-white/6 bg-background/55 p-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-secondary">Potencial</p>
-                    <p className="mt-1 text-sm font-black text-white">{player.potential}</p>
-                  </div>
-                  <div className="rounded-2xl border border-white/6 bg-background/55 p-3">
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-secondary">Contrato</p>
-                    <p className="mt-1 text-sm font-black text-white">{player.contractRounds} rod.</p>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handleListForSale(player)}
-                    disabled={!isWindowOpen}
-                    className="rounded-2xl border border-amber-500/20 bg-amber-500/10 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-amber-200 transition-all active:scale-[0.98] disabled:opacity-35"
-                  >
-                    Colocar à venda
-                  </button>
-                  <button
-                    onClick={() => handleListForLoan(player)}
-                    disabled={!isWindowOpen}
-                    className="rounded-2xl border border-blue-500/20 bg-blue-500/10 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-blue-200 transition-all active:scale-[0.98] disabled:opacity-35"
-                  >
-                    Oferecer empréstimo
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
+
+          {activeTab === 'LISTED' && (
+            <div className="space-y-6">
+              <div className="ui-card-premium p-6">
+                <p className="ui-label-caps mb-2">Planejamento de Saídas</p>
+                <h3 className="text-xl font-black tracking-tight text-white">Gestão de Vendas</h3>
+              </div>
+
+              <div className="space-y-4">
+                {userTeam.roster.map((player) => (
+                  <div key={player.id} className="ui-card-premium p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className={clsx(
+                           "flex h-14 w-14 items-center justify-center rounded-[1.25rem] border font-black text-xs",
+                           player.position === 'GOL' ? 'border-yellow-500/20 text-yellow-500 bg-yellow-500/5' :
+                           ['ZAG', 'LAT'].includes(player.position) ? 'border-blue-500/20 text-blue-500 bg-blue-500/5' :
+                           ['VOL', 'MEI'].includes(player.position) ? 'border-green-500/20 text-green-500 bg-green-500/5' :
+                           'border-red-500/20 text-red-500 bg-red-500/5'
+                        )}>
+                          {player.position}
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-black text-white mb-1">{player.name}</h4>
+                          <div className="flex items-center gap-2">
+                             <p className="text-[11px] font-black uppercase text-secondary">OVR {player.overall} • {player.age} anos</p>
+                             {player.isForSale && <span className="bg-amber-500 text-black text-[8px] font-black uppercase px-1.5 rounded">À Venda</span>}
+                             {player.isListedForLoan && <span className="bg-blue-500 text-white text-[8px] font-black uppercase px-1.5 rounded">Empréstimo</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                         <p className="ui-label-caps mb-0.5">Mercado</p>
+                         <p className="text-sm font-black text-white">{formatMoney(player.marketValue)}</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => handleListForSale(player)}
+                        disabled={!isWindowOpen}
+                        className={clsx(
+                          "rounded-2xl py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border",
+                          player.isForSale ? "bg-amber-500 text-black border-amber-400" : "bg-white/5 text-secondary border-white/5"
+                        )}
+                      >
+                        {player.isForSale ? 'Remover Vitrine' : 'Colocar à Venda'}
+                      </button>
+                      <button
+                        onClick={() => handleListForLoan(player)}
+                        disabled={!isWindowOpen}
+                        className={clsx(
+                          "rounded-2xl py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border",
+                          player.isListedForLoan ? "bg-blue-500 text-white border-blue-400" : "bg-white/5 text-secondary border-white/5"
+                        )}
+                      >
+                        {player.isListedForLoan ? 'Remover Empr.' : 'Oferecer Empr.'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
       </main>
 
-      {negotiatingPlayer && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/92 p-6 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-[2rem] border border-white/10 bg-surface p-6 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Negociação ativa</p>
-                <h3 className="mt-2 text-lg font-black tracking-tight text-white">Defina sua proposta</h3>
-              </div>
-              <button
-                onClick={() => setNegotiatingPlayer(null)}
-                className="rounded-full bg-white/5 p-2"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="mt-6 flex items-center gap-4 rounded-2xl border border-white/8 bg-background/50 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/6 bg-primary/10 font-black text-primary">
-                {negotiatingPlayer.p.position}
-              </div>
-              <div>
-                <p className="font-black text-white">{negotiatingPlayer.p.name}</p>
-                <p className="mt-1 text-[11px] font-black uppercase tracking-[0.14em] text-secondary">
-                  {negotiatingPlayer.t.name} • OVR {negotiatingPlayer.p.overall}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-2xl border border-white/8 bg-background/50 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-[0.16em] text-secondary">Oferta atual</span>
-                <span className="text-lg font-black text-emerald-400">{formatMoney(bidValue)}</span>
-              </div>
-              <input
-                type="range"
-                min={negotiatingPlayer.p.marketValue * 0.5}
-                max={negotiatingPlayer.p.marketValue * 2}
-                step={10000}
-                value={bidValue}
-                onChange={(event) => setBidValue(parseInt(event.target.value))}
-                className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-lg bg-background accent-emerald-500"
-              />
-              <div className="mt-3 flex justify-between text-[10px] font-black uppercase tracking-[0.14em] text-white/45">
-                <span>50%</span>
-                <span>Mercado {formatMoney(negotiatingPlayer.p.marketValue)}</span>
-                <span>200%</span>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              <div className="rounded-2xl border border-white/8 bg-background/50 p-3">
-                <div className="flex items-center gap-2 text-secondary">
-                  <DollarSign size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.14em]">Caixa</span>
-                </div>
-                <p className="mt-2 text-sm font-black text-white">{formatMoney(funds)}</p>
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-background/50 p-3">
-                <div className="flex items-center gap-2 text-secondary">
-                  <CalendarDays size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.14em]">Contrato</span>
-                </div>
-                <p className="mt-2 text-sm font-black text-white">{negotiatingPlayer.p.contractRounds} rod.</p>
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-background/50 p-3">
-                <div className="flex items-center gap-2 text-secondary">
-                  <TrendingUp size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.14em]">Tendência</span>
-                </div>
-                <p className="mt-2 text-sm font-black text-white">
-                  {negotiatingPlayer.p.valueTrend === 'up' ? 'Alta' : negotiatingPlayer.p.valueTrend === 'down' ? 'Queda' : 'Estável'}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-2xl border border-white/8 bg-white/5 p-4 text-[12px] leading-6 text-white/65">
-              Abaixo de 90% o clube tende a recusar. Entre 90% e 120% a negociação fica viva. Acima disso, você compra velocidade.
-            </div>
-
-            <button
-              onClick={handleConfirmBid}
-              className="mt-6 w-full rounded-2xl bg-emerald-500 py-4 text-[11px] font-black uppercase tracking-[0.16em] text-white shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98]"
+      {/* Negotiation Modal */}
+      <AnimatePresence>
+        {negotiatingPlayer && (
+          <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center bg-black/95 p-0 sm:p-6 backdrop-blur-3xl">
+            <motion.div 
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="w-full max-w-lg rounded-t-[3.5rem] sm:rounded-[3.5rem] border border-white/10 bg-[#020617] p-10 shadow-[0_-40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden"
             >
-              Enviar proposta
-            </button>
+              {/* Background ambient light */}
+              <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
+              
+              <div className="relative z-10 flex items-center justify-between mb-10">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                    <p className="ui-label-caps text-emerald-400">Canal de Negociação</p>
+                  </div>
+                  <h3 className="text-3xl font-black tracking-tighter text-white uppercase italic leading-none">Efetuar Proposta</h3>
+                </div>
+                <button
+                  onClick={() => { hapticSelection(); setNegotiatingPlayer(null); }}
+                  className="w-14 h-14 rounded-3xl bg-white/5 border border-white/5 flex items-center justify-center text-white/20 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-90"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="relative z-10 flex items-center gap-6 p-6 rounded-[2.5rem] bg-black/60 border border-white/5 mb-10 group/player">
+                <div className="relative">
+                  <div className={clsx(
+                    "flex h-20 w-20 items-center justify-center rounded-[1.75rem] border-2 font-black text-xl shadow-2xl transition-transform group-hover/player:scale-105",
+                    negotiatingPlayer.p.position === 'GOL' ? 'border-yellow-500/20 text-yellow-500 bg-yellow-500/5' :
+                    ['ZAG', 'LAT'].includes(negotiatingPlayer.p.position) ? 'border-blue-500/20 text-blue-500 bg-blue-500/5' :
+                    ['VOL', 'MEI'].includes(negotiatingPlayer.p.position) ? 'border-green-500/20 text-green-500 bg-green-500/5' :
+                    'border-red-500/20 text-red-500 bg-red-500/5'
+                  )}>
+                    {negotiatingPlayer.p.position}
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-white text-black text-[10px] font-black rounded-full border-4 border-[#020617] flex items-center justify-center shadow-lg">
+                    {negotiatingPlayer.p.overall}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-2xl font-black text-white italic tracking-tighter">{negotiatingPlayer.p.name}</h4>
+                  <p className="ui-label-caps text-secondary opacity-50 mt-1.5 flex items-center gap-2">
+                    {negotiatingPlayer.t.shortName} • {negotiatingPlayer.p.age} Anos
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative z-10 ui-card-premium p-8 bg-black/40 mb-10 border-white/5">
+                <div className="flex items-center justify-between mb-8">
+                  <span className="ui-label-caps text-secondary opacity-60">Valor Ofertado</span>
+                  <motion.span 
+                    key={bidValue}
+                    initial={{ scale: 1.1, textShadow: '0 0 20px rgba(16,185,129,0.5)' }}
+                    animate={{ scale: 1, textShadow: '0 0 0px rgba(16,185,129,0)' }}
+                    className="text-4xl font-black text-emerald-400 tracking-tighter tabular-nums"
+                  >
+                    {formatMoney(bidValue)}
+                  </motion.span>
+                </div>
+                
+                <div className="relative h-12 flex items-center mb-8">
+                  <input
+                    type="range"
+                    min={negotiatingPlayer.p.marketValue * 0.5}
+                    max={negotiatingPlayer.p.marketValue * 2.5}
+                    step={25000}
+                    value={bidValue}
+                    onChange={(e) => { 
+                      const val = parseInt(e.target.value);
+                      if (val !== bidValue) hapticSelection();
+                      setBidValue(val); 
+                    }}
+                    className="w-full h-1.5 rounded-full bg-white/10 appearance-none accent-emerald-500 cursor-pointer z-10"
+                  />
+                  {/* Market Value Marker */}
+                  <div 
+                    className="absolute top-1/2 -translate-y-1/2 w-1.5 h-6 bg-white/30 rounded-full blur-[1px]"
+                    style={{ left: `${((negotiatingPlayer.p.marketValue - (negotiatingPlayer.p.marketValue * 0.5)) / (negotiatingPlayer.p.marketValue * 2)) * 100}%` }}
+                  />
+                </div>
+
+                <div className="flex justify-between items-center text-[9px] font-black uppercase text-white/20 tracking-[0.3em]">
+                  <span className={clsx("transition-colors", bidValue < negotiatingPlayer.p.marketValue && "text-rose-500/50")}>Abaixo</span>
+                  <div className="flex items-center gap-2">
+                     <div className="w-1 h-1 rounded-full bg-white/20" />
+                     <span>Mercado: {formatMoney(negotiatingPlayer.p.marketValue)}</span>
+                     <div className="w-1 h-1 rounded-full bg-white/20" />
+                  </div>
+                  <span className={clsx("transition-colors", bidValue > negotiatingPlayer.p.marketValue && "text-emerald-500/50")}>Acima</span>
+                </div>
+              </div>
+
+              <div className="relative z-10 grid grid-cols-2 gap-5 mb-10">
+                 <div className="rounded-3xl bg-white/5 border border-white/5 p-6 group/funds">
+                    <div className="flex items-center gap-3 mb-3 text-secondary opacity-40 group-hover/funds:text-emerald-400 group-hover/funds:opacity-100 transition-all">
+                       <DollarSign size={16} />
+                       <span className="ui-label-caps text-[9px]">Saldo do Clube</span>
+                    </div>
+                    <p className="text-xl font-black text-white tracking-tighter tabular-nums">{formatMoney(funds)}</p>
+                 </div>
+                 <div className="rounded-3xl bg-white/5 border border-white/5 p-6 group/trend">
+                    <div className="flex items-center gap-3 mb-3 text-secondary opacity-40 group-hover/trend:text-primary group-hover/trend:opacity-100 transition-all">
+                       <TrendingUp size={16} />
+                       <span className="ui-label-caps text-[9px]">Análise Técnica</span>
+                    </div>
+                    <p className={clsx(
+                      "text-xl font-black tracking-tighter uppercase italic",
+                      negotiatingPlayer.p.valueTrend === 'up' ? 'text-primary' : 'text-white'
+                    )}>
+                      {negotiatingPlayer.p.valueTrend === 'up' ? 'Elite' : 'Estável'}
+                    </p>
+                 </div>
+              </div>
+
+              <button
+                onClick={() => { impactHeavy(); handleConfirmBid(); }}
+                className={clsx(
+                  "relative z-10 w-full h-20 rounded-3xl flex items-center justify-center text-sm font-black uppercase tracking-[0.3em] transition-all active:scale-95 overflow-hidden group/btn",
+                  bidValue > funds ? "bg-white/5 text-secondary border border-white/5 cursor-not-allowed" : "bg-emerald-500 text-white shadow-[0_20px_50px_rgba(16,185,129,0.3)] hover:shadow-[0_25px_60px_rgba(16,185,129,0.4)]"
+                )}
+                disabled={bidValue > funds}
+              >
+                <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000" />
+                {bidValue > funds ? 'Saldo Insuficiente' : 'Formalizar Proposta'}
+              </button>
+              
+              <p className="relative z-10 text-center text-[9px] text-white/20 font-bold uppercase tracking-[0.3em] mt-8">
+                 A resposta será entregue na próxima rodada
+              </p>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

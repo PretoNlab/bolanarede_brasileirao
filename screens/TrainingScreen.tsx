@@ -1,11 +1,14 @@
+
 import React from 'react';
 import { Team, Player, TrainingFocus, TrainingIntensity, StaffMember, Infrastructure } from '../types';
 import { 
-  ArrowLeft, Target, Rocket, Shield, Zap, Dumbbell, 
-  Info, Users, Activity, CheckCircle2, UserCheck, 
-  Stethoscope, GraduationCap, TrendingUp 
+  Target, Rocket, Shield, Zap, Dumbbell, 
+  TrendingUp,
+  Activity,
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Header } from '../components/Header';
 import clsx from 'clsx';
 
 interface Props {
@@ -24,16 +27,18 @@ const FocusCard: React.FC<{ id: TrainingFocus, label: string, icon: any, active:
   <button
     onClick={onClick}
     className={clsx(
-      "flex flex-col items-center justify-center gap-4 p-6 rounded-[2rem] border transition-all relative overflow-hidden group h-32 w-full",
+      "flex flex-col items-center justify-center gap-4 p-8 rounded-[2.5rem] border transition-all duration-500 relative overflow-hidden group h-40 w-full shadow-2xl",
       active 
-        ? "bg-primary text-secondary border-primary shadow-[0_0_30px_rgba(31,177,133,0.3)] scale-[1.02]" 
-        : "glass-panel border-white/5 opacity-60 hover:opacity-100 hover:border-white/10 hover:bg-white/5"
+        ? "bg-primary border-primary shadow-[0_0_40px_rgba(31,177,133,0.3)] scale-[1.05] z-10" 
+        : "bg-white/[0.03] border-white/5 opacity-40 hover:opacity-100 hover:border-white/10 hover:bg-white/[0.07]"
     )}
   >
-    <div className={clsx("p-3 rounded-2xl transition-all", active ? "bg-secondary/20 shadow-inner" : "bg-white/5")}>
-      <Icon size={24} className={clsx(active ? "text-secondary" : "text-on-surface-variant")} />
+    <div className={clsx("p-4 rounded-2xl transition-all duration-500 shadow-xl", active ? "bg-white/20" : "bg-white/5 group-hover:bg-primary/10")}>
+      <Icon size={32} className={clsx(active ? "text-white" : "text-primary/60 group-hover:text-primary")} />
     </div>
-    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{label}</span>
+    <span className={clsx("text-[10px] font-black uppercase tracking-[0.25em] transition-all", active ? "text-white" : "text-white/40 group-hover:text-white/80")}>{label}</span>
+    {active && <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />}
+    <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -rotate-45 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
   </button>
 );
 
@@ -47,112 +52,137 @@ export default function TrainingScreen({
   const totalBonus = (coachingBonus + infraBonus) * 100;
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white font-sans overflow-hidden">
-      <header className="p-6 flex items-center justify-between bg-background/60 backdrop-blur-2xl border-b border-white/5 pt-safe shrink-0">
-        <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="w-10 h-10 rounded-xl bg-surface-low/80 flex items-center justify-center border border-white/10">
-          <ArrowLeft size={18} />
-        </motion.button>
-        <div className="flex flex-col items-center">
-          <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-0.5 glow-text">CENTRO DE TREINAMENTO</h1>
-          <span className="text-sm font-black uppercase tracking-tight font-display italic text-on-surface-variant">PREPARAÇÃO DE ATLETAS</span>
-        </div>
-        <div className="w-10 h-10 rounded-xl bg-surface-low flex items-center justify-center border border-white/5 text-primary shadow-lg shadow-primary/5">
-          <Dumbbell size={18} />
-        </div>
-      </header>
+    <div className="flex flex-col h-screen bg-background text-white selection:bg-primary/30 overflow-hidden">
+      <Header 
+        title="Centro de Alta Performance"
+        subtitle={team.name}
+        onBack={onBack}
+        rightAction={
+            <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400">
+                <TrendingUp size={14} />
+                <span className="font-black text-xs uppercase tracking-widest">{totalBonus.toFixed(0)}% Eficiência</span>
+            </div>
+        }
+      />
 
-      <main className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto p-6 space-y-8 no-scrollbar pb-32">
+      <main className="flex-1 overflow-y-auto p-6 space-y-10 no-scrollbar pb-32">
         
-        {/* Development Summary */}
-        <div className="glass-vibrant rounded-[2.5rem] p-8 border border-white/10 relative overflow-hidden group">
+        {/* Potencial de Evolução */}
+        <section className="ui-card-premium p-10 relative overflow-hidden group border-emerald-500/10 bg-emerald-500/[0.02]">
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/10 blur-[100px] animate-pulse" />
           <div className="flex items-center justify-between relative z-10">
              <div className="flex-1">
-                <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2 block">EFICIÊNCIA DE DESENVOLVIMENTO</span>
-                <div className="flex items-baseline gap-2">
-                   <span className="text-5xl font-black font-display italic leading-none text-primary">+{totalBonus.toFixed(0)}%</span>
-                   <span className="text-xs font-bold text-secondary uppercase italic">BÔNUS ATIVO</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 block mb-4">Ganhos de Desenvolvimento</span>
+                <div className="flex items-baseline gap-4">
+                   <span className="text-6xl font-black tracking-tighter leading-none text-white italic">+{totalBonus.toFixed(0)}%</span>
+                   <span className="text-xs font-black text-emerald-500 uppercase tracking-widest animate-pulse">Sinergia Ativa</span>
                 </div>
              </div>
-             <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 justify-end">
-                   <span className="text-[8px] font-bold text-on-surface-variant/60 uppercase">Comissão</span>
-                   <span className="text-[10px] font-black text-primary">+{ (coachingBonus*100).toFixed(0) }%</span>
+             <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4 justify-end">
+                   <div className="text-right">
+                       <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Corpo Técnico</p>
+                       <p className="text-sm font-black text-emerald-400 italic">+{ (coachingBonus*100).toFixed(0) }%</p>
+                   </div>
+                   <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                        <Activity size={18} className="text-emerald-500" />
+                   </div>
                 </div>
-                <div className="flex items-center gap-2 justify-end">
-                   <span className="text-[8px] font-bold text-on-surface-variant/60 uppercase">CT</span>
-                   <span className="text-[10px] font-black text-primary">+{ (infraBonus*100).toFixed(0) }%</span>
+                <div className="flex items-center gap-4 justify-end">
+                   <div className="text-right">
+                       <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Infraestrutura</p>
+                       <p className="text-sm font-black text-emerald-400 italic">+{ (infraBonus*100).toFixed(0) }%</p>
+                   </div>
+                   <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                        <Rocket size={18} className="text-emerald-500" />
+                   </div>
                 </div>
              </div>
-          </div>
-        </div>
-
-        {/* Squad Focus */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant">FOCO DO ELENCO</h3>
-            <span className="text-[10px] font-bold text-primary font-display uppercase tracking-widest italic">{squadFocus}</span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <FocusCard id="ATAQUE" label="Finalização" icon={Rocket} active={squadFocus === 'ATAQUE'} onClick={() => onSetSquadFocus('ATAQUE')} />
-            <FocusCard id="DEFESA" label="Bloqueios" icon={Shield} active={squadFocus === 'DEFESA'} onClick={() => onSetSquadFocus('DEFESA')} />
-            <FocusCard id="TATICO" label="Posicional" icon={Target} active={squadFocus === 'TATICO'} onClick={() => onSetSquadFocus('TATICO')} />
-            <FocusCard id="FISICO" label="Intensidade" icon={Zap} active={squadFocus === 'FISICO'} onClick={() => onSetSquadFocus('FISICO')} />
           </div>
         </section>
 
-        {/* Intensity Selection */}
-        <section className="space-y-4">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant px-2">INTENSIDADE DA SEMANA</h3>
-          <div className="grid grid-cols-3 gap-3">
+        {/* Foco Tático Coletivo */}
+        <section className="space-y-6">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-1.5 h-6 bg-primary rounded-full" />
+            <h3 className="text-sm font-black uppercase tracking-[0.25em] text-white/90">Foco Coletivo</h3>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <FocusCard id="ATAQUE" label="Ataque" icon={Rocket} active={squadFocus === 'ATAQUE'} onClick={() => onSetSquadFocus('ATAQUE')} />
+            <FocusCard id="DEFESA" label="Defesa" icon={Shield} active={squadFocus === 'DEFESA'} onClick={() => onSetSquadFocus('DEFESA')} />
+            <FocusCard id="TATICO" label="Tático" icon={Target} active={squadFocus === 'TATICO'} onClick={() => onSetSquadFocus('TATICO')} />
+            <FocusCard id="FISICO" label="Físico" icon={Zap} active={squadFocus === 'FISICO'} onClick={() => onSetSquadFocus('FISICO')} />
+          </div>
+        </section>
+
+        {/* Intensidade */}
+        <section className="space-y-6">
+           <div className="flex items-center gap-3 px-2">
+            <div className="w-1.5 h-6 bg-secondary rounded-full" />
+            <h3 className="text-sm font-black uppercase tracking-[0.25em] text-white/90">Intensidade</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
              {(['BAIXA', 'MEDIA', 'ALTA'] as TrainingIntensity[]).map(i => (
                <button
                  key={i}
                  onClick={() => onSetIntensity(i)}
                  className={clsx(
-                   "p-5 rounded-2xl border font-black uppercase tracking-widest text-[10px] transition-all",
+                   "p-6 rounded-[2rem] border-2 font-black uppercase tracking-[0.25em] text-[10px] transition-all duration-500 relative overflow-hidden group shadow-2xl",
                    intensity === i 
-                     ? "bg-secondary text-background border-secondary shadow-lg shadow-secondary/20" 
-                     : "glass-panel border-white/5 text-on-surface-variant opacity-60 hover:opacity-100"
+                     ? "bg-secondary border-secondary text-white shadow-secondary/30 scale-[1.05] z-10" 
+                     : "bg-white/[0.03] border-white/5 text-secondary opacity-40 hover:opacity-100 hover:bg-white/[0.08]"
                  )}
                >
-                 {i === 'BAIXA' ? 'Moderado' : i === 'MEDIA' ? 'Padrão' : 'Insano'}
+                 <span className="relative z-10">
+                   {i === 'BAIXA' ? 'Recuperação' : i === 'MEDIA' ? 'Equilibrado' : 'Carga Total'}
+                 </span>
+                 <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -rotate-45 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                </button>
              ))}
           </div>
         </section>
 
         {/* Player Individual Progress */}
-        <section className="space-y-4">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant px-2">DESENVOLVIMENTO INDIVIDUAL</h3>
-          <div className="space-y-3">
+        <section className="space-y-6">
+           <div className="flex items-center gap-3 px-2">
+                <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_10px_rgba(31,177,133,0.5)]" />
+                <h3 className="text-sm font-black uppercase tracking-[0.25em] text-white/90">Gestão de Atletas</h3>
+           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {team.roster.map(player => (
-              <div key={player.id} className="glass-panel p-5 rounded-2xl border border-white/5 flex items-center gap-5 group">
-                <div className="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center font-black text-[10px] font-display border border-white/5 opacity-60">
-                   {player.position}
+              <div key={player.id} className="ui-card-premium p-6 flex items-center gap-6 group hover:bg-white/[0.08] transition-all duration-500 border-white/5">
+                <div className="relative">
+                    <div className="w-14 h-14 rounded-2xl bg-zinc-900 flex items-center justify-center font-black text-[12px] border border-white/5 text-primary shadow-2xl group-hover:scale-110 transition-transform duration-500">
+                        {player.position}
+                    </div>
                 </div>
                 <div className="flex-1">
-                   <div className="flex justify-between items-end mb-1.5">
-                      <h4 className="text-xs font-black uppercase tracking-tight text-white group-hover:text-primary transition-colors">{player.name}</h4>
-                      <span className="text-[10px] font-black tabular font-display italic text-primary">OVR {player.overall}</span>
+                   <div className="flex justify-between items-end mb-3">
+                      <div>
+                        <h4 className="text-sm font-black uppercase tracking-tight text-white group-hover:text-primary transition-colors">{player.name}</h4>
+                        <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">{player.mainPosition}</p>
+                      </div>
+                      <span className="text-xs font-black text-primary italic bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20">OVR {player.overall}</span>
                    </div>
-                   <div className="flex items-center gap-4">
-                      <div className="flex-1 h-1.5 bg-background/50 rounded-full overflow-hidden p-[1px]">
+                   <div className="flex items-center gap-5">
+                      <div className="flex-1 h-2 bg-black/40 rounded-full overflow-hidden p-[1px] border border-white/5 relative">
+                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
                          <motion.div 
                            initial={{ width: 0 }}
                            animate={{ width: `${(player.overall % 1) * 100 || 50}%` }}
-                           className="h-full bg-primary rounded-full shadow-[0_0_8px_rgba(31,177,133,0.5)]" 
+                           className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] relative z-10" 
                          />
                       </div>
                       <select 
                         value={player.individualFocus || 'GERAL'} 
                         onChange={(e) => onUpdatePlayerFocus(player.id, e.target.value as TrainingFocus)}
-                        className="bg-transparent text-[8px] font-black uppercase tracking-[0.2em] text-on-surface-variant outline-none cursor-pointer"
+                        className="bg-transparent text-[9px] font-black uppercase tracking-[0.2em] text-white/30 outline-none cursor-pointer hover:text-primary focus:text-primary transition-all appearance-none text-right"
                       >
-                         <option value="GERAL">AUTO</option>
-                         <option value="ATAQUE">ATA</option>
-                         <option value="DEFESA">DEF</option>
-                         <option value="TATICO">TAT</option>
-                         <option value="FISICO">FIS</option>
+                         <option value="GERAL" className="bg-zinc-900 border-none">AUTO</option>
+                         <option value="ATAQUE" className="bg-zinc-900 border-none">ATA</option>
+                         <option value="DEFESA" className="bg-zinc-900 border-none">DEF</option>
+                         <option value="TATICO" className="bg-zinc-900 border-none">TAT</option>
+                         <option value="FISICO" className="bg-zinc-900 border-none">FIS</option>
                       </select>
                    </div>
                 </div>
@@ -164,3 +194,5 @@ export default function TrainingScreen({
     </div>
   );
 }
+
+
