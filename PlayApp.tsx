@@ -2,7 +2,14 @@ import React, { Suspense, lazy, useState, useEffect, useMemo, useCallback } from
 import { AnimatePresence, motion } from 'framer-motion';
 import { Team, Player, ScreenState, MatchResult, Fixture, MatchEvent, NewsItem, Coach, SeasonHistory, PlayerHistoryEvent, StaffMember, Infrastructure, TrainingFocus, TrainingIntensity, WorldCupGameState } from './types';
 import { INITIAL_TEAMS, generateSchedule } from './data';
-import { WC_TEAMS_DATA, createPlayer, getWorldCupSupplementalCandidates, getWorldCupTeams } from './worldCupData';
+import {
+  WC_TEAMS_DATA,
+  WORLD_CUP_REGIONAL_FALLBACK_NAMES,
+  WORLD_CUP_TEAM_NAME_POOLS,
+  createPlayer,
+  getWorldCupSupplementalCandidates,
+  getWorldCupTeams,
+} from './worldCupData';
 import {
   PHASE_LABELS,
   generateGroupFixtures,
@@ -46,33 +53,6 @@ const WCSquadCallupScreen = lazy(() => import('./screens/WCSquadCallupScreen'));
 
 const DEFAULT_TICKET_PRICE = 50;
 
-const WORLD_CUP_FALLBACK_NAMES = {
-  CONMEBOL: {
-    first: ['Mateo', 'Lucas', 'Nicolás', 'Tomás', 'Santiago', 'Julián', 'Thiago', 'Enzo'],
-    last: ['Silva', 'Pereira', 'Suárez', 'Gómez', 'Fernández', 'Martínez', 'Rodríguez', 'Díaz'],
-  },
-  UEFA: {
-    first: ['Luca', 'Theo', 'Oliver', 'Martin', 'Hugo', 'Nico', 'Adrien', 'Milan'],
-    last: ['Kovač', 'Müller', 'Silva', 'Costa', 'Rossi', 'Novák', 'Berger', 'Moreau'],
-  },
-  CONCACAF: {
-    first: ['Ethan', 'Diego', 'Noah', 'Mateo', 'Tyler', 'Luis', 'Daniel', 'Adrian'],
-    last: ['Johnson', 'Miller', 'Herrera', 'Flores', 'Martinez', 'Brooks', 'Torres', 'Reid'],
-  },
-  AFC: {
-    first: ['Takumi', 'Daichi', 'Min', 'Hyeon', 'Ali', 'Reza', 'Jin', 'Yuto'],
-    last: ['Kim', 'Tanaka', 'Sato', 'Lee', 'Hassan', 'Rahimi', 'Yamamoto', 'Park'],
-  },
-  CAF: {
-    first: ['Amine', 'Youssef', 'Karim', 'Sadio', 'Ismaël', 'Hakim', 'Yahia', 'Tariq'],
-    last: ['Diallo', 'Hakimi', 'Benali', 'Mendy', 'Traoré', 'Amrabat', 'Camara', 'Saïd'],
-  },
-  OFC: {
-    first: ['Liam', 'Noah', 'Ariki', 'Tama', 'Ethan', 'Wiremu', 'Kauri', 'Mika'],
-    last: ['Smith', 'Wilson', 'Taito', 'Rangi', 'Kauri', 'Brown', 'Te Aho', 'Niko'],
-  },
-} as const;
-
 function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
@@ -103,7 +83,7 @@ function buildExtraWorldCupPlayerName(
   usedNames: Set<string>,
   index: number
 ) {
-  const fallback = WORLD_CUP_FALLBACK_NAMES[teamData.confederation];
+  const fallback = WORLD_CUP_TEAM_NAME_POOLS[teamData.id] || WORLD_CUP_REGIONAL_FALLBACK_NAMES[teamData.confederation];
   const firstPool = [...fallback.first];
   const lastPool = [...fallback.last];
 
@@ -1384,7 +1364,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     }
 
     // Converter os realPlayers (que são WCTeamPlayer) em Player completo usando a mesma lógica
-    const completeRealPlayers = realPlayers.map(p => createPlayer(p.name, p.position, p.age, p.overall));
+    const completeRealPlayers = realPlayers.map((p) => createPlayer(p));
 
     const provisionalSquad = normalizeWorldCupSquadNames([...completeRealPlayers, ...extraPlayers]);
 

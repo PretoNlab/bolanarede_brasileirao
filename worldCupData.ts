@@ -1,5 +1,5 @@
 
-import { Player, Team, WCTeamData, WCConfederation, DetailedPosition } from './types';
+import { Player, Team, WCTeamData, WCTeamPlayer, WCConfederation, DetailedPosition } from './types';
 import worldCupPrelistCsv from './prelistas_copa_2026_atualizadas_2025_2026.csv?raw';
 
 // ========== GERADOR DE JOGADOR NACIONAL ==========
@@ -45,23 +45,42 @@ const generateStats = (detPos: DetailedPosition, ovr: number, age: number) => {
   return stats;
 };
 
-export const createPlayer = (name: string, position: Player['position'], age: number, overall: number): Player => {
+export const createPlayer = (
+  input: string | WCTeamPlayer,
+  positionArg?: Player['position'],
+  ageArg?: number,
+  overallArg?: number
+): Player => {
+  const playerInput: WCTeamPlayer =
+    typeof input === 'string'
+      ? {
+          name: input,
+          position: positionArg!,
+          age: ageArg!,
+          overall: overallArg!,
+        }
+      : input;
+
+  const { name, position, age, overall, mainPosition: explicitMainPosition, secondaryPositions, preferredFoot: explicitFoot, statsOverrides } = playerInput;
   const potential = Math.min(99, overall + (age < 24 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * 3)));
-  
+
   const possibleDetails = DETAILED_POS_MAP[position];
-  const mainPosition = possibleDetails[Math.floor(Math.random() * possibleDetails.length)];
-  
+  const mainPosition = explicitMainPosition || possibleDetails[Math.floor(Math.random() * possibleDetails.length)];
+
   const footRoll = Math.random();
-  const preferredFoot: Player['preferredFoot'] = 
-    footRoll > 0.30 ? 'RIGHT' : 
-    footRoll > 0.05 ? 'LEFT' : 'BOTH';
+  const preferredFoot: Player['preferredFoot'] =
+    explicitFoot ||
+    (footRoll > 0.30 ? 'RIGHT' :
+    footRoll > 0.05 ? 'LEFT' : 'BOTH');
+
+  const baseStats = generateStats(mainPosition, overall, age);
 
   return {
     id: Math.random().toString(36).substr(2, 9),
     name,
     position,
     mainPosition,
-    secondaryPositions: [],
+    secondaryPositions: secondaryPositions || [],
     preferredFoot,
     age,
     overall,
@@ -76,13 +95,13 @@ export const createPlayer = (name: string, position: Player['position'], age: nu
     contractRounds: 99,
     history: [],
     seasonStats: { yellowCards: 0, redCards: 0, matchesSuspended: 0 },
-    stats: generateStats(mainPosition, overall, age),
+    stats: { ...baseStats, ...statsOverrides },
   };
 };
 
 // Converte WCTeamData em Team completo
 export const buildWCTeam = (data: WCTeamData): Team => {
-  const roster = data.players.map(p => createPlayer(p.name, p.position, p.age, p.overall));
+  const roster = data.players.map((p) => createPlayer(p));
   roster.sort((a, b) => b.overall - a.overall);
   const lineup = roster.slice(0, 11).map(p => p.id);
   const avg = (data.attack + data.defense) / 2;
@@ -133,6 +152,84 @@ const PRELIST_TEAM_NAME_ALIASES: Record<string, string> = {
   'bosnia e herzegovina': 'wc_bosnia',
 };
 
+export const WORLD_CUP_REGIONAL_FALLBACK_NAMES: Record<WCConfederation, { first: string[]; last: string[] }> = {
+  CONMEBOL: {
+    first: ['Mateo', 'Lucas', 'Nicolás', 'Tomás', 'Santiago', 'Julián', 'Thiago', 'Enzo'],
+    last: ['Silva', 'Pereira', 'Suárez', 'Gómez', 'Fernández', 'Martínez', 'Rodríguez', 'Díaz'],
+  },
+  UEFA: {
+    first: ['Luca', 'Theo', 'Oliver', 'Martin', 'Hugo', 'Nico', 'Adrien', 'Milan'],
+    last: ['Kovač', 'Müller', 'Silva', 'Costa', 'Rossi', 'Novák', 'Berger', 'Moreau'],
+  },
+  CONCACAF: {
+    first: ['Ethan', 'Diego', 'Noah', 'Mateo', 'Tyler', 'Luis', 'Daniel', 'Adrian'],
+    last: ['Johnson', 'Miller', 'Herrera', 'Flores', 'Martinez', 'Brooks', 'Torres', 'Reid'],
+  },
+  AFC: {
+    first: ['Takumi', 'Daichi', 'Min', 'Hyeon', 'Ali', 'Reza', 'Jin', 'Yuto'],
+    last: ['Kim', 'Tanaka', 'Sato', 'Lee', 'Hassan', 'Rahimi', 'Yamamoto', 'Park'],
+  },
+  CAF: {
+    first: ['Amine', 'Youssef', 'Karim', 'Sadio', 'Ismaël', 'Hakim', 'Yahia', 'Tariq'],
+    last: ['Diallo', 'Hakimi', 'Benali', 'Mendy', 'Traoré', 'Amrabat', 'Camara', 'Saïd'],
+  },
+  OFC: {
+    first: ['Liam', 'Noah', 'Ariki', 'Tama', 'Ethan', 'Wiremu', 'Kauri', 'Mika'],
+    last: ['Smith', 'Wilson', 'Taito', 'Rangi', 'Kauri', 'Brown', 'Te Aho', 'Niko'],
+  },
+};
+
+export const WORLD_CUP_TEAM_NAME_POOLS: Record<string, { first: string[]; last: string[] }> = {
+  wc_brazil: {
+    first: ['Caio', 'João', 'Gabriel', 'Matheus', 'Pedro', 'Thiago', 'Lucas', 'Rafael'],
+    last: ['Silva', 'Santos', 'Oliveira', 'Souza', 'Ferreira', 'Costa', 'Pereira', 'Almeida'],
+  },
+  wc_argentina: {
+    first: ['Tomás', 'Franco', 'Valentín', 'Santiago', 'Joaquín', 'Benjamín', 'Facundo', 'Lautaro'],
+    last: ['Gómez', 'Fernández', 'Pereyra', 'López', 'Molina', 'Suárez', 'Herrera', 'Ramírez'],
+  },
+  wc_france: {
+    first: ['Lucas', 'Théo', 'Adrien', 'Rayan', 'Amine', 'Malo', 'Enzo', 'Noah'],
+    last: ['Dubois', 'Lefèvre', 'Morel', 'Leroy', 'Girard', 'Chevalier', 'Renard', 'Mercier'],
+  },
+  wc_england: {
+    first: ['Ethan', 'Oliver', 'Jack', 'Harry', 'Reece', 'Mason', 'Noah', 'Callum'],
+    last: ['Johnson', 'Walker', 'Collins', 'Miller', 'Bennett', 'Turner', 'Hughes', 'Parker'],
+  },
+  wc_portugal: {
+    first: ['Tiago', 'Diogo', 'Gonçalo', 'Rafael', 'Pedro', 'Tomás', 'Afonso', 'João'],
+    last: ['Silva', 'Costa', 'Ferreira', 'Martins', 'Pereira', 'Sousa', 'Cardoso', 'Mendes'],
+  },
+  wc_germany: {
+    first: ['Lukas', 'Finn', 'Jonas', 'Leon', 'Felix', 'Tim', 'Noah', 'Julian'],
+    last: ['Schneider', 'Becker', 'Hoffmann', 'Wagner', 'Keller', 'Vogel', 'Hartmann', 'Krause'],
+  },
+  wc_spain: {
+    first: ['Álvaro', 'Diego', 'Pablo', 'Mario', 'Sergio', 'Adrián', 'Iker', 'Hugo'],
+    last: ['García', 'Martínez', 'Ruiz', 'Moreno', 'Navarro', 'Torres', 'Ortega', 'Castro'],
+  },
+  wc_netherlands: {
+    first: ['Daan', 'Sem', 'Milan', 'Jesse', 'Luuk', 'Mees', 'Bram', 'Thijs'],
+    last: ['de Vries', 'van der Berg', 'Bakker', 'Smit', 'Bosman', 'Mulder', 'de Boer', 'Kok'],
+  },
+  wc_belgium: {
+    first: ['Arthur', 'Louis', 'Milan', 'Noah', 'Jules', 'Matteo', 'Thibo', 'Maxime'],
+    last: ['Peeters', 'Mertens', 'Janssens', 'Vermeulen', 'Dubois', 'Maes', 'Jacobs', 'Willems'],
+  },
+  wc_croatia: {
+    first: ['Luka', 'Petar', 'Marko', 'Ivan', 'Josip', 'Ante', 'Mateo', 'Filip'],
+    last: ['Kovačević', 'Marić', 'Jurić', 'Barišić', 'Božić', 'Vuković', 'Petrović', 'Radić'],
+  },
+  wc_usa: {
+    first: ['Tyler', 'Brandon', 'Evan', 'Liam', 'Cole', 'Mason', 'Aiden', 'Logan'],
+    last: ['Adams', 'Brooks', 'Turner', 'Morris', 'Parker', 'Reynolds', 'Baker', 'Carter'],
+  },
+  wc_norway: {
+    first: ['Erik', 'Magnus', 'Sander', 'Emil', 'Jonas', 'Marius', 'Kristian', 'Lars'],
+    last: ['Hansen', 'Johansen', 'Berg', 'Larsen', 'Dahl', 'Nilsen', 'Aas', 'Solberg'],
+  },
+};
+
 function normalizeLookupValue(value: string) {
   return value
     .normalize('NFD')
@@ -175,10 +272,10 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Lucas Paquetá', position: 'MEI', age: 28, overall: 86 },
       { name: 'Endrick', position: 'ATA', age: 19, overall: 81 },
       { name: 'Gabriel Martinelli', position: 'ATA', age: 27, overall: 93 },
-      { name: 'Raphinha', position: 'ATA', age: 29, overall: 87 },
+      { name: 'Raphinha', position: 'ATA', age: 29, overall: 87, mainPosition: 'RW', secondaryPositions: ['LW'], preferredFoot: 'LEFT' },
       { name: 'Richarlison', position: 'ATA', age: 23, overall: 93 },
-      { name: 'Rodrygo', position: 'ATA', age: 25, overall: 88 },
-      { name: 'Vinícius Júnior', position: 'ATA', age: 31, overall: 94 },
+      { name: 'Rodrygo', position: 'ATA', age: 24, overall: 90, mainPosition: 'RW', secondaryPositions: ['ST', 'LW'], preferredFoot: 'RIGHT', statsOverrides: { dribbling: 92, finishing: 88, vision: 85 } },
+      { name: 'Vinícius Júnior', position: 'ATA', age: 25, overall: 93, mainPosition: 'LW', secondaryPositions: ['RW', 'ST'], preferredFoot: 'RIGHT', statsOverrides: { pace: 97, dribbling: 96, finishing: 88, vision: 82 } },
       { name: 'Alisson', position: 'GOL', age: 33, overall: 88 },
       { name: 'Militão', position: 'ZAG', age: 28, overall: 86 },
       { name: 'Beraldo', position: 'ZAG', age: 22, overall: 78 },
@@ -210,7 +307,7 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Joaquín Panichelli', position: 'ATA', age: 31, overall: 89 },
       { name: 'José Manuel López', position: 'ATA', age: 23, overall: 92 },
       { name: 'Lautaro Martínez', position: 'ATA', age: 28, overall: 89 },
-      { name: 'Lionel Messi', position: 'ATA', age: 27, overall: 83 },
+      { name: 'Lionel Messi', position: 'ATA', age: 39, overall: 93, mainPosition: 'RW', secondaryPositions: ['AM', 'ST'], preferredFoot: 'LEFT', statsOverrides: { pace: 81, shooting: 94, passing: 95, dribbling: 96, finishing: 94, vision: 98, longShot: 93 } },
       { name: 'Nicolás González', position: 'ATA', age: 23, overall: 94 },
       { name: 'E. Martínez', position: 'GOL', age: 33, overall: 89 },
       { name: 'Rulli', position: 'GOL', age: 34, overall: 82 },
@@ -357,22 +454,22 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
     logoUrl: '/world_cup_shields/png/franca.png',
     logoColor1: '#002395', logoColor2: '#FFFFFF', attack: 94, defense: 91,
     players: [
-      { name: 'Brice Samba', position: 'GOL', age: 22, overall: 93 },
-      { name: 'Lucas Chevalier', position: 'GOL', age: 28, overall: 89 },
-      { name: 'Mike Maignan', position: 'GOL', age: 23, overall: 85 },
-      { name: 'Dayot Upamecano', position: 'LAT', age: 28, overall: 92 },
-      { name: 'Ibrahima Konaté', position: 'LAT', age: 21, overall: 91 },
-      { name: 'Jules Koundé', position: 'ZAG', age: 30, overall: 90 },
-      { name: 'Lucas Digne', position: 'ZAG', age: 22, overall: 90 },
+      { name: 'Brice Samba', position: 'GOL', age: 31, overall: 83 },
+      { name: 'Lucas Chevalier', position: 'GOL', age: 24, overall: 84 },
+      { name: 'Mike Maignan', position: 'GOL', age: 31, overall: 90, mainPosition: 'GK', preferredFoot: 'RIGHT', statsOverrides: { keeping: 91, reflexes: 91, handling: 89, positioning: 90 } },
+      { name: 'Dayot Upamecano', position: 'ZAG', age: 27, overall: 87, mainPosition: 'CB', secondaryPositions: ['RB'], preferredFoot: 'RIGHT', statsOverrides: { defending: 88, marking: 87, tackling: 86, strength: 89 } },
+      { name: 'Ibrahima Konaté', position: 'ZAG', age: 26, overall: 87, mainPosition: 'CB', preferredFoot: 'RIGHT', statsOverrides: { defending: 87, marking: 86, tackling: 85, strength: 91, pace: 81 } },
+      { name: 'Jules Koundé', position: 'LAT', age: 27, overall: 87, mainPosition: 'RB', secondaryPositions: ['CB'], preferredFoot: 'RIGHT', statsOverrides: { defending: 86, tackling: 85, marking: 84, pace: 82, positioning: 85 } },
+      { name: 'Lucas Digne', position: 'LAT', age: 32, overall: 82, mainPosition: 'LB', preferredFoot: 'LEFT', statsOverrides: { crossing: 85, passing: 80, stamina: 81 } },
       { name: 'Lucas Hernandez', position: 'ZAG', age: 30, overall: 88 },
       { name: 'Malo Gusto', position: 'ZAG', age: 28, overall: 94 },
-      { name: 'Theo Hernandez', position: 'ZAG', age: 24, overall: 91 },
-      { name: 'William Saliba', position: 'ZAG', age: 27, overall: 89 },
-      { name: 'Khéphren Thuram', position: 'VOL', age: 30, overall: 88 },
-      { name: 'Michael Olise', position: 'VOL', age: 29, overall: 91 },
-      { name: 'N’Golo Kanté', position: 'VOL', age: 25, overall: 93 },
-      { name: 'Warren Zaïre-Emery', position: 'VOL', age: 31, overall: 93 },
-      { name: 'Bradley Barcola', position: 'ATA', age: 33, overall: 95 },
+      { name: 'Theo Hernandez', position: 'LAT', age: 28, overall: 88, mainPosition: 'LB', secondaryPositions: ['CB'], preferredFoot: 'LEFT', statsOverrides: { pace: 89, crossing: 87, stamina: 88, dribbling: 84 } },
+      { name: 'William Saliba', position: 'ZAG', age: 26, overall: 89, mainPosition: 'CB', preferredFoot: 'RIGHT', statsOverrides: { defending: 90, marking: 90, tackling: 88, strength: 87, pace: 80 } },
+      { name: 'Khéphren Thuram', position: 'VOL', age: 24, overall: 84, mainPosition: 'CM', secondaryPositions: ['DM'], preferredFoot: 'RIGHT', statsOverrides: { physical: 86, passing: 81, dribbling: 79, stamina: 85 } },
+      { name: 'Michael Olise', position: 'MEI', age: 24, overall: 87, mainPosition: 'RW', secondaryPositions: ['AM'], preferredFoot: 'LEFT', statsOverrides: { dribbling: 90, passing: 85, vision: 86, crossing: 84, finishing: 82 } },
+      { name: 'N’Golo Kanté', position: 'VOL', age: 34, overall: 84, mainPosition: 'DM', secondaryPositions: ['CM'], preferredFoot: 'RIGHT', statsOverrides: { defending: 86, tackling: 88, stamina: 88, positioning: 89 } },
+      { name: 'Warren Zaïre-Emery', position: 'VOL', age: 20, overall: 86, mainPosition: 'CM', secondaryPositions: ['DM'], preferredFoot: 'RIGHT', statsOverrides: { passing: 83, dribbling: 82, physical: 82, stamina: 84 } },
+      { name: 'Bradley Barcola', position: 'ATA', age: 23, overall: 87, mainPosition: 'LW', secondaryPositions: ['RW', 'ST'], preferredFoot: 'RIGHT', statsOverrides: { pace: 92, dribbling: 89, finishing: 83, positioning: 84 } },
       { name: 'Christopher Nkunku', position: 'ATA', age: 27, overall: 88 },
       { name: 'Florian Thauvin', position: 'ATA', age: 26, overall: 90 },
       { name: 'Hugo Ekitike', position: 'ATA', age: 27, overall: 84 },
@@ -390,31 +487,31 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
     logoUrl: '/world_cup_shields/png/espanha.png',
     logoColor1: '#AA151B', logoColor2: '#F1BF00', attack: 92, defense: 90,
     players: [
-      { name: 'Alex Remiro', position: 'GOL', age: 28, overall: 93 },
-      { name: 'David Raya', position: 'GOL', age: 30, overall: 86 },
-      { name: 'Unai Simón', position: 'GOL', age: 29, overall: 85 },
-      { name: 'Aymeric Laporte', position: 'LAT', age: 31, overall: 87 },
-      { name: 'Dani Vivian', position: 'LAT', age: 22, overall: 95 },
-      { name: 'Marc Cucurella', position: 'ZAG', age: 33, overall: 83 },
+      { name: 'Alex Remiro', position: 'GOL', age: 30, overall: 84 },
+      { name: 'David Raya', position: 'GOL', age: 30, overall: 85 },
+      { name: 'Unai Simón', position: 'GOL', age: 28, overall: 88, mainPosition: 'GK', preferredFoot: 'RIGHT', statsOverrides: { keeping: 89, reflexes: 88, handling: 86, positioning: 88 } },
+      { name: 'Aymeric Laporte', position: 'ZAG', age: 31, overall: 85, mainPosition: 'CB', preferredFoot: 'LEFT', statsOverrides: { defending: 86, passing: 81, heading: 84, marking: 85 } },
+      { name: 'Dani Vivian', position: 'ZAG', age: 25, overall: 84, mainPosition: 'CB', preferredFoot: 'RIGHT', statsOverrides: { defending: 85, tackling: 84, strength: 84 } },
+      { name: 'Marc Cucurella', position: 'LAT', age: 27, overall: 84, mainPosition: 'LB', preferredFoot: 'LEFT', statsOverrides: { crossing: 82, stamina: 88, pace: 83, defending: 81 } },
       { name: 'Marcos Llorente', position: 'ZAG', age: 32, overall: 83 },
       { name: 'Pau Cubarsí', position: 'ZAG', age: 19, overall: 82 },
-      { name: 'Pedro Porro', position: 'ZAG', age: 25, overall: 95 },
+      { name: 'Pedro Porro', position: 'LAT', age: 25, overall: 84, mainPosition: 'RB', preferredFoot: 'RIGHT', statsOverrides: { crossing: 85, pace: 84, stamina: 84, dribbling: 80 } },
       { name: 'Álex Grimaldo', position: 'ZAG', age: 31, overall: 84 },
       { name: 'Aleix García', position: 'VOL', age: 29, overall: 86 },
-      { name: 'Fabián Ruiz', position: 'VOL', age: 30, overall: 84 },
-      { name: 'Martín Zubimendi', position: 'VOL', age: 33, overall: 81 },
+      { name: 'Fabián Ruiz', position: 'MEI', age: 29, overall: 85, mainPosition: 'CM', secondaryPositions: ['AM'], preferredFoot: 'LEFT', statsOverrides: { passing: 87, vision: 86, dribbling: 83, longShot: 82 } },
+      { name: 'Martín Zubimendi', position: 'VOL', age: 26, overall: 85, mainPosition: 'DM', secondaryPositions: ['CM'], preferredFoot: 'RIGHT', statsOverrides: { passing: 84, positioning: 88, tackling: 86, marking: 84 } },
       { name: 'Mikel Merino', position: 'VOL', age: 21, overall: 88 },
       { name: 'Pablo Barrios', position: 'MEI', age: 33, overall: 84 },
       { name: 'Pablo Fornals', position: 'MEI', age: 31, overall: 86 },
       { name: 'Álex Baena', position: 'MEI', age: 33, overall: 91 },
       { name: 'Borja Iglesias', position: 'ATA', age: 26, overall: 89 },
-      { name: 'Dani Olmo', position: 'ATA', age: 28, overall: 86 },
+      { name: 'Dani Olmo', position: 'MEI', age: 27, overall: 86, mainPosition: 'AM', secondaryPositions: ['LW', 'RW'], preferredFoot: 'RIGHT', statsOverrides: { passing: 86, dribbling: 87, vision: 86, finishing: 82 } },
       { name: 'Fermín López', position: 'ATA', age: 22, overall: 81 },
       { name: 'Ferran Torres', position: 'ATA', age: 26, overall: 81 },
       { name: 'Jorge de Frutos', position: 'ATA', age: 30, overall: 90 },
-      { name: 'Mikel Oyarzabal', position: 'ATA', age: 26, overall: 94 },
-      { name: 'Samu Aghehowa', position: 'ATA', age: 31, overall: 83 },
-      { name: 'Yeremy Pino', position: 'ATA', age: 23, overall: 80 },
+      { name: 'Mikel Oyarzabal', position: 'ATA', age: 28, overall: 87, mainPosition: 'LW', secondaryPositions: ['ST'], preferredFoot: 'LEFT', statsOverrides: { finishing: 86, positioning: 87, passing: 81 } },
+      { name: 'Samu Aghehowa', position: 'ATA', age: 21, overall: 82, mainPosition: 'ST', preferredFoot: 'RIGHT', statsOverrides: { pace: 80, finishing: 82, strength: 83, heading: 82 } },
+      { name: 'Yeremy Pino', position: 'ATA', age: 23, overall: 84, mainPosition: 'RW', secondaryPositions: ['LW'], preferredFoot: 'RIGHT', statsOverrides: { pace: 85, dribbling: 86, finishing: 80, vision: 80 } },
       { name: 'Robert Sánchez', position: 'GOL', age: 29, overall: 80 },
     ]
   },
@@ -439,12 +536,12 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Declan Rice', position: 'VOL', age: 24, overall: 82 },
       { name: 'Elliot Anderson', position: 'VOL', age: 21, overall: 91 },
       { name: 'Jordan Henderson', position: 'MEI', age: 21, overall: 85 },
-      { name: 'Jude Bellingham', position: 'MEI', age: 31, overall: 86 },
+      { name: 'Jude Bellingham', position: 'MEI', age: 22, overall: 92, mainPosition: 'AM', secondaryPositions: ['CM'], preferredFoot: 'RIGHT', statsOverrides: { passing: 88, dribbling: 90, physical: 89, vision: 89, longShot: 86, positioning: 90 } },
       { name: 'Morgan Rogers', position: 'MEI', age: 32, overall: 89 },
       { name: 'Anthony Gordon', position: 'ATA', age: 28, overall: 88 },
       { name: 'Bukayo Saka', position: 'ATA', age: 30, overall: 94 },
       { name: 'Eberechi Eze', position: 'ATA', age: 26, overall: 81 },
-      { name: 'Harry Kane', position: 'ATA', age: 29, overall: 85 },
+      { name: 'Harry Kane', position: 'ATA', age: 33, overall: 91, mainPosition: 'ST', secondaryPositions: ['AM'], preferredFoot: 'RIGHT', statsOverrides: { shooting: 93, finishing: 95, passing: 84, vision: 86, heading: 90, positioning: 94 } },
       { name: 'Jarrod Bowen', position: 'ATA', age: 26, overall: 87 },
       { name: 'Marcus Rashford', position: 'ATA', age: 21, overall: 85 },
       { name: 'Pickford', position: 'GOL', age: 32, overall: 84 },
@@ -456,12 +553,12 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
     logoUrl: '/world_cup_shields/png/alemanha.png',
     logoColor1: '#000000', logoColor2: '#DD0000', attack: 92, defense: 89,
     players: [
-      { name: 'Alexander Nübel', position: 'GOL', age: 25, overall: 86 },
+      { name: 'Alexander Nübel', position: 'GOL', age: 28, overall: 82, mainPosition: 'GK', preferredFoot: 'RIGHT', statsOverrides: { keeping: 82, reflexes: 83, handling: 81, positioning: 81 } },
       { name: 'Finn Dahmen', position: 'GOL', age: 32, overall: 93 },
       { name: 'Noah Atubolu', position: 'GOL', age: 23, overall: 83 },
       { name: 'Oliver Baumann', position: 'GOL', age: 33, overall: 91 },
-      { name: 'David Raum', position: 'LAT', age: 24, overall: 92 },
-      { name: 'Jonathan Tah', position: 'LAT', age: 33, overall: 93 },
+      { name: 'David Raum', position: 'LAT', age: 28, overall: 84, mainPosition: 'LB', preferredFoot: 'LEFT', statsOverrides: { pace: 84, crossing: 85, stamina: 86, passing: 81 } },
+      { name: 'Jonathan Tah', position: 'ZAG', age: 29, overall: 87, mainPosition: 'CB', preferredFoot: 'RIGHT', statsOverrides: { defending: 88, marking: 88, tackling: 86, strength: 90, heading: 86 } },
       { name: 'Malick Thiaw', position: 'ZAG', age: 27, overall: 95 },
       { name: 'Nathaniel Brown', position: 'ZAG', age: 32, overall: 80 },
       { name: 'Nico Schlotterbeck', position: 'ZAG', age: 33, overall: 82 },
@@ -470,15 +567,15 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Aleksandar Pavlović', position: 'VOL', age: 28, overall: 85 },
       { name: 'Assan Ouédraogo', position: 'VOL', age: 24, overall: 81 },
       { name: 'Felix Nmecha', position: 'VOL', age: 22, overall: 95 },
-      { name: 'Florian Wirtz', position: 'VOL', age: 33, overall: 92 },
+      { name: 'Florian Wirtz', position: 'MEI', age: 23, overall: 91, mainPosition: 'AM', secondaryPositions: ['LW'], preferredFoot: 'RIGHT', statsOverrides: { passing: 89, dribbling: 92, vision: 91, finishing: 86, longShot: 85 } },
       { name: 'Jamie Leweling', position: 'MEI', age: 23, overall: 94 },
-      { name: 'Joshua Kimmich', position: 'MEI', age: 31, overall: 90 },
-      { name: 'Karim Adeyemi', position: 'MEI', age: 33, overall: 82 },
+      { name: 'Joshua Kimmich', position: 'VOL', age: 31, overall: 89, mainPosition: 'DM', secondaryPositions: ['RB', 'CM'], preferredFoot: 'RIGHT', statsOverrides: { passing: 90, vision: 89, crossing: 85, positioning: 90, tackling: 85 } },
+      { name: 'Karim Adeyemi', position: 'ATA', age: 24, overall: 83, mainPosition: 'LW', secondaryPositions: ['ST', 'RW'], preferredFoot: 'RIGHT', statsOverrides: { pace: 93, dribbling: 84, finishing: 81, positioning: 80 } },
       { name: 'Kevin Schade', position: 'MEI', age: 29, overall: 82 },
       { name: 'Leon Goretzka', position: 'MEI', age: 28, overall: 87 },
-      { name: 'Serge Gnabry', position: 'MEI', age: 32, overall: 95 },
+      { name: 'Serge Gnabry', position: 'ATA', age: 30, overall: 85, mainPosition: 'RW', secondaryPositions: ['LW', 'ST'], preferredFoot: 'RIGHT', statsOverrides: { pace: 84, finishing: 84, dribbling: 85, positioning: 83 } },
       { name: 'Jonathan Burkardt', position: 'ATA', age: 31, overall: 86 },
-      { name: 'Nick Woltemade', position: 'ATA', age: 29, overall: 85 },
+      { name: 'Nick Woltemade', position: 'ATA', age: 23, overall: 81, mainPosition: 'ST', secondaryPositions: ['AM'], preferredFoot: 'RIGHT', statsOverrides: { finishing: 81, heading: 81, dribbling: 79, passing: 77 } },
       { name: 'Said El Mala', position: 'ATA', age: 28, overall: 87 },
       { name: 'Neuer', position: 'GOL', age: 40, overall: 85 },
       { name: 'Ter Stegen', position: 'GOL', age: 34, overall: 86 },
@@ -499,15 +596,15 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Nélson Semedo', position: 'ZAG', age: 33, overall: 84 },
       { name: 'Renato Veiga', position: 'ZAG', age: 25, overall: 90 },
       { name: 'Rúben Dias', position: 'ZAG', age: 29, overall: 87 },
-      { name: 'Bernardo Silva', position: 'VOL', age: 31, overall: 88 },
-      { name: 'Bruno Fernandes', position: 'VOL', age: 31, overall: 87 },
+      { name: 'Bernardo Silva', position: 'VOL', age: 31, overall: 90, mainPosition: 'AM', secondaryPositions: ['RW', 'CM'], preferredFoot: 'LEFT', statsOverrides: { passing: 91, dribbling: 93, vision: 92, stamina: 88 } },
+      { name: 'Bruno Fernandes', position: 'VOL', age: 31, overall: 89, mainPosition: 'AM', secondaryPositions: ['CM'], preferredFoot: 'RIGHT', statsOverrides: { passing: 92, vision: 94, longShot: 88, stamina: 86 } },
       { name: 'João Neves', position: 'VOL', age: 25, overall: 93 },
       { name: 'João Palhinha', position: 'VOL', age: 21, overall: 85 },
       { name: 'Matheus Nunes', position: 'MEI', age: 22, overall: 91 },
       { name: 'Rúben Neves', position: 'MEI', age: 22, overall: 85 },
       { name: 'Vitinha', position: 'MEI', age: 26, overall: 86 },
       { name: 'Carlos Forbs', position: 'ATA', age: 31, overall: 88 },
-      { name: 'Cristiano Ronaldo', position: 'ATA', age: 41, overall: 84 },
+      { name: 'Cristiano Ronaldo', position: 'ATA', age: 41, overall: 88, mainPosition: 'ST', secondaryPositions: ['LW'], preferredFoot: 'RIGHT', statsOverrides: { shooting: 92, finishing: 93, heading: 95, positioning: 95, pace: 78 } },
       { name: 'Francisco Conceição', position: 'ATA', age: 27, overall: 91 },
       { name: 'Francisco Trincão', position: 'ATA', age: 26, overall: 79 },
       { name: 'Gonçalo Ramos', position: 'ATA', age: 25, overall: 83 },
@@ -526,17 +623,17 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Mark Flekken', position: 'GOL', age: 29, overall: 78 },
       { name: 'Robin Roefs', position: 'GOL', age: 22, overall: 92 },
       { name: 'Jan Paul van Hecke', position: 'LAT', age: 24, overall: 82 },
-      { name: 'Jurriën Timber', position: 'LAT', age: 25, overall: 81 },
+      { name: 'Jurriën Timber', position: 'LAT', age: 24, overall: 84, mainPosition: 'RB', secondaryPositions: ['CB'], preferredFoot: 'RIGHT', statsOverrides: { defending: 84, pace: 83, dribbling: 79, tackling: 82 } },
       { name: 'Lutsharel Geertruida', position: 'ZAG', age: 33, overall: 93 },
       { name: 'Matthijs de Ligt', position: 'ZAG', age: 32, overall: 88 },
       { name: 'Micky van de Ven', position: 'ZAG', age: 22, overall: 91 },
-      { name: 'Nathan Aké', position: 'ZAG', age: 24, overall: 80 },
-      { name: 'Virgil van Dijk', position: 'ZAG', age: 21, overall: 82 },
-      { name: 'Frenkie de Jong', position: 'VOL', age: 29, overall: 86 },
+      { name: 'Nathan Aké', position: 'ZAG', age: 30, overall: 84, mainPosition: 'CB', secondaryPositions: ['LB'], preferredFoot: 'LEFT', statsOverrides: { defending: 85, tackling: 84, marking: 84, pace: 79 } },
+      { name: 'Virgil van Dijk', position: 'ZAG', age: 34, overall: 89, mainPosition: 'CB', preferredFoot: 'RIGHT', statsOverrides: { defending: 90, marking: 91, tackling: 88, heading: 90, strength: 91, positioning: 90 } },
+      { name: 'Frenkie de Jong', position: 'VOL', age: 29, overall: 88, mainPosition: 'CM', secondaryPositions: ['DM'], preferredFoot: 'RIGHT', statsOverrides: { passing: 90, dribbling: 89, vision: 88, stamina: 84, positioning: 84 } },
       { name: 'Ryan Gravenberch', position: 'VOL', age: 22, overall: 90 },
       { name: 'Tijjani Reijnders', position: 'VOL', age: 21, overall: 82 },
-      { name: 'Xavi Simons', position: 'VOL', age: 33, overall: 86 },
-      { name: 'Cody Gakpo', position: 'ATA', age: 33, overall: 87 },
+      { name: 'Xavi Simons', position: 'MEI', age: 23, overall: 87, mainPosition: 'AM', secondaryPositions: ['LW', 'RW'], preferredFoot: 'RIGHT', statsOverrides: { passing: 85, dribbling: 90, vision: 86, finishing: 82 } },
+      { name: 'Cody Gakpo', position: 'ATA', age: 26, overall: 85, mainPosition: 'LW', secondaryPositions: ['ST'], preferredFoot: 'RIGHT', statsOverrides: { pace: 84, dribbling: 84, finishing: 84, longShot: 82 } },
       { name: 'Memphis Depay', position: 'ATA', age: 33, overall: 85 },
       { name: 'Verbruggen', position: 'GOL', age: 24, overall: 83 },
       { name: 'Flekken', position: 'GOL', age: 33, overall: 80 },
@@ -558,7 +655,7 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Maarten Vandevoordt', position: 'GOL', age: 31, overall: 88 },
       { name: 'Matz Sels', position: 'GOL', age: 24, overall: 91 },
       { name: 'Senne Lammens', position: 'GOL', age: 25, overall: 85 },
-      { name: 'Thibaut Courtois', position: 'GOL', age: 29, overall: 88 },
+      { name: 'Thibaut Courtois', position: 'GOL', age: 33, overall: 91, mainPosition: 'GK', preferredFoot: 'LEFT', statsOverrides: { keeping: 92, reflexes: 94, handling: 91, positioning: 90 } },
       { name: 'Arthur Theate', position: 'LAT', age: 28, overall: 84 },
       { name: 'Brandon Mechele', position: 'LAT', age: 33, overall: 85 },
       { name: 'Joaquin Seys', position: 'ZAG', age: 32, overall: 86 },
@@ -599,7 +696,7 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Marin Pongračić', position: 'ZAG', age: 32, overall: 90 },
       { name: 'Martin Erlić', position: 'ZAG', age: 33, overall: 89 },
       { name: 'Kristijan Jakić', position: 'VOL', age: 26, overall: 89 },
-      { name: 'Luka Modrić', position: 'VOL', age: 24, overall: 81 },
+      { name: 'Luka Modrić', position: 'VOL', age: 40, overall: 88, mainPosition: 'CM', secondaryPositions: ['AM', 'DM'], preferredFoot: 'RIGHT', statsOverrides: { passing: 94, vision: 95, dribbling: 90, longShot: 84, stamina: 82 } },
       { name: 'Mario Pašalić', position: 'VOL', age: 22, overall: 82 },
       { name: 'Nikola Moro', position: 'VOL', age: 27, overall: 85 },
       { name: 'Nikola Vlašić', position: 'MEI', age: 24, overall: 76 },
@@ -740,7 +837,7 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Tim Weah', position: 'MEI', age: 30, overall: 84 },
       { name: 'Tyler Adams', position: 'MEI', age: 21, overall: 86 },
       { name: 'Weston McKennie', position: 'MEI', age: 30, overall: 85 },
-      { name: 'Christian Pulisic', position: 'ATA', age: 26, overall: 75 },
+      { name: 'Christian Pulisic', position: 'ATA', age: 27, overall: 86, mainPosition: 'LW', secondaryPositions: ['RW', 'AM'], preferredFoot: 'RIGHT', statsOverrides: { pace: 90, dribbling: 89, finishing: 83, vision: 82 } },
       { name: 'Diego Luna', position: 'ATA', age: 28, overall: 84 },
       { name: 'Folarin Balogun', position: 'ATA', age: 21, overall: 75 },
       { name: 'Haji Wright', position: 'ATA', age: 23, overall: 80 },
@@ -1633,7 +1730,7 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Thelo Aasgaard', position: 'MEI', age: 26, overall: 85 },
       { name: 'Alexander Sørloth', position: 'ATA', age: 26, overall: 78 },
       { name: 'Andreas Schjelderup', position: 'ATA', age: 28, overall: 72 },
-      { name: 'Erling Haaland', position: 'ATA', age: 29, overall: 72 },
+      { name: 'Erling Haaland', position: 'ATA', age: 26, overall: 92, mainPosition: 'ST', preferredFoot: 'LEFT', statsOverrides: { pace: 89, shooting: 95, finishing: 96, strength: 94, positioning: 95, heading: 90 } },
       { name: 'Jørgen Strand Larsen', position: 'ATA', age: 33, overall: 78 },
       { name: 'Nyland', position: 'GOL', age: 35, overall: 80 },
       { name: 'Ostigard', position: 'ZAG', age: 26, overall: 79 },

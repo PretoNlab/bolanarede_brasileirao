@@ -1,7 +1,7 @@
 import { Team, Player, MatchResult, MatchEvent, StaffMember, PlayerHistoryEvent, TrainingFocus, TrainingIntensity, Infrastructure } from '../types';
 import { PlayerSeasonStats } from '../save';
 import { clamp, DEFAULT_TICKET_PRICE } from './gameState';
-import { calculateDynamicTeamStrength } from './tacticsEngine';
+import { calculateDynamicTeamStrength, selectGoalParticipants } from './tacticsEngine';
 
 export interface MatchProcessorInput {
   teams: Team[];
@@ -92,16 +92,12 @@ export function processMatchResults(input: MatchProcessorInput): MatchProcessorO
       });
     } else {
       for (let i = 0; i < score; i++) {
-        const bag: Player[] = [];
-        team.roster.forEach(p => {
-          const weight = p.position === 'ATA' ? 6 : p.position === 'MEI' ? 3 : 1;
-          if (p.status !== 'suspended' && p.status !== 'injured') {
-            for (let k = 0; k < weight; k++) bag.push(p);
-          }
-        });
-        if (bag.length > 0) {
-          const scorer = bag[Math.floor(Math.random() * bag.length)];
+        const { scorer, assist } = selectGoalParticipants(team);
+        if (scorer) {
           matchGoals[scorer.id] = (matchGoals[scorer.id] || 0) + 1;
+          if (assist) {
+            matchAssists[assist.id] = (matchAssists[assist.id] || 0) + 1;
+          }
         }
       }
       team.roster.forEach(p => {
@@ -157,12 +153,15 @@ export function processMatchResults(input: MatchProcessorInput): MatchProcessorO
         const isRivalry = hTeamRef.rivalId === aTeamRef.id || aTeamRef.rivalId === hTeamRef.id;
         const tension = isRivalry ? 1.5 : 1.0;
 
-        const hPower = hAtt - aDef + homeAdvantage + (Math.random() * 20 - 10) * tension;
-        const aPower = aAtt - hDef + (Math.random() * 20 - 10) * tension;
+        const hControl = hStats.control || ((hAtt + hDef) / 2);
+        const aControl = aStats.control || ((aAtt + aDef) / 2);
+
+        const hPower = hAtt - aDef + (hControl - aControl) * 0.35 + homeAdvantage + (Math.random() * 12 - 6) * tension;
+        const aPower = aAtt - hDef + (aControl - hControl) * 0.25 + (Math.random() * 12 - 6) * tension;
 
         const baseGoals = 1.25;
-        let hExpected = Math.max(0, baseGoals + (hPower * 0.05));
-        let aExpected = Math.max(0, baseGoals + (aPower * 0.05));
+        let hExpected = Math.max(0.15, baseGoals + (hPower * 0.035));
+        let aExpected = Math.max(0.15, baseGoals + (aPower * 0.035));
 
         if (fix.homeTeamId === userTeamId) {
           aExpected *= ddaFactor;

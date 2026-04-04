@@ -1,6 +1,6 @@
 import { Team, Fixture, MatchResult, MatchEvent, WCGroup, WCBracketMatch, WCPhase, WorldCupGameState } from '../types';
 import { ESTABLISHED_GROUPS } from '../worldCupData';
-import { calculateDynamicTeamStrength } from './tacticsEngine';
+import { calculateDynamicTeamStrength, selectGoalParticipants } from './tacticsEngine';
 
 // ========== SORTEIO DE GRUPOS ==========
 
@@ -238,11 +238,14 @@ export function simulateWCMatch(home: Team, away: Team): { homeScore: number; aw
   const hStats = calculateDynamicTeamStrength(home);
   const aStats = calculateDynamicTeamStrength(away);
 
-  const homePower = (hStats.att - aStats.def) + 5 + (Math.random() * 20 - 10);
-  const awayPower = (aStats.att - hStats.def) + (Math.random() * 20 - 10);
+  const homeControl = hStats.control || ((hStats.att + hStats.def) / 2);
+  const awayControl = aStats.control || ((aStats.att + aStats.def) / 2);
 
-  const homeExpected = Math.max(0.3, 1.25 + (homePower * 0.04));
-  const awayExpected = Math.max(0.3, 1.25 + (awayPower * 0.04));
+  const homePower = (hStats.att - aStats.def) + (homeControl - awayControl) * 0.35 + 5 + (Math.random() * 12 - 6);
+  const awayPower = (aStats.att - hStats.def) + (awayControl - homeControl) * 0.25 + (Math.random() * 12 - 6);
+
+  const homeExpected = Math.max(0.2, 1.2 + (homePower * 0.035));
+  const awayExpected = Math.max(0.2, 1.2 + (awayPower * 0.035));
 
   let homeScore = 0;
   let awayScore = 0;
@@ -251,53 +254,33 @@ export function simulateWCMatch(home: Team, away: Team): { homeScore: number; aw
     if (Math.random() < homeExpected / 6) {
       homeScore++;
       const minute = Math.floor(Math.random() * 90) + 1;
-      const roster = home.roster.filter(p => p.position === 'ATA' || p.position === 'MEI');
-      const scorer = (roster.length > 0 ? roster[Math.floor(Math.random() * roster.length)] : home.roster[0]);
+      const { scorer, assist } = selectGoalParticipants(home);
       
       if (!scorer) continue; // Pular gol se não houver jogadores válidos
-
-      // Assist logic
-      let assistName: string | undefined;
-      if (Math.random() < 0.75) {
-        const potentialAssisters = home.roster.filter(p => p.name !== scorer.name && (p.position === 'MEI' || p.position === 'LAT' || p.position === 'ATA'));
-        if (potentialAssisters.length > 0) {
-          assistName = potentialAssisters[Math.floor(Math.random() * potentialAssisters.length)].name;
-        }
-      }
 
       events.push({ 
         minute, 
         type: 'goal', 
         teamId: home.id, 
         playerName: scorer.name, 
-        assistName,
-        description: `GOL! ${scorer.name} marca para ${home.shortName}!${assistName ? ` (Assist: ${assistName})` : ''}` 
+        assistName: assist?.name,
+        description: `GOL! ${scorer.name} marca para ${home.shortName}!${assist ? ` (Assist: ${assist.name})` : ''}` 
       });
     }
     if (Math.random() < awayExpected / 6) {
       awayScore++;
       const minute = Math.floor(Math.random() * 90) + 1;
-      const roster = away.roster.filter(p => p.position === 'ATA' || p.position === 'MEI');
-      const scorer = (roster.length > 0 ? roster[Math.floor(Math.random() * roster.length)] : away.roster[0]);
+      const { scorer, assist } = selectGoalParticipants(away);
 
       if (!scorer) continue; // Pular gol se não houver jogadores válidos
-
-      // Assist logic
-      let assistName: string | undefined;
-      if (Math.random() < 0.75) {
-        const potentialAssisters = away.roster.filter(p => p.name !== scorer.name && (p.position === 'MEI' || p.position === 'LAT' || p.position === 'ATA'));
-        if (potentialAssisters.length > 0) {
-          assistName = potentialAssisters[Math.floor(Math.random() * potentialAssisters.length)].name;
-        }
-      }
 
       events.push({ 
         minute, 
         type: 'goal', 
         teamId: away.id, 
         playerName: scorer.name, 
-        assistName,
-        description: `GOL! ${scorer.name} marca para ${away.shortName}!${assistName ? ` (Assist: ${assistName})` : ''}` 
+        assistName: assist?.name,
+        description: `GOL! ${scorer.name} marca para ${away.shortName}!${assist ? ` (Assist: ${assist.name})` : ''}` 
       });
     }
   }

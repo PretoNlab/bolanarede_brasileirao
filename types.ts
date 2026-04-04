@@ -72,6 +72,17 @@ export interface Player {
   trainingProgress?: number;
 }
 
+export interface WCTeamPlayer {
+  name: string;
+  position: 'GOL' | 'ZAG' | 'LAT' | 'VOL' | 'MEI' | 'ATA';
+  age: number;
+  overall: number;
+  mainPosition?: DetailedPosition;
+  secondaryPositions?: DetailedPosition[];
+  preferredFoot?: 'LEFT' | 'RIGHT' | 'BOTH';
+  statsOverrides?: Partial<Player['stats']>;
+}
+
 // ========== TÁTICA AVANÇADA ==========
 
 export type DetailedPosition =
@@ -302,5 +313,5 @@ export interface WCTeamData {
   logoUrl?: string;
   attack: number;
   defense: number;
-  players: { name: string; position: 'GOL' | 'ZAG' | 'LAT' | 'VOL' | 'MEI' | 'ATA'; age: number; overall: number }[];
+  players: WCTeamPlayer[];
 }
