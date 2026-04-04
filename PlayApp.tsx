@@ -71,13 +71,18 @@ function ScreenFallback() {
 function runWhenIdle(task: () => void) {
   if (typeof window === 'undefined') return () => {};
 
-  if ('requestIdleCallback' in window) {
-    const id = window.requestIdleCallback(() => task(), { timeout: 1200 });
-    return () => window.cancelIdleCallback(id);
+  const idleWindow = window as Window & {
+    requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  };
+
+  if (typeof idleWindow.requestIdleCallback === 'function' && typeof idleWindow.cancelIdleCallback === 'function') {
+    const id = idleWindow.requestIdleCallback(() => task(), { timeout: 1200 });
+    return () => idleWindow.cancelIdleCallback!(id);
   }
 
-  const timeout = window.setTimeout(task, 500);
-  return () => window.clearTimeout(timeout);
+  const timeout = globalThis.setTimeout(task, 500);
+  return () => globalThis.clearTimeout(timeout);
 }
 
 function buildExtraWorldCupPlayerName(
@@ -338,6 +343,11 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     downloadJson(`bolanarede_slot_${activeSlot}_${new Date().toISOString().slice(0, 10)}.json`, save);
     toast.success(`Arquivo do Slot ${activeSlot} gerado.`, { icon: '📦' });
   }, [activeSlot, buildSave]);
+
+  const handleBackToMain = useCallback(() => {
+    saveToSlot(activeSlot);
+    onBackHome?.();
+  }, [onBackHome, activeSlot, saveToSlot]);
 
   const importSaveFromFile = useCallback(
     async (file: File) => {
@@ -1388,7 +1398,10 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     // Atualizar o time do usuário na lista de times da Copa
     const updatedTeams = wcState.teams.map(t => {
       if (t.id === wcState.userTeamId) {
-        return { ...t, roster: finalRoster };
+        // Inicializar lineup com os 11 melhores da lista de convocados
+        const sortedRoster = [...finalRoster].sort((a, b) => b.overall - a.overall);
+        const initialLineup = sortedRoster.slice(0, 11).map(p => p.id);
+        return { ...t, roster: finalRoster, lineup: initialLineup };
       }
       return t;
     });
@@ -1720,7 +1733,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 onStart={handleStartCareer}
                 onContinue={handleContinueCareer}
                 onWorldCup={handleOpenWorldCup}
-                onBackHome={onBackHome}
+                onBackHome={handleBackToMain}
               />
             </PageWrapper>
           )}
@@ -1782,9 +1795,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 onOpenStaff={() => setCurrentScreen('STAFF' as any)}
                 onOpenInfrastructure={() => setCurrentScreen('INFRASTRUCTURE' as any)}
                 onOpenYouth={() => setCurrentScreen('YOUTH' as any)}
-                hiredStaff={hiredStaff}
-                infrastructure={infrastructure}
-                onBackHome={onBackHome}
+                onBackHome={handleBackToMain}
               />
             </PageWrapper>
           )}
@@ -1912,8 +1923,6 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 onReset={handleRestart}
                 activeSlot={activeSlot}
                 lastLocalSaveAt={lastLocalSaveAt}
-                session={null}
-                onLoadCloud={() => { }}
                 onFixData={handleFixData}
               />
             </PageWrapper>

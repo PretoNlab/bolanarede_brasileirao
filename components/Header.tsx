@@ -7,6 +7,7 @@ interface HeaderProps {
   title: string;
   subtitle?: string;
   onBack?: () => void;
+  backIcon?: React.ReactNode;
   rightAction?: React.ReactNode;
   className?: string;
   variant?: 'default' | 'cinematic';
@@ -16,6 +17,7 @@ export const Header: React.FC<HeaderProps> = ({
   title, 
   subtitle, 
   onBack, 
+  backIcon,
   rightAction, 
   className,
   variant = 'default' 
@@ -33,7 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="p-3 bg-white/5 rounded-2xl hover:bg-white/10 text-white transition-all active:scale-95 border border-white/5 group"
             aria-label="Voltar"
           >
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            {backIcon || <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />}
           </button>
         ) : <div className="w-11" />}
         

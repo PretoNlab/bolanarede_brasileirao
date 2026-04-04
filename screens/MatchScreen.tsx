@@ -11,89 +11,7 @@ import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { impactLight, impactMedium, impactHeavy, hapticNotificationSuccess, hapticNotificationError, hapticSelection } from '../haptics';
 
-// --- DYNAMIC PITCH COMPONENT (CINEMATIC v3) ---
-interface PitchProps {
-   isDanger: boolean;
-   attackingTeamId: string | null;
-   homeTeamId: string;
-   momentum: number; // 0-100
-   isGoalAnimation: boolean;
-   shoutActive: string | null;
-   speed: number;
-}
 
-const Pitch2D = ({ isDanger, attackingTeamId, homeTeamId, momentum, isGoalAnimation, shoutActive, speed }: PitchProps) => {
-   const ballPosition = 5 + (momentum * 0.9);
-
-   return (
-      <div className={clsx(
-         "relative w-full h-32 rounded-[2.5rem] border overflow-hidden transition-all duration-1000 shadow-2xl",
-         isGoalAnimation ? "border-amber-400 bg-amber-400/10" : "bg-slate-950/40 border-white/5",
-         isDanger && !isGoalAnimation && "border-rose-500/30 bg-rose-500/5 shadow-[inset_0_0_40px_rgba(244,63,94,0.1)]"
-      )}>
-         {/* Atmospheric Field Texture (High Fidelity) */}
-         <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_0%,transparent_100%)]" />
-         
-         {/* Field markings (Premium Art Deco Style) */}
-         <div className="absolute inset-x-4 inset-y-6 pointer-events-none opacity-[0.08]">
-            <div className="absolute inset-0 border border-white rounded-xl" />
-            <div className="absolute left-1/2 -translate-x-1/2 h-full w-[1.5px] bg-white" />
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-white" />
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-14 border border-white rounded-r-lg" />
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-14 border border-white rounded-l-lg" />
-         </div>
-
-         {/* Momentum Glow Zones (Dynamic Heatmap) */}
-         <div
-            className="absolute inset-y-0 left-0 bg-primary/20 blur-[80px] transition-all duration-1000"
-            style={{ width: `${momentum}%`, opacity: momentum / 100 }}
-         />
-         <div
-            className="absolute inset-y-0 right-0 bg-rose-500/10 blur-[80px] transition-all duration-1000"
-            style={{ width: `${100 - momentum}%`, opacity: (100 - momentum) / 100 }}
-         />
-
-         {/* BALL (CORE) */}
-         <div
-            className={clsx(
-               "absolute top-1/2 -translate-y-1/2 w-6 h-6 transition-all duration-700 ease-in-out z-20",
-               isDanger ? "scale-125" : "scale-100"
-            )}
-            style={{ left: `${ballPosition}%` }}
-         >
-            {isDanger && (
-               <div className="absolute inset-0 bg-white/30 blur-2xl animate-pulse rounded-full" />
-            )}
-            <div className={clsx(
-               "w-full h-full rounded-full flex items-center justify-center shadow-2xl transition-all border-2",
-               isDanger ? "bg-white border-primary" : "bg-slate-200 border-white/50"
-            )}>
-               <div className="w-2.5 h-2.5 bg-black/60 rounded-full blur-[0.5px]" />
-            </div>
-            {/* Trail (Cinematic Sweep) */}
-            <div className={clsx(
-               "absolute right-full mr-1 h-[2px] w-14 bg-gradient-to-l from-white/60 to-transparent blur-sm transition-opacity",
-               speed === 100 ? "opacity-100 w-24" : "opacity-40"
-            )} />
-         </div>
-
-         {/* Tactical Shout Popup (Standardized UI) */}
-         <AnimatePresence>
-            {shoutActive && (
-               <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-primary rounded-2xl shadow-[0_0_20px_rgba(31,177,133,0.3)] border border-primary-light/30 flex items-center gap-2 z-30"
-               >
-                  <Zap size={11} className="text-white animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white italic">{shoutActive}</span>
-               </motion.div>
-            )}
-         </AnimatePresence>
-      </div>
-   );
-};
 
 interface Props {
    homeTeam: Team;
@@ -151,7 +69,17 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
    const [pkIndex, setPkIndex] = useState(0);
    const [pkMessage, setPkMessage] = useState('Disputa de pênaltis iniciada!');
 
-   const [homeTeam, setHomeTeam] = useState<Team>({ ...initialHomeTeam });
+   const [homeTeam, setHomeTeam] = useState<Team>(() => {
+      const t = { ...initialHomeTeam };
+      // HEAL: Se a lineup estiver vazia (bug da Copa), inicializa com os 11 melhores
+      if (!t.lineup || t.lineup.length === 0) {
+         t.lineup = [...t.roster]
+            .sort((a, b) => b.overall - a.overall)
+            .slice(0, 11)
+            .map(p => p.id);
+      }
+      return t;
+   });
    const [currentStyle, setCurrentStyle] = useState<PlayingStyle>(initialHomeTeam.style);
    const [currentFormation, setCurrentFormation] = useState<FormationType>(initialHomeTeam.formation);
    const [currentInstructions, setCurrentInstructions] = useState<TacticalInstructions>(
@@ -525,21 +453,12 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                <p className="text-[12px] text-secondary font-medium leading-relaxed opacity-80 relative z-10">{matchPulse.copy}</p>
             </section>
 
-            {/* PITCH 2D */}
-            <Pitch2D 
-               isDanger={isDanger} 
-               attackingTeamId={dangerTeamId} 
-               homeTeamId={homeTeam.id} 
-               momentum={stats.momentum} 
-               isGoalAnimation={isGoalAnimation} 
-               shoutActive={shoutActive} 
-               speed={speed}
-            />
 
-            {/* LIVE COMMENTARY FEED (CINEMATIC) */}
+
+            {/* LIVE COMMENTARY FEED (CINEMATIC FULL) */}
             <div 
                ref={feedRef}
-               className="flex-1 ui-card-premium p-6 overflow-y-auto no-scrollbar space-y-5 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)]"
+               className="flex-1 ui-card-premium p-6 overflow-y-auto no-scrollbar space-y-5 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)] flex flex-col items-center"
             >
                {feed.length === 0 && (
                   <div className="h-full flex flex-col items-center justify-center opacity-10 gap-6">
@@ -560,8 +479,8 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                         )}
                      >
                         <div className={clsx(
-                           "flex",
-                           msg.type === 'goal' ? "flex-col items-center gap-4" : "gap-5 items-start"
+                           "flex w-full max-w-lg mx-auto",
+                           msg.type === 'goal' ? "flex-col items-center gap-5 text-center" : "gap-6 items-start"
                         )}>
                            {msg.type === 'goal' && <div className="ui-label-caps bg-emerald-500/20 text-emerald-400 px-4 py-1.5 rounded-full border border-emerald-500/20">GOL</div>}
                            

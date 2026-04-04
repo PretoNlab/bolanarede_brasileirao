@@ -1,4 +1,4 @@
-import { Team, Player, NewsItem, StaffMember, Infrastructure } from '../types';
+import { Team, Player, NewsItem, StaffMember, Infrastructure, DetailedPosition } from '../types';
 import { formatCurrency, clamp } from './gameState';
 
 export interface NewsGeneratorInput {
@@ -16,6 +16,42 @@ export interface NewsGeneratorOutput {
   news: NewsItem[];
   youthProspect: Player | null;
   moralChanges: { teamId: string; delta: number }[];
+}
+
+const DETAILED_POSITION_BY_ROLE: Record<Player['position'], DetailedPosition> = {
+  GOL: 'GK',
+  ZAG: 'CB',
+  LAT: 'RB',
+  VOL: 'DM',
+  MEI: 'AM',
+  ATA: 'ST',
+};
+
+function buildProspectStats(mainPosition: DetailedPosition, overall: number): Player['stats'] {
+  const scale = (base: number) => clamp(Math.round(base), 10, 99);
+  const isGoalkeeper = mainPosition === 'GK';
+
+  return {
+    pace: scale(isGoalkeeper ? 36 : overall + 6),
+    shooting: scale(isGoalkeeper ? 18 : overall + (mainPosition === 'ST' ? 10 : -2)),
+    passing: scale(isGoalkeeper ? 28 : overall + (mainPosition === 'AM' ? 8 : 2)),
+    dribbling: scale(isGoalkeeper ? 20 : overall + (mainPosition === 'ST' || mainPosition === 'AM' ? 8 : 0)),
+    defending: scale(isGoalkeeper ? 22 : overall + (mainPosition === 'CB' || mainPosition === 'DM' ? 10 : -4)),
+    physical: scale(isGoalkeeper ? overall + 6 : overall + 2),
+    keeping: scale(isGoalkeeper ? overall + 18 : 12),
+    crossing: scale(mainPosition === 'RB' ? overall + 6 : overall - 4),
+    finishing: scale(mainPosition === 'ST' ? overall + 12 : overall - 6),
+    tackling: scale(mainPosition === 'CB' || mainPosition === 'DM' ? overall + 10 : overall - 5),
+    marking: scale(mainPosition === 'CB' ? overall + 12 : overall - 4),
+    positioning: scale(mainPosition === 'ST' || mainPosition === 'AM' ? overall + 8 : overall),
+    strength: scale(mainPosition === 'CB' || mainPosition === 'ST' ? overall + 6 : overall),
+    stamina: scale(mainPosition === 'RB' || mainPosition === 'DM' ? overall + 6 : overall + 1),
+    vision: scale(mainPosition === 'AM' ? overall + 10 : overall - 1),
+    longShot: scale(mainPosition === 'AM' || mainPosition === 'ST' ? overall + 5 : overall - 6),
+    heading: scale(mainPosition === 'CB' || mainPosition === 'ST' ? overall + 7 : overall - 5),
+    reflexes: scale(isGoalkeeper ? overall + 16 : 12),
+    handling: scale(isGoalkeeper ? overall + 14 : 12),
+  };
 }
 
 export function generateRoundNews(input: NewsGeneratorInput): NewsGeneratorOutput {
@@ -146,16 +182,21 @@ export function generateRoundNews(input: NewsGeneratorInput): NewsGeneratorOutpu
       const firstNames = ['Kaio', 'Vinícius', 'Rayan', 'Endrick', 'Estevão', 'Léo', 'Kauã', 'Breno', 'Arthur', 'Igor'];
       const lastNames = ['Junior', 'Pires', 'Silva', 'Santos', 'Oliveira', 'Costa', 'Moura', 'Ribeiro', 'Vieira', 'Souza'];
       const positions: Player['position'][] = ['GOL', 'ZAG', 'LAT', 'VOL', 'MEI', 'ATA'];
+      const position = positions[Math.floor(Math.random() * positions.length)];
+      const mainPosition = DETAILED_POSITION_BY_ROLE[position];
+      const overall = 45 + Math.floor(Math.random() * 12);
 
       const newProspect: Player = {
         id: `youth_${Math.random().toString(36).substr(2, 9)}`,
         name: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
-        position: positions[Math.floor(Math.random() * positions.length)],
+        position,
+        mainPosition,
+        secondaryPositions: [],
+        preferredFoot: position === 'GOL' ? 'RIGHT' : Math.random() > 0.2 ? 'RIGHT' : 'LEFT',
         age: 15 + Math.floor(Math.random() * 3),
-        overall: 45 + Math.floor(Math.random() * 12),
+        overall,
         potential: 78 + Math.floor(Math.random() * 15),
         energy: 100,
-        isYouth: true,
         status: 'fit',
         yellowCards: 0,
         redCards: 0,
@@ -166,8 +207,8 @@ export function generateRoundNews(input: NewsGeneratorInput): NewsGeneratorOutpu
         contractRounds: 0,
         history: [],
         seasonStats: { yellowCards: 0, redCards: 0, matchesSuspended: 0 },
-        stats: { pace: 60, shooting: 55, passing: 58, dribbling: 60, defending: 50, physical: 55, keeping: 40 }
-      } as Player;
+        stats: buildProspectStats(mainPosition, overall),
+      };
 
       youthProspect = newProspect;
 

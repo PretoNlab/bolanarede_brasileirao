@@ -7,7 +7,7 @@ import { Team, NewsItem, TransferOffer } from '../types';
 import { 
   Play, Users, ArrowLeftRight, Wallet, LayoutDashboard, Trophy, Settings, 
   Newspaper, Target, MessageSquare, Heart, BarChart3, ShieldAlert, 
-  CalendarDays, ChevronRight, Building2, Zap, Sparkles
+  CalendarDays, ChevronRight, Building2, Zap, Sparkles, Home
 } from 'lucide-react';
 import { impactLight, impactMedium, hapticSelection } from '../haptics';
 import clsx from 'clsx';
@@ -143,6 +143,7 @@ export default function DashboardScreen({
         title={team.name}
         subtitle={`Rodada ${round}`}
         onBack={onBackHome}
+        backIcon={<Home size={20} className="text-secondary" />}
         rightAction={
           <div className="flex items-center gap-2">
             <div className={clsx(

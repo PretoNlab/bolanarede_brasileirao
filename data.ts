@@ -1,5 +1,5 @@
 
-import { Team, Player, Fixture, DetailedPosition } from './types';
+import { Team, Player, Fixture, DetailedPosition, TacticalInstructions } from './types';
 
 const firstNames = ['Lucas', 'Matheus', 'Gabriel', 'Pedro', 'João', 'Felipe', 'Rafael', 'Daniel', 'Bruno', 'Thiago', 'Marcos', 'André', 'Luiz', 'Gustavo', 'Eduardo', 'Caio', 'Enzo', 'Arthur', 'Diego', 'Victor', 'Ruan', 'Igor', 'Breno', 'Talles', 'Yuri'];
 const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues', 'Ferreira', 'Almeida', 'Pereira', 'Lima', 'Gomes', 'Costa', 'Martins', 'Araújo', 'Barbosa', 'Ramos', 'Jesus', 'Alves', 'Rocha', 'Nascimento', 'Teixeira', 'Moraes'];
@@ -113,6 +113,12 @@ const generateStats = (detPos: DetailedPosition, ovr: number, age: number) => {
   return stats;
 };
 
+const DEFAULT_TACTICAL_INSTRUCTIONS: TacticalInstructions = {
+  pressing: 'MEDIA',
+  passing: 'MISTO',
+  tempo: 'PADRAO',
+};
+
 const generateRoster = (teamRating: number): Player[] => {
   const roster: Player[] = [];
   ['GOL', 'GOL'].forEach(p => roster.push(generatePlayer(p as any, teamRating)));
@@ -124,7 +130,7 @@ const generateRoster = (teamRating: number): Player[] => {
   return roster.sort((a, b) => b.overall - a.overall);
 };
 
-export const INITIAL_TEAMS: Team[] = [
+const INITIAL_TEAM_SEEDS: Omit<Team, 'instructions'>[] = [
   {
     "id": "athletico-pr",
     "name": "Athletico Paranaense",
@@ -1334,6 +1340,11 @@ export const INITIAL_TEAMS: Team[] = [
     "description": "Jogadores sem clube disponíveis no mercado."
   }
 ];
+
+export const INITIAL_TEAMS: Team[] = INITIAL_TEAM_SEEDS.map(team => ({
+  ...team,
+  instructions: { ...DEFAULT_TACTICAL_INSTRUCTIONS },
+}));
 
 INITIAL_TEAMS.forEach(team => {
   if (team.id === 'free_agent') {

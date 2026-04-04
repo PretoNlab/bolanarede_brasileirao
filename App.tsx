@@ -42,11 +42,20 @@ function ErrorScreen({ title, message }: { title: string; message: string }) {
   );
 }
 
-class AppErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; message: string }
-> {
-  constructor(props: { children: React.ReactNode }) {
+type AppErrorBoundaryProps = {
+  children: React.ReactNode;
+};
+
+type AppErrorBoundaryState = {
+  hasError: boolean;
+  message: string;
+};
+
+class AppErrorBoundary extends React.Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
+  declare props: Readonly<AppErrorBoundaryProps>;
+  declare state: AppErrorBoundaryState;
+
+  constructor(props: AppErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, message: '' };
   }
@@ -73,14 +82,18 @@ class AppErrorBoundary extends React.Component<
 function runWhenIdle(task: () => void) {
   if (typeof window === 'undefined') return () => {};
 
-  const win = window as any;
-  if (win.requestIdleCallback) {
-    const id = win.requestIdleCallback(() => task(), { timeout: 1200 });
-    return () => win.cancelIdleCallback(id);
+  const idleWindow = window as Window & {
+    requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  };
+
+  if (typeof idleWindow.requestIdleCallback === 'function' && typeof idleWindow.cancelIdleCallback === 'function') {
+    const id = idleWindow.requestIdleCallback(() => task(), { timeout: 1200 });
+    return () => idleWindow.cancelIdleCallback!(id);
   }
 
-  const timeout = window.setTimeout(task, 500);
-  return () => window.clearTimeout(timeout);
+  const timeout = globalThis.setTimeout(task, 500);
+  return () => globalThis.clearTimeout(timeout);
 }
 
 export default function App() {
