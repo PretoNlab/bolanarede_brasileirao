@@ -167,20 +167,20 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
   };
 
   return (
-    <div className="h-screen w-full overflow-y-auto overflow-x-hidden bg-background text-white/90 no-scrollbar">
+    <div className="h-screen w-full overflow-y-auto overflow-x-hidden bg-[#f4ecde] text-[#2f2418] no-scrollbar">
       <div className="mx-auto min-h-screen w-full max-w-[1320px] px-5 pb-24 pt-5 sm:px-8 lg:px-10">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img src="/logo.svg" alt="BNR" className="h-10 w-10 brightness-0 invert" />
-            <div className="font-editorial text-lg font-bold tracking-[-0.04em]">BNR <span className="opacity-40">Manager</span></div>
+            <img src="/logo.svg" alt="BNR" className="h-10 w-10" />
+            <div className="font-editorial text-lg font-bold tracking-[-0.04em] text-[#2f2418]">BNR <span className="opacity-35">Manager</span></div>
           </div>
 
-          <nav className="hidden items-center gap-8 text-[13px] font-semibold text-white/40 lg:flex">
+          <nav className="hidden items-center gap-8 text-[13px] font-semibold text-[#6e6251] lg:flex">
             {navItems.map((item) => (
               <button
                 key={item.label}
                 onClick={() => scrollToSection(item.target)}
-                className="transition-colors hover:text-white"
+                className="transition-colors hover:text-[#2f2418]"
               >
                 {item.label}
               </button>
@@ -190,13 +190,13 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
           <div className="flex items-center gap-2">
             <button
               onClick={onWorldCup}
-              className="hidden h-11 items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-sm backdrop-blur-md sm:flex"
+              className="hidden h-11 items-center justify-center rounded-full border border-[#d1c2ab] bg-[#fbf7ef] px-4 text-[11px] font-black uppercase tracking-[0.14em] text-[#5f5446] shadow-sm sm:flex"
             >
               Copa do Mundo
             </button>
             <button
               onClick={onStart}
-              className="flex h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-lg shadow-emerald-500/20"
+              className="flex h-11 items-center justify-center rounded-full bg-emerald-700 px-5 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-lg shadow-emerald-900/20"
             >
               Começar Carreira
             </button>
@@ -204,15 +204,16 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
         </header>
 
         <main className="relative flex flex-col items-center pt-14 sm:pt-18">
-          <section className="relative flex w-full flex-col items-center overflow-hidden rounded-[42px] border border-white/5 bg-zinc-900/40 px-6 pb-10 pt-10 shadow-premium sm:px-10 sm:pt-14 backdrop-blur-3xl">
-            <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top,rgba(31,177,133,0.1),transparent_60%)]" />
+          <section className="relative flex w-full flex-col items-center overflow-hidden rounded-[42px] border border-[#dacbb4] bg-[#efe4d2]/90 px-6 pb-10 pt-10 shadow-[0_30px_80px_rgba(95,72,43,0.12)] sm:px-10 sm:pt-14">
+            <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_top,rgba(79,111,82,0.12),transparent_58%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,transparent,rgba(255,248,238,0.55))]" />
             <div className="max-w-4xl text-center relative z-10">
 
-              <h1 className="font-editorial mt-6 text-[3.2rem] font-bold leading-[0.9] tracking-[-0.08em] text-white sm:text-[4.6rem] lg:text-[5rem] italic">
+              <h1 className="font-editorial mt-6 text-[3.2rem] font-bold leading-[0.9] tracking-[-0.08em] text-[#2f2418] sm:text-[4.6rem] lg:text-[5rem] italic">
                 Escale, ajuste, negocie e sustente sua campanha até o topo.
               </h1>
 
-              <p className="mx-auto mt-5 max-w-3xl text-[16px] font-semibold leading-8 text-white/50">
+              <p className="mx-auto mt-5 max-w-3xl text-[16px] font-semibold leading-8 text-[#6f6253]">
                 Monte o elenco, leia o jogo e sustente o projeto quando a pressão subir.
               </p>
 
@@ -226,7 +227,7 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
                 </button>
                 <button
                   onClick={onWorldCup}
-                  className="flex h-12 items-center justify-center gap-3 rounded-full border border-white/10 bg-white/5 px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white shadow-[0_10px_22px_rgba(0,0,0,0.2)] backdrop-blur-md"
+                  className="flex h-12 items-center justify-center gap-3 rounded-full border border-[#d2c4af] bg-[#fbf7ef] px-8 text-[12px] font-black uppercase tracking-[0.14em] text-[#5a4d40] shadow-[0_10px_22px_rgba(80,61,34,0.08)]"
                 >
                   <Globe className="h-4 w-4" />
                   Jogar Copa do Mundo
@@ -238,14 +239,14 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
               {floatingCards.map((card) => (
                 <div
                   key={card.title}
-                  className={`absolute z-10 w-[216px] items-start gap-3 rounded-[22px] border border-white/10 bg-white/5 px-4 py-4 shadow-xl backdrop-blur-3xl ${card.className}`}
+                  className={`absolute z-10 w-[216px] items-start gap-3 rounded-[22px] border border-[#d7c8b1] bg-[#fbf6ee]/92 px-4 py-4 shadow-[0_24px_40px_rgba(93,72,44,0.08)] ${card.className}`}
                 >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-black text-emerald-500">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-700/10 text-[10px] font-black text-emerald-700">
                     •
                   </div>
                   <div>
-                    <div className="text-[13px] font-black leading-tight text-white">{card.title}</div>
-                    <div className="mt-1 text-[12px] font-medium leading-5 text-white/40">{card.text}</div>
+                    <div className="text-[13px] font-black leading-tight text-[#2f2418]">{card.title}</div>
+                    <div className="mt-1 text-[12px] font-medium leading-5 text-[#6e6252]">{card.text}</div>
                   </div>
                 </div>
               ))}
@@ -259,21 +260,21 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
           </section>
 
           <section id="proof" className="mx-auto mt-24 max-w-6xl w-full">
-            <div className="rounded-[42px] border border-white/5 bg-white/5 p-8 shadow-sm sm:p-12 backdrop-blur-3xl">
+            <div className="rounded-[42px] border border-[#ddcfba] bg-[#fbf7f0] p-8 shadow-[0_24px_60px_rgba(95,72,43,0.07)] sm:p-12">
               <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
                 <div className="max-w-4xl">
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">Engine Realista</div>
-                  <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-white sm:text-[3.6rem] italic">
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Engine Realista</div>
+                  <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-[#2f2418] sm:text-[3.6rem] italic">
                     Um Simulador para quem não aceita roteiros prontos.
                   </h2>
-                  <p className="mt-6 max-w-3xl text-[17px] font-medium leading-8 text-white/40">
+                  <p className="mt-6 max-w-3xl text-[17px] font-medium leading-8 text-[#6d6254]">
                     BNR Series foi construído para quem busca profundidade técnica. Cada decisão no mercado ou no gramado reverbera na trajetória do clube.
                   </p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
                   {['Telas reais do jogo', 'Sem Pay-to-win', 'Dados Autênticos'].map((item) => (
-                    <div key={item} className="rounded-[24px] border border-white/10 bg-white/5 px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-white/40 text-center backdrop-blur-xl">
+                    <div key={item} className="rounded-[24px] border border-[#dfd1bc] bg-[#f5ecdf] px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-[#6a5f51] text-center">
                       {item}
                     </div>
                   ))}
@@ -285,11 +286,11 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
           <section className="mx-auto mt-24 max-w-6xl w-full">
             <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
               <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">Conexão Global</div>
-                <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-white sm:text-[3.4rem] italic">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Conexão Global</div>
+                <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-[#2f2418] sm:text-[3.4rem] italic">
                   O ecossistema oficial da Série A e B.
                 </h2>
-                <p className="mt-6 max-w-xl text-[17px] font-medium leading-8 text-white/40">
+                <p className="mt-6 max-w-xl text-[17px] font-medium leading-8 text-[#6d6254]">
                   Assuma o controle dos clubes brasileiros com elencos atualizados e contexto de mercado realista.
                 </p>
               </div>
@@ -298,10 +299,10 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
                 {featuredClubs.map((club, index) => (
                   <div
                     key={club.name}
-                    className={`flex h-[120px] flex-col items-center justify-center rounded-[32px] border border-white/5 bg-white/5 shadow-2xl backdrop-blur-md transition-transform hover:scale-105 ${index % 2 === 1 ? 'sm:-translate-y-4' : ''}`}
+                    className={`flex h-[120px] flex-col items-center justify-center rounded-[32px] border border-[#e1d4c0] bg-[#fbf7f0] shadow-[0_18px_35px_rgba(95,72,43,0.06)] transition-transform hover:scale-105 ${index % 2 === 1 ? 'sm:-translate-y-4' : ''}`}
                   >
                     <img src={club.logo} alt={club.name} loading="lazy" decoding="async" className="h-12 w-12 object-contain" />
-                    <div className="mt-4 text-[9px] font-black uppercase tracking-[0.2em] text-white/30">{club.name}</div>
+                    <div className="mt-4 text-[9px] font-black uppercase tracking-[0.2em] text-[#796d5e]">{club.name}</div>
                   </div>
                 ))}
               </div>
@@ -309,15 +310,15 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
           </section>
 
           <section id="features" className="mx-auto mt-24 max-w-6xl w-full">
-            <div className="rounded-[42px] border border-white/5 bg-white/5 px-8 py-10 backdrop-blur-3xl shadow-sm">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">Deep Systems</div>
-              <p className="mt-4 max-w-3xl text-[17px] font-medium leading-8 text-white/50">
-                BNR Series não é sobre simular resultados, é sobre <span className="text-white">sustentar processos sob pressão.</span>
+            <div className="rounded-[42px] border border-[#ddcfba] bg-[#fbf7f0] px-8 py-10 shadow-[0_24px_60px_rgba(95,72,43,0.07)]">
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Deep Systems</div>
+              <p className="mt-4 max-w-3xl text-[17px] font-medium leading-8 text-[#716555]">
+                BNR Series não é sobre simular resultados, é sobre <span className="text-[#2f2418]">sustentar processos sob pressão.</span>
               </p>
               <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {proofItems.map((item) => (
-                  <div key={item} className="rounded-[28px] border border-white/10 bg-white/5 px-6 py-8 shadow-sm backdrop-blur-xl">
-                    <div className="font-editorial text-[1.8rem] font-bold tracking-[-0.05em] text-white italic">{item}</div>
+                  <div key={item} className="rounded-[28px] border border-[#e0d3c0] bg-[#f6eee2] px-6 py-8 shadow-sm">
+                    <div className="font-editorial text-[1.8rem] font-bold tracking-[-0.05em] text-[#2f2418] italic">{item}</div>
                   </div>
                 ))}
               </div>
@@ -327,22 +328,22 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
           <section id="modes" className="mx-auto mt-24 max-w-6xl w-full">
             <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
               <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">Escalabilidade</div>
-                <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-white sm:text-[3.4rem] italic">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Escalabilidade</div>
+                <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-[#2f2418] sm:text-[3.4rem] italic">
                   A jornada define o gestor.
                 </h2>
-                <p className="mt-6 max-w-xl text-[17px] font-medium leading-8 text-white/40">
+                <p className="mt-6 max-w-xl text-[17px] font-medium leading-8 text-[#6d6254]">
                   Comece onde a pressão é maior e prove que seu método sobrevive ao calendário brasileiro.
                 </p>
               </div>
 
               <div className="grid gap-4">
                 {seasonActs.map((act) => (
-                  <div key={act.step} className="grid gap-6 rounded-[32px] border border-white/5 bg-white/5 p-8 shadow-sm sm:grid-cols-[80px_1fr] backdrop-blur-3xl">
-                    <div className="font-editorial text-[2.4rem] font-bold leading-none tracking-[-0.08em] text-white/10 italic">{act.step}</div>
+                  <div key={act.step} className="grid gap-6 rounded-[32px] border border-[#e0d3c0] bg-[#fbf7f0] p-8 shadow-sm sm:grid-cols-[80px_1fr]">
+                    <div className="font-editorial text-[2.4rem] font-bold leading-none tracking-[-0.08em] text-[#c8b79e] italic">{act.step}</div>
                     <div>
-                      <h3 className="font-editorial text-[1.8rem] font-bold leading-[1] tracking-[-0.05em] text-white italic">{act.title}</h3>
-                      <p className="mt-4 text-[16px] font-medium leading-7 text-white/40">{act.text}</p>
+                      <h3 className="font-editorial text-[1.8rem] font-bold leading-[1] tracking-[-0.05em] text-[#2f2418] italic">{act.title}</h3>
+                      <p className="mt-4 text-[16px] font-medium leading-7 text-[#6d6254]">{act.text}</p>
                     </div>
                   </div>
                 ))}
@@ -352,8 +353,8 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
 
           <section id="faq" className="mx-auto mt-32 max-w-6xl w-full">
             <div className="max-w-3xl">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">Controle Absoluto</div>
-              <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-white sm:text-[3.4rem] italic">
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Controle Absoluto</div>
+              <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-[#2f2418] sm:text-[3.4rem] italic">
                 Ferramentas para quem domina o caos.
               </h2>
             </div>
@@ -362,10 +363,10 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
               {featureCards.map((feature, index) => (
                 <div
                   key={feature.title}
-                  className={`rounded-[32px] border p-8 shadow-sm transition-all hover:bg-white/10 ${index === 0 ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/10 bg-white/5'}`}
+                  className={`rounded-[32px] border p-8 shadow-sm transition-all hover:bg-[#f8f0e5] ${index === 0 ? 'border-emerald-700/20 bg-emerald-700/5' : 'border-[#ddd0bc] bg-[#fbf7f0]'}`}
                 >
-                  <h3 className="font-editorial text-[1.8rem] font-bold leading-[1] tracking-[-0.05em] text-white italic">{feature.title}</h3>
-                  <p className="mt-4 text-[16px] font-medium leading-7 text-white/40">{feature.text}</p>
+                  <h3 className="font-editorial text-[1.8rem] font-bold leading-[1] tracking-[-0.05em] text-[#2f2418] italic">{feature.title}</h3>
+                  <p className="mt-4 text-[16px] font-medium leading-7 text-[#6d6254]">{feature.text}</p>
                 </div>
               ))}
             </div>
@@ -379,7 +380,7 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
               </button>
               <button
                 onClick={onWorldCup}
-                className="flex h-12 items-center justify-center gap-3 rounded-full border border-white/10 bg-white/5 px-8 text-[11px] font-black uppercase tracking-[0.15em] text-white backdrop-blur-md"
+                className="flex h-12 items-center justify-center gap-3 rounded-full border border-[#d1c2ab] bg-[#fbf7ef] px-8 text-[11px] font-black uppercase tracking-[0.15em] text-[#5f5446]"
               >
                 Copa do Mundo
               </button>
@@ -389,8 +390,8 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
           <section className="mx-auto mt-32 max-w-6xl w-full">
             <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
               <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">Diferentes Intensidades</div>
-                <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-white sm:text-[3.4rem] italic">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Diferentes Intensidades</div>
+                <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-[#2f2418] sm:text-[3.4rem] italic">
                   Escolha seu campo de batalha.
                 </h2>
               </div>
@@ -399,14 +400,14 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
                 {modeCards.map((card) => (
                   <div
                     key={card.title}
-                    className={`rounded-[40px] border p-8 shadow-sm backdrop-blur-3xl transition-all hover:scale-[1.02] ${card.dark ? 'border-emerald-600/30 bg-emerald-500/10' : 'border-white/10 bg-white/5'}`}
+                    className={`rounded-[40px] border p-8 shadow-sm transition-all hover:scale-[1.02] ${card.dark ? 'border-emerald-700/20 bg-[#eef3eb]' : 'border-[#ddd0bc] bg-[#fbf7f0]'}`}
                   >
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">{card.kicker}</div>
-                    <h3 className="font-editorial mt-6 text-[2.2rem] font-bold leading-[1] tracking-[-0.05em] text-white italic">{card.title}</h3>
-                    <p className="mt-4 text-[16px] font-medium leading-7 text-white/50">{card.text}</p>
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#847767]">{card.kicker}</div>
+                    <h3 className="font-editorial mt-6 text-[2.2rem] font-bold leading-[1] tracking-[-0.05em] text-[#2f2418] italic">{card.title}</h3>
+                    <p className="mt-4 text-[16px] font-medium leading-7 text-[#6d6254]">{card.text}</p>
                     <button
                       onClick={card.dark ? onWorldCup : onStart}
-                      className={`mt-8 flex h-12 w-full items-center justify-center rounded-full px-6 text-[11px] font-black uppercase tracking-[0.15em] ${card.dark ? 'bg-emerald-600 text-white' : 'bg-white/10 border border-white/10 text-white'}`}
+                      className={`mt-8 flex h-12 w-full items-center justify-center rounded-full px-6 text-[11px] font-black uppercase tracking-[0.15em] ${card.dark ? 'bg-emerald-700 text-white' : 'border border-[#d3c4ad] bg-[#f5ecde] text-[#5f5446]'}`}
                     >
                       {card.cta}
                     </button>
@@ -417,13 +418,13 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
           </section>
 
           <section className="mx-auto mt-24 max-w-6xl">
-            <div className="rounded-[36px] bg-zinc-900 border border-white/5 px-7 py-8 text-white shadow-[0_24px_60px_rgba(0,0,0,0.5)] sm:px-10">
+            <div className="rounded-[36px] border border-[#ddd0bc] bg-[#f0e5d2] px-7 py-8 text-[#2f2418] shadow-[0_24px_60px_rgba(95,72,43,0.10)] sm:px-10">
               <div className="max-w-4xl">
-                <div className="text-[11px] font-black uppercase tracking-[0.22em] text-white/30">Visão de futuro</div>
+                <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#8b7b67]">Visão de futuro</div>
                 <h2 className="font-editorial mt-4 text-[2.7rem] font-bold leading-[0.92] tracking-[-0.08em] sm:text-[3.5rem]">
                   Identidade forte. Ambição global.
                 </h2>
-                <p className="mt-4 max-w-3xl text-[15px] font-semibold leading-7 text-white/50">
+                <p className="mt-4 max-w-3xl text-[15px] font-semibold leading-7 text-[#6d6254]">
                   A base é forte. O próximo passo é abrir espaço para mais contextos, ligas, competições e torneios.
                 </p>
               </div>
@@ -453,20 +454,20 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
           <section className="mx-auto mt-24 max-w-6xl">
             <div className="grid gap-8 lg:grid-cols-[0.86fr_1.14fr]">
               <div>
-                <div className="text-[11px] font-black uppercase tracking-[0.24em] text-emerald-500">Perguntas frequentes</div>
-                <h2 className="font-editorial mt-4 text-[2.4rem] font-bold leading-[0.92] tracking-[-0.08em] text-white sm:text-[3.2rem]">
+                <div className="text-[11px] font-black uppercase tracking-[0.24em] text-emerald-700">Perguntas frequentes</div>
+                <h2 className="font-editorial mt-4 text-[2.4rem] font-bold leading-[0.92] tracking-[-0.08em] text-[#2f2418] sm:text-[3.2rem]">
                   O essencial antes de entrar no jogo.
                 </h2>
-                <p className="mt-4 max-w-xl text-[15px] font-semibold leading-7 text-white/40">
+                <p className="mt-4 max-w-xl text-[15px] font-semibold leading-7 text-[#6d6254]">
                   O básico, sem enrolação.
                 </p>
               </div>
 
               <div className="space-y-4">
                 {faqs.map((item) => (
-                  <div key={item.q} className="rounded-[26px] border border-white/10 bg-white/5 p-6 backdrop-blur-3xl shadow-sm">
-                    <div className="text-[15px] font-black text-white">{item.q}</div>
-                    <div className="mt-2 text-[15px] font-semibold leading-7 text-white/40">{item.a}</div>
+                  <div key={item.q} className="rounded-[26px] border border-[#ddd0bc] bg-[#fbf7f0] p-6 shadow-sm">
+                    <div className="text-[15px] font-black text-[#2f2418]">{item.q}</div>
+                    <div className="mt-2 text-[15px] font-semibold leading-7 text-[#6d6254]">{item.a}</div>
                   </div>
                 ))}
               </div>
@@ -474,15 +475,16 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
           </section>
 
           <section className="mx-auto mt-40 max-w-6xl w-full pb-safe">
-            <div className="rounded-[48px] bg-gradient-to-br from-emerald-600 to-emerald-900 px-8 py-16 text-white shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="relative overflow-hidden rounded-[48px] bg-[linear-gradient(135deg,#d9c1a1_0%,#ead9c2_45%,#f4ebdd_100%)] px-8 py-16 text-[#2f2418] shadow-[0_34px_90px_rgba(95,72,43,0.14)]">
+              <div className="absolute top-0 right-0 h-96 w-96 rounded-full bg-white/30 blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-emerald-900/10 blur-3xl -translate-x-1/3 translate-y-1/3" />
               <div className="grid gap-12 lg:grid-cols-[1fr_auto] lg:items-center relative z-10">
                 <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60">Final de Temporada</div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6b5f4f]">Final de Temporada</div>
                   <h2 className="font-editorial mt-6 max-w-4xl text-[3rem] font-bold leading-[0.85] tracking-[-0.06em] sm:text-[4.2rem] italic">
                     Assuma o controle.<br />Escale sua história.
                   </h2>
-                  <p className="mt-8 max-w-xl text-[18px] font-bold leading-8 text-white/70 italic">
+                  <p className="mt-8 max-w-xl text-[18px] font-bold leading-8 text-[#5f5446] italic">
                     BNR Manager: Onde cada tática é um risco e cada vitória é real.
                   </p>
                 </div>
@@ -496,7 +498,7 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
                   </button>
                   <button
                     onClick={onWorldCup}
-                    className="flex h-14 items-center justify-center gap-3 rounded-full border-2 border-white/20 bg-white/10 px-8 text-[12px] font-black uppercase tracking-[0.15em] text-white backdrop-blur-md"
+                    className="flex h-14 items-center justify-center gap-3 rounded-full border-2 border-[#cab79a] bg-[#fff8ef] px-8 text-[12px] font-black uppercase tracking-[0.15em] text-[#5b5044]"
                   >
                     World Cup 2026
                   </button>
@@ -505,10 +507,10 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
             </div>
           </section>
 
-          <footer className="mx-auto mt-20 flex w-full max-w-6xl flex-col gap-10 border-t border-white/5 py-12 text-white/40 sm:flex-row sm:items-start sm:justify-between">
+          <footer className="mx-auto mt-20 flex w-full max-w-6xl flex-col gap-10 border-t border-[#ddcfba] py-12 text-[#746858] sm:flex-row sm:items-start sm:justify-between">
             <div className="max-w-sm">
               <div className="flex items-center gap-4">
-                <div className="font-editorial text-xl font-bold tracking-[-0.05em] text-white italic">BNR <span className="opacity-20">Manager</span></div>
+                <div className="font-editorial text-xl font-bold tracking-[-0.05em] text-[#2f2418] italic">BNR <span className="opacity-20">Manager</span></div>
               </div>
               <div className="mt-4 text-[14px] font-medium leading-7">
                 A próxima geração de simulação esportiva focada em narrativa, contexto e trajetória real de clubes.
@@ -520,7 +522,7 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
                 <button
                   key={`footer-${item.label}`}
                   onClick={() => scrollToSection(item.target)}
-                  className="transition-colors hover:text-white"
+                  className="transition-colors hover:text-[#2f2418]"
                 >
                   {item.label}
                 </button>
@@ -532,4 +534,3 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
     </div>
   );
 }
-

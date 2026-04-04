@@ -281,8 +281,8 @@ export function TriplePhoneShowcase() {
     <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
       <div className="flex flex-col items-center lg:items-start">
         <div className="mb-4 text-center lg:text-left">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/54">Mercado</div>
-          <div className="mt-1 max-w-[220px] text-[14px] font-semibold leading-6 text-white/78">
+          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#7b6d5d]">Mercado</div>
+          <div className="mt-1 max-w-[220px] text-[14px] font-semibold leading-6 text-[#5f5446]">
             Leia a janela e ataque quando a peça certa aparecer.
           </div>
         </div>
@@ -308,8 +308,8 @@ export function TriplePhoneShowcase() {
 
       <div className="flex flex-col items-center">
         <div className="mb-4 text-center">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/54">Liga e stats</div>
-          <div className="mt-1 max-w-[220px] text-[14px] font-semibold leading-6 text-white/78">
+          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#7b6d5d]">Liga e stats</div>
+          <div className="mt-1 max-w-[220px] text-[14px] font-semibold leading-6 text-[#5f5446]">
             Veja a tabela apertar e o peso real de cada rodada.
           </div>
         </div>
@@ -322,8 +322,8 @@ export function TriplePhoneShowcase() {
 
       <div className="flex flex-col items-center lg:items-end">
         <div className="mb-4 text-center lg:text-left">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/54">Finanças</div>
-          <div className="mt-1 max-w-[220px] text-[14px] font-semibold leading-6 text-white/78">
+          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#7b6d5d]">Finanças</div>
+          <div className="mt-1 max-w-[220px] text-[14px] font-semibold leading-6 text-[#5f5446]">
             Busque fôlego no caixa sem desmontar o projeto.
           </div>
         </div>
