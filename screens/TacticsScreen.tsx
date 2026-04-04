@@ -73,6 +73,125 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
     [tempLineup, tempFormation, tempStyle, tempInstructions, team]
   );
 
+  const powerCards = [
+    { label: 'Defesa', value: powers.def, icon: <Shield size={14} />, color: 'text-blue-400' },
+    { label: 'Meio', value: powers.mid, icon: <Compass size={14} />, color: 'text-amber-400' },
+    { label: 'Ataque', value: powers.att, icon: <Target size={14} />, color: 'text-rose-400' }
+  ];
+
+  const instructionsConfig = [
+    { key: 'pressing', label: 'Pressão', options: ['BAIXA', 'MEDIA', 'ALTA'] },
+    { key: 'passing', label: 'Passagem', options: ['CURTO', 'MISTO', 'LONGO'] },
+    { key: 'tempo', label: 'Ritmo', options: ['LENTO', 'PADRAO', 'VELOZ'] }
+  ] as const;
+
+  const renderControlPanel = (panelClassName: string) => (
+    <div className={panelClassName}>
+      <div className="grid grid-cols-3 gap-3">
+        {powerCards.map(p => (
+          <div key={p.label} className="ui-card-premium p-4 flex flex-col items-center gap-1 border-white/5 bg-white/5">
+            <div className={clsx("p-2 rounded-xl bg-white/5 mb-1", p.color)}>{p.icon}</div>
+            <span className="text-[9px] font-black uppercase text-white/30 tracking-widest">{p.label}</span>
+            <span className="text-xl font-black italic">{p.value}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="ui-card-premium p-6 space-y-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-1">Esquema Tático</label>
+            <select 
+              value={tempFormation}
+              onChange={(e) => setTempFormation(e.target.value as FormationType)}
+              className="w-full bg-white/5 border border-white/5 p-4 rounded-2xl text-[11px] font-black text-center uppercase outline-none focus:border-primary transition-all appearance-none"
+            >
+              {FORMATIONS.map(f => <option key={f} value={f} className="bg-zinc-900">{f}</option>)}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-1">Mentalidade</label>
+            <select 
+              value={tempStyle}
+              onChange={(e) => setTempStyle(e.target.value as PlayingStyle)}
+              className="w-full bg-white/5 border border-white/5 p-4 rounded-2xl text-[11px] font-black text-center uppercase outline-none focus:border-primary transition-all appearance-none"
+            >
+              {STYLES.map(s => <option key={s} value={s} className="bg-zinc-900">{s}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="ui-card-premium p-6 border-emerald-500/10 bg-emerald-500/[0.02]">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-500">
+            <Activity size={18} />
+          </div>
+          <div>
+            <h3 className="text-sm font-black uppercase text-white tracking-widest leading-none">Feedback Tático</h3>
+            <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Análise Assistida</span>
+          </div>
+        </div>
+        
+        <div className="space-y-3 mb-5">
+          {tacticalAnalysis.strengths.slice(0, 2).map((s, i) => (
+            <div key={i} className="flex items-center gap-3 text-[11px] font-bold text-emerald-400">
+              <Zap size={12} className="shrink-0" />
+              <span>{s}</span>
+            </div>
+          ))}
+          {tacticalAnalysis.weaknesses.slice(0, 2).map((w, i) => (
+            <div key={i} className="flex items-center gap-3 text-[11px] font-bold text-rose-400">
+              <AlertCircle size={12} className="shrink-0" />
+              <span>{w}</span>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-[12px] text-white/40 font-medium leading-relaxed italic border-t border-white/5 pt-4">
+          "{tacticalAnalysis.summary}"
+        </p>
+      </div>
+
+      <div className="ui-card-premium p-6 space-y-6">
+        {instructionsConfig.map((instr) => (
+          <div key={instr.key} className="space-y-3">
+            <div className="flex justify-between items-center px-1">
+              <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{instr.label}</span>
+              <span className="text-[10px] font-black text-primary uppercase tracking-widest">{(tempInstructions as any)[instr.key]}</span>
+            </div>
+            <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
+              {instr.options.map(opt => (
+                <button
+                  key={opt}
+                  onClick={() => setTempInstructions(prev => ({ ...prev, [instr.key]: opt }))}
+                  className={clsx(
+                    "flex-1 py-3 rounded-xl text-[9px] font-black tracking-widest transition-all",
+                    (tempInstructions as any)[instr.key] === opt ? "bg-primary text-white shadow-lg" : "text-white/30 hover:text-white/50"
+                  )}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {!isComplete && (
+        <div className="bg-rose-500/10 border border-rose-500/20 p-5 rounded-[2rem] flex items-center gap-4">
+          <div className="w-10 h-10 rounded-2xl bg-rose-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-rose-600/20">
+            <AlertCircle size={20} />
+          </div>
+          <div>
+            <span className="text-[11px] font-black uppercase tracking-widest text-rose-400">Escalação Incompleta</span>
+            <p className="text-[12px] font-bold text-rose-200/50 leading-relaxed mt-0.5">Seu time precisa de 11 jogadores titulares.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="flex flex-col h-screen bg-background text-white/90 selection:bg-primary/30 overflow-hidden">
       <Header 
@@ -93,9 +212,9 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
         }
       />
 
-      <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      <main className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
         {/* Lado Esquerdo: Campo (Pitch) */}
-        <div className="flex-1 relative flex items-center justify-center p-4 bg-[radial-gradient(circle_at_center,rgba(31,177,133,0.05),transparent_70%)]">
+        <div className="relative flex items-center justify-center p-4 bg-[radial-gradient(circle_at_center,rgba(31,177,133,0.05),transparent_70%)] md:flex-1 md:min-h-0">
            <div className="relative aspect-[3/4] w-full max-w-[480px] select-none">
               <div className="absolute inset-0 rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl bg-[#020617]">
                  <div className="absolute inset-0 bg-gradient-to-b from-[#1e5231]/10 to-[#123620]/20" />
@@ -151,119 +270,14 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
            </div>
         </div>
 
-        <div className="w-full md:w-[420px] bg-white/[0.02] border-l border-white/5 backdrop-blur-3xl overflow-y-auto no-scrollbar pb-safe flex flex-col gap-6 p-6">
-            <div className="grid grid-cols-3 gap-3">
-                {[
-                    { label: 'Defesa', value: powers.def, icon: <Shield size={14} />, color: 'text-blue-400' },
-                    { label: 'Meio', value: powers.mid, icon: <Compass size={14} />, color: 'text-amber-400' },
-                    { label: 'Ataque', value: powers.att, icon: <Target size={14} />, color: 'text-rose-400' }
-                ].map(p => (
-                    <div key={p.label} className="ui-card-premium p-4 flex flex-col items-center gap-1 border-white/5 bg-white/5">
-                        <div className={clsx("p-2 rounded-xl bg-white/5 mb-1", p.color)}>{p.icon}</div>
-                        <span className="text-[9px] font-black uppercase text-white/30 tracking-widest">{p.label}</span>
-                        <span className="text-xl font-black italic">{p.value}</span>
-                    </div>
-                ))}
-            </div>
-
-            <div className="ui-card-premium p-6 space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-1">Esquema Tático</label>
-                        <select 
-                            value={tempFormation}
-                            onChange={(e) => setTempFormation(e.target.value as FormationType)}
-                            className="w-full bg-white/5 border border-white/5 p-4 rounded-2xl text-[11px] font-black text-center uppercase outline-none focus:border-primary transition-all appearance-none"
-                        >
-                            {FORMATIONS.map(f => <option key={f} value={f} className="bg-zinc-900">{f}</option>)}
-                        </select>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-1">Mentalidade</label>
-                        <select 
-                            value={tempStyle}
-                            onChange={(e) => setTempStyle(e.target.value as PlayingStyle)}
-                            className="w-full bg-white/5 border border-white/5 p-4 rounded-2xl text-[11px] font-black text-center uppercase outline-none focus:border-primary transition-all appearance-none"
-                        >
-                            {STYLES.map(s => <option key={s} value={s} className="bg-zinc-900">{s}</option>)}
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div className="ui-card-premium p-6 border-emerald-500/10 bg-emerald-500/[0.02]">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-500">
-                        <Activity size={18} />
-                    </div>
-                    <div>
-                        <h3 className="text-sm font-black uppercase text-white tracking-widest leading-none">Feedback Tático</h3>
-                        <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Análise Assistida</span>
-                    </div>
-                </div>
-                
-                <div className="space-y-3 mb-5">
-                    {tacticalAnalysis.strengths.slice(0, 2).map((s, i) => (
-                        <div key={i} className="flex items-center gap-3 text-[11px] font-bold text-emerald-400">
-                            <Zap size={12} className="shrink-0" />
-                            <span>{s}</span>
-                        </div>
-                    ))}
-                    {tacticalAnalysis.weaknesses.slice(0, 2).map((w, i) => (
-                        <div key={i} className="flex items-center gap-3 text-[11px] font-bold text-rose-400">
-                            <AlertCircle size={12} className="shrink-0" />
-                            <span>{w}</span>
-                        </div>
-                    ))}
-                </div>
-
-                <p className="text-[12px] text-white/40 font-medium leading-relaxed italic border-t border-white/5 pt-4">
-                   "{tacticalAnalysis.summary}"
-                </p>
-            </div>
-
-            <div className="ui-card-premium p-6 space-y-6">
-                {[
-                    { key: 'pressing', label: 'Pressão', options: ['BAIXA', 'MEDIA', 'ALTA'] },
-                    { key: 'passing', label: 'Passagem', options: ['CURTO', 'MISTO', 'LONGO'] },
-                    { key: 'tempo', label: 'Ritmo', options: ['LENTO', 'PADRAO', 'VELOZ'] }
-                ].map((instr) => (
-                    <div key={instr.key} className="space-y-3">
-                        <div className="flex justify-between items-center px-1">
-                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{instr.label}</span>
-                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">{(tempInstructions as any)[instr.key]}</span>
-                        </div>
-                        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
-                            {instr.options.map(opt => (
-                                <button
-                                    key={opt}
-                                    onClick={() => setTempInstructions(prev => ({ ...prev, [instr.key]: opt }))}
-                                    className={clsx(
-                                        "flex-1 py-3 rounded-xl text-[9px] font-black tracking-widest transition-all",
-                                        (tempInstructions as any)[instr.key] === opt ? "bg-primary text-white shadow-lg" : "text-white/30 hover:text-white/50"
-                                    )}
-                                >
-                                    {opt}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {!isComplete && (
-               <div className="bg-rose-500/10 border border-rose-500/20 p-5 rounded-[2rem] flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-2xl bg-rose-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-rose-600/20">
-                     <AlertCircle size={20} />
-                  </div>
-                  <div>
-                     <span className="text-[11px] font-black uppercase tracking-widest text-rose-400">Escalação Incompleta</span>
-                     <p className="text-[12px] font-bold text-rose-200/50 leading-relaxed mt-0.5">Seu time precisa de 11 jogadores titulares.</p>
-                  </div>
-               </div>
-            )}
-        </div>
+        {renderControlPanel(
+          "hidden md:flex md:w-[420px] bg-white/[0.02] border-l border-white/5 backdrop-blur-3xl overflow-y-auto no-scrollbar pb-safe flex-col gap-6 p-6"
+        )}
       </main>
+
+      {renderControlPanel(
+        "md:hidden border-t border-white/5 bg-[#020617]/95 backdrop-blur-3xl px-4 pt-4 pb-safe max-h-[42vh] overflow-y-auto no-scrollbar flex flex-col gap-4"
+      )}
 
       {selectedSlotIndex !== null && (
         <PlayerSelectorDrawer
@@ -277,5 +291,4 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
     </div>
   );
 }
-
 
