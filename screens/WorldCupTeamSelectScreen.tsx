@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { TeamLogo } from '../components/TeamLogo';
-import { ArrowLeft, Search, Check, X, Globe, Shield, Star } from 'lucide-react';
+import { ArrowLeft, Search, Check, X, Globe, Shield, Star, Home } from 'lucide-react';
 import { Team, WCConfederation } from '../types';
 import { WC_TEAMS_DATA, CONFEDERATION_LABELS, getTeamConfederation } from '../worldCupData';
 import clsx from 'clsx';
@@ -62,8 +62,8 @@ export default function WorldCupTeamSelectScreen({ teams, onSelect, onBack }: Pr
       {/* HEADER */}
       <header className="px-5 pt-12 pb-4 bg-background z-10">
         <div className="flex items-center justify-between mb-6">
-          <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-surface text-white transition-colors">
-            <ArrowLeft className="w-6 h-6" />
+          <button onClick={onBack} className="p-3 -ml-2 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 text-white transition-all active:scale-95 group" title="Voltar ao Menu Principal">
+            <Home className="w-5 h-5 text-yellow-400 group-hover:scale-110 transition-transform" />
           </button>
           <div className="flex flex-col items-center">
             <span className="text-[10px] font-black tracking-[0.2em] text-yellow-400 uppercase">Copa do Mundo 2026</span>
