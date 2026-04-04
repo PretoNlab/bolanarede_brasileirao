@@ -118,6 +118,7 @@ ensureFile('metadata.json');
 ensureFile('vercel.json');
 ensureFile('public/robots.txt', 'robots.txt público');
 ensureFile('public/social-cover.svg', 'social cover pública');
+ensureFile('public/sitemap.xml', 'sitemap público');
 checkManifest();
 checkMetadata();
 checkVercelConfig();
