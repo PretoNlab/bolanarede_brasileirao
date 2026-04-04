@@ -232,31 +232,65 @@ export function generateKnockoutBracket(qualifiedTeamIds: string[]): WCBracketMa
 
 // ========== SIMULAÇÃO DE PARTIDA ==========
 
-export function simulateWCMatch(home: Team, away: Team): { homeScore: number; awayScore: number; events: MatchEvent[] } {
+export function simulateWCMatch(
+  home: Team, 
+  away: Team, 
+  phase: WCPhase = 'GROUP'
+): { homeScore: number; awayScore: number; events: MatchEvent[] } {
   const events: MatchEvent[] = [];
 
+  // 1. Manager Influence & Tactical Bonus
+  let homeManagerBonus = 0;
+  let awayManagerBonus = 0;
+
+  // Managers who are known for tactical brilliance in tournaments
+  const eliteManagers = ['Carlo Ancelotti', 'Didier Deschamps', 'Lionel Scaloni', 'Luis de la Fuente', 'Thomas Tuchel', 'Julian Nagelsmann', 'Marcelo Bielsa'];
+  
+  if (home.managerName && eliteManagers.includes(home.managerName)) {
+    homeManagerBonus = phase === 'GROUP' ? 2 : 5; // Elite managers shine in knockouts
+  }
+  if (away.managerName && eliteManagers.includes(away.managerName)) {
+    awayManagerBonus = phase === 'GROUP' ? 2 : 5;
+  }
+
+  // 2. Base Strength Calculation
   const hStats = calculateDynamicTeamStrength(home);
   const aStats = calculateDynamicTeamStrength(away);
 
   const homeControl = hStats.control || ((hStats.att + hStats.def) / 2);
   const awayControl = aStats.control || ((aStats.att + aStats.def) / 2);
 
-  const homePower = (hStats.att - aStats.def) + (homeControl - awayControl) * 0.35 + 5 + (Math.random() * 12 - 6);
-  const awayPower = (aStats.att - hStats.def) + (awayControl - homeControl) * 0.25 + (Math.random() * 12 - 6);
+  // Apply Manager Bonus to control and power
+  const homePower = (hStats.att - aStats.def) + (homeControl - awayControl) * 0.35 + 5 + homeManagerBonus + (Math.random() * 12 - 6);
+  const awayPower = (aStats.att - hStats.def) + (awayControl - homeControl) * 0.25 + awayManagerBonus + (Math.random() * 12 - 6);
 
-  const homeExpected = Math.max(0.2, 1.2 + (homePower * 0.035));
-  const awayExpected = Math.max(0.2, 1.2 + (awayPower * 0.035));
+  // 3. Phase Momentum (Knockout Pressure)
+  let homeExpected = Math.max(0.15, 1.1 + (homePower * 0.038));
+  let awayExpected = Math.max(0.15, 1.1 + (awayPower * 0.038));
+
+  // In later stages, defense becomes tighter
+  if (phase === 'SEMI' || phase === 'FINAL') {
+    homeExpected *= 0.85;
+    awayExpected *= 0.85;
+  }
 
   let homeScore = 0;
   let awayScore = 0;
 
+  // 4. Goal Simulation (6 scoring opportunities)
   for (let i = 0; i < 6; i++) {
     if (Math.random() < homeExpected / 6) {
       homeScore++;
       const minute = Math.floor(Math.random() * 90) + 1;
       const { scorer, assist } = selectGoalParticipants(home);
       
-      if (!scorer) continue; // Pular gol se não houver jogadores válidos
+      if (!scorer) continue;
+
+      // Narrative boost for big stars
+      let specialDesc = '';
+      if (scorer.overall >= 90 && (phase === 'SEMI' || phase === 'FINAL')) {
+        specialDesc = `O CRAQUE APARECEU! ${scorer.name} brilha no momento de maior pressão! `;
+      }
 
       events.push({ 
         minute, 
@@ -264,7 +298,7 @@ export function simulateWCMatch(home: Team, away: Team): { homeScore: number; aw
         teamId: home.id, 
         playerName: scorer.name, 
         assistName: assist?.name,
-        description: `GOL! ${scorer.name} marca para ${home.shortName}!${assist ? ` (Assist: ${assist.name})` : ''}` 
+        description: `${specialDesc}GOL! ${scorer.name} marca para ${home.shortName}!${assist ? ` (Assist: ${assist.name})` : ''}` 
       });
     }
     if (Math.random() < awayExpected / 6) {
@@ -272,7 +306,12 @@ export function simulateWCMatch(home: Team, away: Team): { homeScore: number; aw
       const minute = Math.floor(Math.random() * 90) + 1;
       const { scorer, assist } = selectGoalParticipants(away);
 
-      if (!scorer) continue; // Pular gol se não houver jogadores válidos
+      if (!scorer) continue;
+
+      let specialDesc = '';
+      if (scorer.overall >= 90 && (phase === 'SEMI' || phase === 'FINAL')) {
+        specialDesc = `O CRAQUE APARECEU! ${scorer.name} brilha no momento de maior pressão! `;
+      }
 
       events.push({ 
         minute, 
@@ -280,22 +319,24 @@ export function simulateWCMatch(home: Team, away: Team): { homeScore: number; aw
         teamId: away.id, 
         playerName: scorer.name, 
         assistName: assist?.name,
-        description: `GOL! ${scorer.name} marca para ${away.shortName}!${assist ? ` (Assist: ${assist.name})` : ''}` 
+        description: `${specialDesc}GOL! ${scorer.name} marca para ${away.shortName}!${assist ? ` (Assist: ${assist.name})` : ''}` 
       });
     }
   }
 
-  // Cartões
-  home.roster.slice(0, 14).forEach(p => {
-    if (Math.random() < 0.06) {
+  // 5. Tension & Cards (Increases in knockouts)
+  const tensionFactor = phase === 'GROUP' ? 1 : 1.5;
+  
+  home.roster.slice(0, 11).forEach(p => {
+    if (Math.random() < 0.05 * tensionFactor) {
       const minute = Math.floor(Math.random() * 90) + 1;
-      events.push({ minute, type: 'card_yellow', teamId: home.id, playerName: p.name, description: `Cartão amarelo para ${p.name}` });
+      events.push({ minute, type: 'card_yellow', teamId: home.id, playerName: p.name, description: `Cartão amarelo para ${p.name}. O clima está quente!` });
     }
   });
-  away.roster.slice(0, 14).forEach(p => {
-    if (Math.random() < 0.06) {
+  away.roster.slice(0, 11).forEach(p => {
+    if (Math.random() < 0.05 * tensionFactor) {
       const minute = Math.floor(Math.random() * 90) + 1;
-      events.push({ minute, type: 'card_yellow', teamId: away.id, playerName: p.name, description: `Cartão amarelo para ${p.name}` });
+      events.push({ minute, type: 'card_yellow', teamId: away.id, playerName: p.name, description: `Cartão amarelo para ${p.name}. Muita pressão em campo!` });
     }
   });
 
