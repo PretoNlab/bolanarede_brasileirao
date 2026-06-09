@@ -3,13 +3,16 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { hasAnyLocalSave } from './save';
 
 const LandingPage = lazy(() => import('./screens/SplashScreen'));
+const WorldCupLandingScreen = lazy(() => import('./screens/WorldCupLandingScreen'));
 const PlayApp = lazy(() => import('./PlayApp'));
 
-type RoutePath = '/' | '/play';
+type RoutePath = '/' | '/play' | '/copa';
 type PlayIntent = 'career' | 'continue' | 'worldcup' | null;
 
 function normalizePath(pathname: string): RoutePath {
-  return pathname === '/play' ? '/play' : '/';
+  if (pathname === '/play') return '/play';
+  if (pathname === '/copa' || pathname === '/worldcup') return '/copa';
+  return '/';
 }
 
 function LoadingScreen() {
@@ -177,6 +180,20 @@ export default function App() {
               className="w-full h-full"
             >
               <LandingPage {...landingProps} />
+            </motion.div>
+          ) : routePath === '/copa' ? (
+            <motion.div
+              key="copa-landing"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full h-full"
+            >
+              <WorldCupLandingScreen
+                onPlayWorldCup={() => navigateTo('/play', 'worldcup')}
+                onBackHome={() => navigateTo('/')}
+              />
             </motion.div>
           ) : (
             <motion.div

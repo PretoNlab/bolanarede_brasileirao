@@ -99,38 +99,7 @@ export const createPlayer = (
   };
 };
 
-// Converte WCTeamData em Team completo
-export const buildWCTeam = (data: WCTeamData): Team => {
-  const roster = data.players.map((p) => createPlayer(p));
-  roster.sort((a, b) => b.overall - a.overall);
-  const lineup = roster.slice(0, 11).map(p => p.id);
-  const avg = (data.attack + data.defense) / 2;
 
-  return {
-    id: data.id,
-    name: data.name,
-    shortName: data.shortName,
-    city: '',
-    logoColor1: data.logoColor1,
-    logoColor2: data.logoColor2,
-    // Os assets atuais da Copa embutem texto e badge de grupo na própria imagem.
-    // Para manter a UI limpa, usamos o escudo estilizado do app nesses times.
-    logoUrl: data.logoUrl,
-    attack: data.attack,
-    defense: data.defense,
-    roster,
-    lineup,
-    formation: '4-3-3',
-    style: 'Equilibrado',
-    instructions: { pressing: 'MEDIA', passing: 'MISTO', tempo: 'PADRAO' },
-    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0,
-    moral: 80,
-    division: 0,
-    stadiumCapacity: 60000,
-    stadiumName: 'Estádio da Copa',
-    managerName: data.managerName,
-  };
-};
 
 export const CONFEDERATION_LABELS: Record<WCConfederation, string> = {
   UEFA: 'Europa',
@@ -151,6 +120,7 @@ interface WCPrelistRow {
 
 const PRELIST_TEAM_NAME_ALIASES: Record<string, string> = {
   'bosnia e herzegovina': 'wc_bosnia',
+  'coreia do sul': 'wc_southkorea',
 };
 
 export const WORLD_CUP_REGIONAL_FALLBACK_NAMES: Record<WCConfederation, { first: string[]; last: string[] }> = {
@@ -246,7 +216,7 @@ function normalizePlayerName(value: string) {
 
 // ========== 48 SELEÇÕES DA COPA DO MUNDO 2026 ==========
 
-export const WC_TEAMS_DATA: WCTeamData[] = [
+const ALL_RAW_WC_TEAMS_DATA: WCTeamData[] = [
 
   // ==================== CONMEBOL (6) ====================
   {
@@ -1146,6 +1116,319 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
       { name: 'Soufiane Rahimi', position: 'ATA', age: 28, overall: 81 },
     ]
   },
+  {
+    id: 'wc_spain', name: 'Espanha', shortName: 'ESP', confederation: 'UEFA',
+    logoUrl: '/world_cup_shields/png/espanha.png',
+    logoColor1: '#FF0000', logoColor2: '#FFFF00', attack: 87, defense: 85,
+    managerName: 'Luis de la Fuente',
+    players: [
+      { name: 'Unai Simón', position: 'GOL', age: 27, overall: 86 },
+      { name: 'David Raya', position: 'GOL', age: 28, overall: 84 },
+      { name: 'Robin Le Normand', position: 'ZAG', age: 27, overall: 83 },
+      { name: 'Aymeric Laporte', position: 'ZAG', age: 30, overall: 84 },
+      { name: 'Daniel Carvajal', position: 'LAT', age: 32, overall: 86 },
+      { name: 'Alejandro Grimaldo', position: 'LAT', age: 28, overall: 85 },
+      { name: 'Marc Cucurella', position: 'LAT', age: 25, overall: 83 },
+      { name: 'Rodri', position: 'VOL', age: 28, overall: 91, mainPosition: 'DM', statsOverrides: { passing: 91, physical: 84, defending: 87 } },
+      { name: 'Fabián Ruiz', position: 'VOL', age: 28, overall: 82 },
+      { name: 'Pedri', position: 'MEI', age: 21, overall: 86, statsOverrides: { vision: 90, passing: 88 } },
+      { name: 'Dani Olmo', position: 'MEI', age: 26, overall: 84 },
+      { name: 'Lamine Yamal', position: 'ATA', age: 17, overall: 85, potential: 95, mainPosition: 'RW', statsOverrides: { dribbling: 88, pace: 85 } },
+      { name: 'Nico Williams', position: 'ATA', age: 22, overall: 85, statsOverrides: { pace: 93, dribbling: 88 } },
+      { name: 'Álvaro Morata', position: 'ATA', age: 31, overall: 83 },
+    ]
+  },
+  {
+    id: 'wc_portugal', name: 'Portugal', shortName: 'POR', confederation: 'UEFA',
+    logoUrl: '/world_cup_shields/png/portugal.png',
+    logoColor1: '#FF0000', logoColor2: '#008000', attack: 88, defense: 84,
+    managerName: 'Roberto Martínez',
+    players: [
+      { name: 'Diogo Costa', position: 'GOL', age: 24, overall: 85 },
+      { name: 'Rúben Dias', position: 'ZAG', age: 27, overall: 88, statsOverrides: { defending: 89, strength: 87 } },
+      { name: 'Gonçalo Inácio', position: 'ZAG', age: 22, overall: 83 },
+      { name: 'João Cancelo', position: 'LAT', age: 30, overall: 85 },
+      { name: 'Nuno Mendes', position: 'LAT', age: 22, overall: 84 },
+      { name: 'João Palhinha', position: 'VOL', age: 29, overall: 84, mainPosition: 'DM' },
+      { name: 'Vitinha', position: 'VOL', age: 24, overall: 84 },
+      { name: 'Bruno Fernandes', position: 'MEI', age: 29, overall: 88, statsOverrides: { passing: 90, vision: 91 } },
+      { name: 'Bernardo Silva', position: 'MEI', age: 29, overall: 88, statsOverrides: { dribbling: 92, stamina: 91 } },
+      { name: 'Rafael Leão', position: 'ATA', age: 25, overall: 87, statsOverrides: { pace: 94, dribbling: 89 } },
+      { name: 'Cristiano Ronaldo', position: 'ATA', age: 39, overall: 86, statsOverrides: { finishing: 92, heading: 90, shooting: 88 } },
+      { name: 'Diogo Jota', position: 'ATA', age: 27, overall: 85 },
+      { name: 'Gonçalo Ramos', position: 'ATA', age: 23, overall: 81 },
+      { name: 'João Neves', position: 'VOL', age: 19, overall: 82, potential: 90 },
+    ]
+  },
+  {
+    id: 'wc_belgium', name: 'Bélgica', shortName: 'BEL', confederation: 'UEFA',
+    logoUrl: '/world_cup_shields/png/belgica.png',
+    logoColor1: '#FF0000', logoColor2: '#FFFF00', attack: 84, defense: 80,
+    managerName: 'Domenico Tedesco',
+    players: [
+      { name: 'Koen Casteels', position: 'GOL', age: 32, overall: 83 },
+      { name: 'Courtois', position: 'GOL', age: 32, overall: 89 },
+      { name: 'Wout Faes', position: 'ZAG', age: 26, overall: 79 },
+      { name: 'Arthur Theate', position: 'ZAG', age: 24, overall: 81 },
+      { name: 'Timothy Castagne', position: 'LAT', age: 28, overall: 79 },
+      { name: 'Amadou Onana', position: 'VOL', age: 22, overall: 82 },
+      { name: 'Kevin De Bruyne', position: 'MEI', age: 33, overall: 91, statsOverrides: { passing: 94, vision: 95 } },
+      { name: 'Youri Tielemans', position: 'VOL', age: 27, overall: 82 },
+      { name: 'Jérémy Doku', position: 'ATA', age: 22, overall: 83, statsOverrides: { pace: 92, dribbling: 91 } },
+      { name: 'Romelu Lukaku', position: 'ATA', age: 31, overall: 84, statsOverrides: { strength: 92, finishing: 85 } },
+      { name: 'Leandro Trossard', position: 'ATA', age: 29, overall: 83 },
+      { name: 'Johan Bakayoko', position: 'ATA', age: 21, overall: 80 },
+    ]
+  },
+  {
+    id: 'wc_uruguay', name: 'Uruguai', shortName: 'URU', confederation: 'CONMEBOL',
+    logoUrl: '/world_cup_shields/png/uruguai.png',
+    logoColor1: '#00A1DE', logoColor2: '#FFFFFF', attack: 85, defense: 84,
+    managerName: 'Marcelo Bielsa',
+    players: [
+      { name: 'Sergio Rochet', position: 'GOL', age: 31, overall: 81 },
+      { name: 'José Giménez', position: 'ZAG', age: 29, overall: 82 },
+      { name: 'Ronald Araújo', position: 'ZAG', age: 25, overall: 86, statsOverrides: { strength: 88, defending: 87 } },
+      { name: 'Mathías Olivera', position: 'LAT', age: 26, overall: 80 },
+      { name: 'Federico Valverde', position: 'VOL', age: 26, overall: 88, statsOverrides: { stamina: 92, longShot: 88, pace: 87 } },
+      { name: 'Manuel Ugarte', position: 'VOL', age: 23, overall: 82 },
+      { name: 'Nicolás de la Cruz', position: 'MEI', age: 27, overall: 81 },
+      { name: 'Darwin Núñez', position: 'ATA', age: 25, overall: 83, statsOverrides: { pace: 90, physical: 85 } },
+      { name: 'Luis Suárez', position: 'ATA', age: 37, overall: 81 },
+      { name: 'Facundo Pellistri', position: 'ATA', age: 22, overall: 78 },
+      { name: 'Giorgian de Arrascaeta', position: 'MEI', age: 30, overall: 82 },
+    ]
+  },
+  {
+    id: 'wc_colombia', name: 'Colômbia', shortName: 'COL', confederation: 'CONMEBOL',
+    logoUrl: '/world_cup_shields/png/colombia.png',
+    logoColor1: '#FCD116', logoColor2: '#003893', attack: 84, defense: 81,
+    managerName: 'Néstor Lorenzo',
+    players: [
+      { name: 'Camilo Vargas', position: 'GOL', age: 35, overall: 81 },
+      { name: 'Davinson Sánchez', position: 'ZAG', age: 28, overall: 80 },
+      { name: 'Jhon Lucumí', position: 'ZAG', age: 26, overall: 80 },
+{ name: 'Daniel Muñoz', position: 'LAT', age: 28, overall: 81 },
+      { name: 'Johan Mojica', position: 'LAT', age: 31, overall: 78 },
+      { name: 'Jefferson Lerma', position: 'VOL', age: 29, overall: 81 },
+      { name: 'Richard Ríos', position: 'VOL', age: 24, overall: 79 },
+      { name: 'James Rodríguez', position: 'MEI', age: 33, overall: 83, statsOverrides: { passing: 88, vision: 90 } },
+      { name: 'Luis Díaz', position: 'ATA', age: 27, overall: 86, statsOverrides: { pace: 91, dribbling: 89 } },
+      { name: 'Jhon Arias', position: 'MEI', age: 26, overall: 81 },
+      { name: 'Jhon Córdoba', position: 'ATA', age: 31, overall: 80 },
+      { name: 'Jhon Durán', position: 'ATA', age: 20, overall: 79, potential: 88 },
+    ]
+  },
+  {
+    id: 'wc_senegal', name: 'Senegal', shortName: 'SEN', confederation: 'CAF',
+    logoUrl: '/world_cup_shields/png/senegal.png',
+    logoColor1: '#009639', logoColor2: '#FDEF42', attack: 84, defense: 82,
+    managerName: 'Aliou Cissé',
+    players: [
+      { name: 'Edouard Mendy', position: 'GOL', age: 32, overall: 83 },
+      { name: 'Mory Diaw', position: 'GOL', age: 31, overall: 78 },
+      { name: 'Kalidou Koulibaly', position: 'ZAG', age: 33, overall: 84 },
+      { name: 'Moussa Niakhaté', position: 'ZAG', age: 28, overall: 81 },
+      { name: 'Abdoulaye Seck', position: 'ZAG', age: 32, overall: 78 },
+      { name: 'Ismail Jakobs', position: 'LAT', age: 24, overall: 79 },
+      { name: 'Idrissa Gueye', position: 'VOL', age: 34, overall: 81 },
+      { name: 'Pape Matar Sarr', position: 'VOL', age: 21, overall: 82, potential: 89 },
+      { name: 'Lamine Camara', position: 'VOL', age: 20, overall: 78, potential: 88 },
+      { name: 'Sadio Mané', position: 'ATA', age: 32, overall: 86, statsOverrides: { pace: 88, finishing: 85 } },
+      { name: 'Ismaïla Sarr', position: 'ATA', age: 26, overall: 81 },
+      { name: 'Nicolas Jackson', position: 'ATA', age: 23, overall: 81, statsOverrides: { pace: 87 } },
+      { name: 'Iliman Ndiaye', position: 'ATA', age: 24, overall: 79 },
+      { name: 'Boulaye Dia', position: 'ATA', age: 27, overall: 79 },
+    ]
+  },
+  {
+    id: 'wc_egypt', name: 'Egito', shortName: 'EGI', confederation: 'CAF',
+    logoUrl: '/world_cup_shields/png/egito.png',
+    logoColor1: '#CE1126', logoColor2: '#FFFFFF', attack: 83, defense: 78,
+    managerName: 'Hossam Hassan',
+    players: [
+      { name: 'Mohamed El Shenawy', position: 'GOL', age: 35, overall: 81 },
+      { name: 'Mostafa Shobeir', position: 'GOL', age: 24, overall: 75 },
+      { name: 'Ahmed Hegazi', position: 'ZAG', age: 33, overall: 79 },
+      { name: 'Mohamed Abdelmonem', position: 'ZAG', age: 25, overall: 82, statsOverrides: { defending: 83 } },
+      { name: 'Mohamed Hany', position: 'LAT', age: 28, overall: 77 },
+      { name: 'Mohamed Hamdy', position: 'LAT', age: 29, overall: 76 },
+      { name: 'Hamdi Fathi', position: 'VOL', age: 29, overall: 80 },
+      { name: 'Marwan Attia', position: 'VOL', age: 25, overall: 78 },
+      { name: 'Emam Ashour', position: 'MEI', age: 26, overall: 81 },
+      { name: 'Mostafa Fathi', position: 'MEI', age: 30, overall: 77 },
+      { name: 'Mohamed Salah', position: 'ATA', age: 32, overall: 89, statsOverrides: { finishing: 90, pace: 88, vision: 87 } },
+      { name: 'Mostafa Mohamed', position: 'ATA', age: 26, overall: 82 },
+      { name: 'Omar Marmoush', position: 'ATA', age: 25, overall: 83, statsOverrides: { pace: 89, dribbling: 84 } },
+      { name: 'Trezeguet', position: 'ATA', age: 29, overall: 80 },
+    ]
+  },
+  {
+    id: 'wc_south_africa', name: 'África do Sul', shortName: 'RSA', confederation: 'CAF',
+    logoUrl: '/world_cup_shields/png/south_africa.png',
+    logoColor1: '#007A4D', logoColor2: '#FFB81C', attack: 78, defense: 76,
+    managerName: 'Hugo Broos',
+    players: [
+      { name: 'Ronwen Williams', position: 'GOL', age: 32, overall: 80, statsOverrides: { reflexes: 84 } },
+      { name: 'Grant Kekana', position: 'ZAG', age: 31, overall: 75 },
+      { name: 'Mothobi Mvala', position: 'ZAG', age: 30, overall: 74 },
+      { name: 'Aubrey Modiba', position: 'LAT', age: 29, overall: 76 },
+      { name: 'Khuliso Mudau', position: 'LAT', age: 29, overall: 77 },
+      { name: 'Teboho Mokoena', position: 'VOL', age: 27, overall: 81, statsOverrides: { shooting: 85 } },
+      { name: 'Sphephelo Sithole', position: 'VOL', age: 25, overall: 76 },
+      { name: 'Themba Zwane', position: 'MEI', age: 34, overall: 78 },
+      { name: 'Percy Tau', position: 'ATA', age: 30, overall: 79 },
+      { name: 'Oswin Appollis', position: 'ATA', age: 22, overall: 74, potential: 82 },
+      { name: 'Evidence Makgopa', position: 'ATA', age: 24, overall: 75 },
+    ]
+  },
+  {
+    id: 'wc_tunisia', name: 'Tunísia', shortName: 'TUN', confederation: 'CAF',
+    logoUrl: '/world_cup_shields/png/tunisia.png',
+    logoColor1: '#E70013', logoColor2: '#FFFFFF', attack: 78, defense: 77,
+    managerName: 'Kais Yaâcoubi',
+    players: [
+      { name: 'Aymen Dahmen', position: 'GOL', age: 32, overall: 75 },
+      { name: 'Bechir Ben Said', position: 'GOL', age: 33, overall: 77 },
+      { name: 'Noureddine Farhati', position: 'GOL', age: 26, overall: 73 },
+      { name: 'Ali Maaloul', position: 'LAT', age: 33, overall: 72 },
+      { name: 'Marouane Sahraoui', position: 'LAT', age: 28, overall: 71 },
+      { name: 'Mohamed Amine Ben Hamida', position: 'ZAG', age: 28, overall: 72 },
+      { name: 'Moutaz Neffati', position: 'ZAG', age: 30, overall: 68 },
+      { name: 'Oussama Haddadi', position: 'ZAG', age: 31, overall: 70 },
+      { name: 'Yassine Meriah', position: 'ZAG', age: 27, overall: 75 },
+      { name: 'Chiheb Jebali', position: 'VOL', age: 32, overall: 69 },
+      { name: 'Ferjani Sassi', position: 'VOL', age: 28, overall: 82 },
+      { name: 'Hadj Mahmoud', position: 'VOL', age: 29, overall: 82 },
+      { name: 'Houssem Tka', position: 'VOL', age: 33, overall: 70 },
+      { name: 'Ismael Gharbi', position: 'MEI', age: 30, overall: 69 },
+      { name: 'Mohamed Ali Ben Romdhane', position: 'MEI', age: 27, overall: 68 },
+      { name: 'Amor Layouni', position: 'ATA', age: 31, overall: 71 },
+      { name: 'Firas Chaouat', position: 'ATA', age: 27, overall: 71 },
+      { name: 'Hazem Mastouri', position: 'ATA', age: 26, overall: 79 },
+      { name: 'Nacim Dendani', position: 'ATA', age: 29, overall: 77 },
+      { name: 'Rayane Anane', position: 'ATA', age: 28, overall: 76 },
+      { name: 'Dahmen', position: 'GOL', age: 28, overall: 77 },
+      { name: 'Hassen', position: 'GOL', age: 31, overall: 76 },
+      { name: 'Ben Said', position: 'GOL', age: 25, overall: 73 },
+      { name: 'Bronn', position: 'ZAG', age: 31, overall: 77 },
+      { name: 'Talbi', position: 'ZAG', age: 28, overall: 78 },
+      { name: 'Meriah', position: 'ZAG', age: 33, overall: 76 },
+    ]
+  },
+  {
+    id: 'wc_drcongo', name: 'RD Congo', shortName: 'RDC', confederation: 'CAF',
+    logoUrl: '/world_cup_shields/png/rd_congo.png',
+    logoColor1: '#007FFF', logoColor2: '#CE1126', attack: 77, defense: 75,
+    players: [
+      { name: 'Lionel Mpasi-Nzau', position: 'GOL', age: 24, overall: 69 },
+      { name: 'Mathieu Epolo', position: 'GOL', age: 26, overall: 73 },
+      { name: 'Timothé Fayulu', position: 'GOL', age: 27, overall: 78 },
+      { name: 'Aaron Wan-Bissaka', position: 'LAT', age: 31, overall: 68 },
+      { name: 'Arthur Masuaku', position: 'LAT', age: 21, overall: 71 },
+      { name: 'Axel Tuanzebe', position: 'ZAG', age: 29, overall: 74 },
+      { name: 'Chancel Mbemba', position: 'ZAG', age: 30, overall: 69 },
+      { name: 'Dylan Batubinsika', position: 'ZAG', age: 22, overall: 73 },
+      { name: 'Jeremy Ngakia', position: 'ZAG', age: 32, overall: 71 },
+      { name: 'Joris Kayembe', position: 'ZAG', age: 26, overall: 76 },
+      { name: 'Rocky Bushiri', position: 'ZAG', age: 25, overall: 79 },
+      { name: 'Steve Kapuadi', position: 'ZAG', age: 22, overall: 75 },
+      { name: 'Brian Silbenga', position: 'VOL', age: 21, overall: 69 },
+      { name: 'Charles Pickel', position: 'VOL', age: 25, overall: 74 },
+      { name: 'Edo Kayembe', position: 'VOL', age: 27, overall: 75 },
+      { name: 'Grady Diangana', position: 'VOL', age: 33, overall: 80 },
+      { name: 'Meschack Elia', position: 'MEI', age: 27, overall: 79 },
+      { name: 'Nathanael Mbuku', position: 'MEI', age: 21, overall: 68 },
+      { name: 'Ngala Mukaou', position: 'MEI', age: 25, overall: 71 },
+      { name: 'Noah Sadiki', position: 'MEI', age: 30, overall: 70 },
+      { name: 'Samuel Moutoussamy', position: 'MEI', age: 30, overall: 72 },
+      { name: 'Theo Bongonda', position: 'MEI', age: 28, overall: 76 },
+      { name: 'Cedric Bakambu', position: 'ATA', age: 21, overall: 74 },
+      { name: 'Fiston Mayele', position: 'ATA', age: 24, overall: 74 },
+      { name: 'Simon Banza', position: 'ATA', age: 21, overall: 80 },
+      { name: 'Yoane Wissa', position: 'ATA', age: 21, overall: 72 },
+    ]
+  },
+  {
+    id: 'wc_australia', name: 'Austrália', shortName: 'AUS', confederation: 'AFC',
+    logoUrl: '/world_cup_shields/png/australia.png',
+    logoColor1: '#FFCD00', logoColor2: '#00843D', attack: 79, defense: 80,
+    managerName: 'Tony Popovic',
+    players: [
+      { name: 'Mathew Ryan', position: 'GOL', age: 32, overall: 80 },
+      { name: 'Joe Gauci', position: 'GOL', age: 24, overall: 74 },
+      { name: 'Harry Souttar', position: 'ZAG', age: 25, overall: 82, statsOverrides: { defending: 83, strength: 90 } },
+      { name: 'Cameron Burgess', position: 'ZAG', age: 28, overall: 77 },
+      { name: 'Kye Rowles', position: 'ZAG', age: 26, overall: 75 },
+      { name: 'Aziz Behich', position: 'LAT', age: 33, overall: 76 },
+      { name: 'Lewis Miller', position: 'LAT', age: 23, overall: 74 },
+      { name: 'Jackson Irvine', position: 'VOL', age: 31, overall: 79 },
+      { name: 'Aiden O\'Neill', position: 'VOL', age: 26, overall: 76 },
+      { name: 'Connor Metcalfe', position: 'MEI', age: 24, overall: 75 },
+      { name: 'Craig Goodwin', position: 'MEI', age: 32, overall: 81 },
+      { name: 'Nestory Irankunda', position: 'ATA', age: 18, overall: 74, potential: 88, statsOverrides: { pace: 93 } },
+      { name: 'Kusini Yengi', position: 'ATA', age: 25, overall: 76 },
+    ]
+  },
+  {
+    id: 'wc_japan', name: 'Japão', shortName: 'JAP', confederation: 'AFC',
+    logoUrl: '/world_cup_shields/png/japao.png',
+    logoColor1: '#00008B', logoColor2: '#FFFFFF', attack: 85, defense: 82,
+    managerName: 'Hajime Moriyasu',
+    players: [
+      { name: 'Zion Suzuki', position: 'GOL', age: 21, overall: 78, potential: 86 },
+      { name: 'Keisuke Osako', position: 'GOL', age: 24, overall: 76 },
+      { name: 'Takehiro Tomiyasu', position: 'ZAG', age: 25, overall: 84, statsOverrides: { defending: 85 } },
+      { name: 'Ko Itakura', position: 'ZAG', age: 27, overall: 82 },
+      { name: 'Hiroki Ito', position: 'ZAG', age: 25, overall: 81 },
+      { name: 'Yukinari Sugawara', position: 'LAT', age: 24, overall: 80 },
+      { name: 'Wataru Endo', position: 'VOL', age: 31, overall: 84, statsOverrides: { defending: 86 } },
+      { name: 'Hidemasa Morita', position: 'VOL', age: 29, overall: 82 },
+      { name: 'Takefusa Kubo', position: 'MEI', age: 23, overall: 85, potential: 90, statsOverrides: { dribbling: 88 } },
+      { name: 'Daichi Kamada', position: 'MEI', age: 27, overall: 82 },
+      { name: 'Kaoru Mitoma', position: 'ATA', age: 27, overall: 86, statsOverrides: { dribbling: 90, pace: 87 } },
+      { name: 'Junya Ito', position: 'ATA', age: 31, overall: 83 },
+      { name: 'Ritsu Doan', position: 'ATA', age: 26, overall: 82 },
+      { name: 'Ayase Ueda', position: 'ATA', age: 25, overall: 80 },
+    ]
+  },
+  {
+    id: 'wc_south_korea', name: 'Coreia do Sul', shortName: 'COR', confederation: 'AFC',
+    logoUrl: '/world_cup_shields/png/coreia_sul.png',
+    logoColor1: '#E10600', logoColor2: '#000000', attack: 85, defense: 81,
+    managerName: 'Hong Myung-bo',
+    players: [
+      { name: 'Jo Hyeon-woo', position: 'GOL', age: 32, overall: 81 },
+      { name: 'Kim Seung-gyu', position: 'GOL', age: 33, overall: 79 },
+      { name: 'Kim Min-jae', position: 'ZAG', age: 27, overall: 87, statsOverrides: { strength: 88, pace: 84 } },
+      { name: 'Kim Young-gwon', position: 'ZAG', age: 34, overall: 78 },
+      { name: 'Seol Young-woo', position: 'LAT', age: 25, overall: 76 },
+      { name: 'Kim Jin-su', position: 'LAT', age: 32, overall: 77 },
+      { name: 'Hwang In-beom', position: 'VOL', age: 27, overall: 82 },
+      { name: 'Lee Kang-in', position: 'MEI', age: 23, overall: 84, potential: 89, statsOverrides: { vision: 86, dribbling: 87 } },
+      { name: 'Lee Jae-sung', position: 'MEI', age: 31, overall: 79 },
+      { name: 'Son Heung-min', position: 'ATA', age: 31, overall: 88, statsOverrides: { finishing: 91, pace: 87 } },
+      { name: 'Hwang Hee-chan', position: 'ATA', age: 28, overall: 82, statsOverrides: { pace: 88 } },
+      { name: 'Cho Gue-sung', position: 'ATA', age: 26, overall: 80 },
+    ]
+  },
+  {
+    id: 'wc_uzbekistan', name: 'Uzbequistão', shortName: 'UZB', confederation: 'AFC',
+    logoUrl: '/world_cup_shields/png/uzbequistao.png',
+    logoColor1: '#009966', logoColor2: '#33CCFF', attack: 77, defense: 75,
+    managerName: 'Srečko Katanec',
+    players: [
+      { name: 'Utkir Yusupov', position: 'GOL', age: 33, overall: 75 },
+      { name: 'Abdukodir Khusanov', position: 'ZAG', age: 20, overall: 78, potential: 87 },
+      { name: 'Rustam Ashurmatov', position: 'ZAG', age: 27, overall: 74 },
+      { name: 'Otabek Shukurov', position: 'VOL', age: 28, overall: 77 },
+      { name: 'Odiljon Hamrobekov', position: 'VOL', age: 28, overall: 75 },
+      { name: 'Abbosbek Fayzullaev', position: 'MEI', age: 20, overall: 79, potential: 88 },
+      { name: 'Jaloliddin Masharipov', position: 'MEI', age: 30, overall: 76 },
+      { name: 'Eldor Shomurodov', position: 'ATA', age: 29, overall: 81, statsOverrides: { physical: 82 } },
+    ]
+  },
+
   // ==================== OFC (1) ====================
   {
     id: 'wc_newzealand', name: 'Nova Zelândia', shortName: 'NZL', confederation: 'OFC',
@@ -1615,6 +1898,15 @@ export const WC_TEAMS_DATA: WCTeamData[] = [
   },
 ];
 
+// Deduplicar e filtrar WC_TEAMS_DATA
+const seenIds = new Set<string>();
+export const WC_TEAMS_DATA: WCTeamData[] = ALL_RAW_WC_TEAMS_DATA.filter((team) => {
+  if (team.id === 'wc_south_korea') return false; // Excluir ID duplicado
+  if (seenIds.has(team.id)) return false;
+  seenIds.add(team.id);
+  return true;
+});
+
 // ========== GRUPOS JÁ ESTABELECIDOS (SORTEIO FIXO) ==========
 
 export const ESTABLISHED_GROUPS: { name: string; teamIds: string[] }[] = [
@@ -1632,10 +1924,9 @@ export const ESTABLISHED_GROUPS: { name: string; teamIds: string[] }[] = [
   { name: 'L', teamIds: ['wc_england', 'wc_croatia', 'wc_ghana', 'wc_panama'] },
 ];
 
-// Exportar times construídos
-export const getWorldCupTeams = (): Team[] => WC_TEAMS_DATA.map(buildWCTeam);
-
 let cachedWorldCupPrelistRows: WCPrelistRow[] | null = null;
+
+
 
 function parseWorldCupPrelistRows(): WCPrelistRow[] {
   if (cachedWorldCupPrelistRows) {
@@ -1685,6 +1976,155 @@ function parseWorldCupPrelistRows(): WCPrelistRow[] {
   return rows;
 }
 
+// Auxiliar para mapear a posição do jogador de forma simplificada
+function isSupplementalCandidateCompatible(
+  positionGroup: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward',
+  position: Player['position']
+) {
+  if (position === 'GOL') return positionGroup === 'Goalkeeper';
+  if (position === 'ZAG' || position === 'LAT') return positionGroup === 'Defender';
+  if (position === 'VOL' || position === 'MEI') return positionGroup === 'Midfielder';
+  return positionGroup === 'Forward';
+}
+
+// Injetor dinâmico de elenco da Copa baseado no CSV
+export const getTeamCSVPlayers = (teamId: string, data: WCTeamData): Player[] => {
+  const csvPlayers = parseWorldCupPrelistRows().filter((row) => row.teamId === teamId);
+  const existingPlayers = data.players;
+  let roster: Player[] = [];
+
+  csvPlayers.forEach((csvP) => {
+    const normName = normalizeLookupValue(csvP.playerName);
+    const foundHardcoded = existingPlayers.find((p) => normalizeLookupValue(p.name) === normName);
+
+    if (foundHardcoded) {
+      roster.push(createPlayer(foundHardcoded));
+    } else {
+      let position: Player['position'] = 'ATA';
+      if (csvP.positionGroup === 'Goalkeeper') {
+        position = 'GOL';
+      } else if (csvP.positionGroup === 'Defender') {
+        position = Math.random() > 0.4 ? 'ZAG' : 'LAT';
+      } else if (csvP.positionGroup === 'Midfielder') {
+        position = Math.random() > 0.5 ? 'VOL' : 'MEI';
+      }
+
+      const baseOvr = Math.round((data.attack + data.defense) / 2);
+      const overall = Math.max(60, Math.min(95, baseOvr + Math.floor(Math.random() * 5) - 2));
+      const age = 20 + Math.floor(Math.random() * 14);
+
+      roster.push(createPlayer(csvP.playerName, position, age, overall));
+    }
+  });
+
+  // Se tiver mais de 26, filtramos primeiro separando GOL e Linha
+  if (roster.length > 26) {
+    const gks = roster.filter(p => p.position === 'GOL').sort((a, b) => b.overall - a.overall);
+    const field = roster.filter(p => p.position !== 'GOL').sort((a, b) => b.overall - a.overall);
+    
+    // Pegar no máximo 3 goleiros e no máximo 23 jogadores de linha
+    const selectedGks = gks.slice(0, 3);
+    const selectedField = field.slice(0, 23);
+    roster = [...selectedGks, ...selectedField];
+  }
+
+  // Se tiver menos de 26 (ou se cortou e ficou < 26 por falta de goleiros no CSV)
+  if (roster.length < 26) {
+    const conf = data.confederation || 'UEFA';
+    const namePool = WORLD_CUP_TEAM_NAME_POOLS[teamId] || WORLD_CUP_REGIONAL_FALLBACK_NAMES[conf] || WORLD_CUP_REGIONAL_FALLBACK_NAMES['UEFA'];
+    const usedNames = new Set(roster.map(p => normalizeLookupValue(p.name)));
+    const needed = 26 - roster.length;
+
+    // Se faltarem goleiros para completar 3 no elenco, geramos goleiros. Caso contrário, posições variadas.
+    const currentGks = roster.filter(p => p.position === 'GOL').length;
+    let neededGks = Math.max(0, 3 - currentGks);
+
+    for (let i = 0; i < needed; i++) {
+      let pos: Player['position'] = 'ATA';
+      if (neededGks > 0) {
+        pos = 'GOL';
+        neededGks--;
+      } else {
+        const fillPositions: Player['position'][] = ['ZAG', 'LAT', 'VOL', 'MEI', 'ATA'];
+        pos = fillPositions[i % fillPositions.length];
+      }
+
+      let name = '';
+      let attempts = 0;
+      while (attempts < 100) {
+        const first = namePool.first[Math.floor(Math.random() * namePool.first.length)];
+        const last = namePool.last[Math.floor(Math.random() * namePool.last.length)];
+        name = `${first} ${last}`;
+        if (!usedNames.has(normalizeLookupValue(name))) {
+          break;
+        }
+        attempts++;
+      }
+      if (!name) name = `Jogador ${i + 1}`;
+      usedNames.add(normalizeLookupValue(name));
+
+      const baseOvr = Math.round((data.attack + data.defense) / 2);
+      const overall = Math.max(60, Math.min(95, baseOvr - 3 + Math.floor(Math.random() * 6)));
+      const age = 19 + Math.floor(Math.random() * 14);
+
+      roster.push(createPlayer(name, pos, age, overall));
+    }
+  }
+
+  // Garantia dupla de 3 goleiros
+  const finalGkCount = roster.filter(p => p.position === 'GOL').length;
+  if (finalGkCount < 3) {
+    const missing = 3 - finalGkCount;
+    for (let m = 0; m < missing; m++) {
+      roster.sort((a, b) => a.overall - b.overall); // Ordenar ascendente para achar os piores
+      const lowestNonGkIdx = roster.findIndex(p => p.position !== 'GOL');
+      if (lowestNonGkIdx >= 0) {
+        const conf = data.confederation || 'UEFA';
+        const namePool = WORLD_CUP_TEAM_NAME_POOLS[teamId] || WORLD_CUP_REGIONAL_FALLBACK_NAMES[conf] || WORLD_CUP_REGIONAL_FALLBACK_NAMES['UEFA'];
+        const first = namePool.first[Math.floor(Math.random() * namePool.first.length)];
+        const last = namePool.last[Math.floor(Math.random() * namePool.last.length)];
+        const name = `${first} ${last}`;
+        const baseOvr = Math.round((data.attack + data.defense) / 2);
+        const overall = Math.max(60, Math.min(95, baseOvr - 2));
+        const age = 20 + Math.floor(Math.random() * 12);
+        roster[lowestNonGkIdx] = createPlayer(name, 'GOL', age, overall);
+      }
+    }
+  }
+
+  roster.sort((a, b) => b.overall - a.overall);
+  return roster;
+};
+
+// Converte WCTeamData em Team completo injetando elenco do CSV
+export const buildWCTeam = (data: WCTeamData): Team => {
+  const roster = getTeamCSVPlayers(data.id, data);
+  const lineup = roster.slice(0, 11).map(p => p.id);
+
+  return {
+    id: data.id,
+    name: data.name,
+    shortName: data.shortName,
+    city: '',
+    logoColor1: data.logoColor1,
+    logoColor2: data.logoColor2,
+    logoUrl: data.logoUrl,
+    attack: data.attack,
+    defense: data.defense,
+    roster,
+    lineup,
+    formation: '4-3-3',
+    style: 'Equilibrado',
+    instructions: { pressing: 'MEDIA', passing: 'MISTO', tempo: 'PADRAO' },
+    played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0,
+    moral: 80,
+    division: 0,
+    stadiumCapacity: 60000,
+    stadiumName: 'Estádio da Copa',
+    managerName: data.managerName,
+  };
+};
+
 export function getWorldCupSupplementalCandidates(teamId: string, existingPlayers: WCTeamData['players']) {
   const existingNames = new Set(existingPlayers.map((player) => normalizeLookupValue(player.name)));
   const seenNames = new Set<string>();
@@ -1709,3 +2149,6 @@ export const getTeamConfederation = (teamId: string): WCConfederation => {
   const data = WC_TEAMS_DATA.find(t => t.id === teamId);
   return data?.confederation ?? 'UEFA';
 };
+
+// Exportar times construídos
+export const getWorldCupTeams = (): Team[] => WC_TEAMS_DATA.map(buildWCTeam);
