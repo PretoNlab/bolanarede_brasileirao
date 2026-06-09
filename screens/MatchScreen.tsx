@@ -335,12 +335,18 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
       const aGoals = nextAway.filter(r => r === 1).length;
       const hTaken = nextHome.length;
       const aTaken = nextAway.length;
-      const hRemaining = Math.max(0, 5 - hTaken);
-      const aRemaining = Math.max(0, 5 - aTaken);
-      const shootoutComplete =
-         hGoals > aGoals + aRemaining ||
-         aGoals > hGoals + hRemaining ||
-         (hTaken >= 5 && aTaken >= 5 && hGoals !== aGoals);
+
+      let shootoutComplete = false;
+      if (hTaken <= 5 && aTaken <= 5) {
+         const hRemaining = Math.max(0, 5 - hTaken);
+         const aRemaining = Math.max(0, 5 - aTaken);
+         shootoutComplete =
+            hGoals > aGoals + aRemaining ||
+            aGoals > hGoals + hRemaining ||
+            (hTaken >= 5 && aTaken >= 5 && hGoals !== aGoals);
+      } else {
+         shootoutComplete = (hTaken === aTaken && hGoals !== aGoals);
+      }
 
       if (shootoutComplete) {
          setGameState('FT');

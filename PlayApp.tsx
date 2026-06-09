@@ -1523,7 +1523,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
         userBracketMatch.winnerId = winnerId;
         newState.bracket = advanceBracket(newState.bracket, userBracketMatch.id, winnerId);
 
-        if (winnerId !== wcUserTeamId) {
+        if (winnerId !== wcUserTeamId && userBracketMatch.phase !== 'SEMI' && userBracketMatch.phase !== 'FINAL') {
           newState.isEliminated = true;
         }
 

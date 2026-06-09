@@ -362,17 +362,8 @@ export function simulatePenalties(team1: Team, team2: Team): { score1: number; s
 
   // Morte súbita se empate
   while (s1 === s2) {
-    if (Math.random() > gk2Skill * 0.3) s1++; else s1 += 0;
-    if (Math.random() > gk1Skill * 0.3) s2++; else s2 += 0;
-    if (s1 !== s2) break;
-    // Se os dois acertam ou erram, mais uma rodada
-    if (s1 === s2) {
-      const r1 = Math.random() > gk2Skill * 0.35;
-      const r2 = Math.random() > gk1Skill * 0.35;
-      if (r1 && !r2) { s1++; break; }
-      if (!r1 && r2) { s2++; break; }
-      if (r1 && r2) { s1++; s2++; }
-    }
+    if (Math.random() > gk2Skill * 0.3) s1++;
+    if (Math.random() > gk1Skill * 0.3) s2++;
   }
 
   return { score1: s1, score2: s2 };
