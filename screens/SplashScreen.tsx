@@ -190,13 +190,13 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
           <div className="flex items-center gap-2">
             <button
               onClick={onWorldCup}
-              className="hidden h-11 items-center justify-center rounded-full border border-[#d1c2ab] bg-[#fbf7ef] px-4 text-[11px] font-black uppercase tracking-[0.14em] text-[#5f5446] shadow-sm sm:flex"
+              className="hidden h-11 items-center justify-center rounded-full bg-amber-600 px-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-md sm:flex hover:bg-amber-700 transition-colors"
             >
-              Copa do Mundo
+              Copa do Mundo 2026
             </button>
             <button
               onClick={onStart}
-              className="flex h-11 items-center justify-center rounded-full bg-emerald-700 px-5 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-lg shadow-emerald-900/20"
+              className="flex h-11 items-center justify-center rounded-full border border-[#d1c2ab] bg-[#fbf7ef] px-5 text-[11px] font-black uppercase tracking-[0.14em] text-[#5f5446] shadow-sm hover:bg-[#efe9dd] transition-colors"
             >
               Começar Carreira
             </button>
@@ -205,9 +205,13 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
 
         <main className="relative flex flex-col items-center pt-14 sm:pt-18">
           <section className="relative flex w-full flex-col items-center overflow-hidden rounded-[42px] border border-[#dacbb4] bg-[#efe4d2]/90 px-6 pb-10 pt-10 shadow-[0_30px_80px_rgba(95,72,43,0.12)] sm:px-10 sm:pt-14">
-            <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_top,rgba(79,111,82,0.12),transparent_58%)]" />
+            <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_top,rgba(217,119,6,0.12),transparent_58%)]" />
             <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,transparent,rgba(255,248,238,0.55))]" />
             <div className="max-w-4xl text-center relative z-10">
+              
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-600/25 bg-amber-600/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-amber-700">
+                🏆 MODO COPA DO MUNDO 2026 LIBERADO!
+              </div>
 
               <h1 className="font-editorial mt-6 text-[3.2rem] font-bold leading-[0.9] tracking-[-0.08em] text-[#2f2418] sm:text-[4.6rem] lg:text-[5rem] italic">
                 Escale, ajuste, negocie e sustente sua campanha até o topo.
@@ -219,18 +223,18 @@ export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave 
 
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <button
-                  onClick={onStart}
-                  className="flex h-12 items-center justify-center gap-3 rounded-full bg-emerald-600 px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_34px_rgba(31,177,133,0.2)]"
-                >
-                  <Play className="h-4 w-4 fill-current" />
-                  Começar Carreira
-                </button>
-                <button
                   onClick={onWorldCup}
-                  className="flex h-12 items-center justify-center gap-3 rounded-full border border-[#d2c4af] bg-[#fbf7ef] px-8 text-[12px] font-black uppercase tracking-[0.14em] text-[#5a4d40] shadow-[0_10px_22px_rgba(80,61,34,0.08)]"
+                  className="flex h-12 items-center justify-center gap-3 rounded-full bg-amber-600 hover:bg-amber-700 px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_34px_rgba(217,119,6,0.2)] active:scale-95 transition-all"
                 >
                   <Globe className="h-4 w-4" />
-                  Jogar Copa do Mundo
+                  Jogar Copa do Mundo 2026
+                </button>
+                <button
+                  onClick={onStart}
+                  className="flex h-12 items-center justify-center gap-3 rounded-full border border-[#d2c4af] bg-[#fbf7ef] px-8 text-[12px] font-black uppercase tracking-[0.14em] text-[#5a4d40] shadow-[0_10px_22px_rgba(80,61,34,0.08)] active:scale-95 transition-all"
+                >
+                  <Play className="h-4 w-4 fill-current text-emerald-700" />
+                  Começar Carreira
                 </button>
               </div>
             </div>
