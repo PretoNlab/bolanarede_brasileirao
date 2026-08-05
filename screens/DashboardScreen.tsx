@@ -7,7 +7,7 @@ import { Team, NewsItem, TransferOffer } from '../types';
 import { 
   Play, Users, ArrowLeftRight, Wallet, LayoutDashboard, Trophy, Settings, 
   Newspaper, Target, MessageSquare, Heart, BarChart3, ShieldAlert, 
-  CalendarDays, ChevronRight, Building2, Zap, Sparkles, Home
+  CalendarDays, ChevronRight, Building2, Zap, Home
 } from 'lucide-react';
 import { impactLight, impactMedium, hapticSelection } from '../haptics';
 import clsx from 'clsx';
@@ -162,7 +162,7 @@ export default function DashboardScreen({
         }
       />
 
-      <main className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar pb-40">
+      <main className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar pb-32">
         
         {/* Top Fold: Priority Decision Hub */}
         <section className="ui-card-premium p-8 relative overflow-hidden group shadow-2xl">
@@ -339,49 +339,43 @@ export default function DashboardScreen({
         </section>
       </main>
 
-      {/* FIXED BOTTOM ACTION BAR */}
-      <footer className="fixed bottom-0 left-0 w-full z-50 pointer-events-none">
-         <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-background via-background/90 to-transparent" />
-         
-         <div className="relative p-6 flex flex-col items-center gap-4 pointer-events-auto">
-            {/* Play Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.95 }}
-              animate={{
-                boxShadow: ["0 0 20px rgba(31,177,133,0.2)", "0 0 40px rgba(31,177,133,0.4)", "0 0 20px rgba(31,177,133,0.2)"]
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-              onClick={() => { impactMedium(); onSimulate(); }}
-              className="w-full max-w-sm h-18 bg-primary rounded-[2.5rem] flex items-center justify-center gap-4 shadow-2xl relative overflow-hidden group"
-            >
-               <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-               <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center text-white">
-                  <Play size={20} fill="currentColor" />
-               </div>
-               <span className="text-sm font-black text-white uppercase tracking-[0.4em] italic drop-shadow-lg">Começar Rodada</span>
-               <div className="absolute -right-4 -top-4 opacity-10">
-                  <Sparkles size={60} />
-               </div>
-            </motion.button>
+      {/* FIXED BOTTOM ACTION BAR — single bar, "Começar Rodada" as a raised FAB */}
+      <footer className="fixed bottom-0 left-0 w-full z-50 pointer-events-none pb-safe">
+         <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background via-background/90 to-transparent" />
 
-            {/* Bottom Navigation */}
-            <nav className="w-full bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[2rem] flex justify-around items-center px-2 py-3 shadow-2xl">
+         <div className="relative px-6 pt-8 pb-4 pointer-events-auto">
+            <nav className="relative w-full max-w-sm mx-auto bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[2rem] flex items-center px-2 py-3 shadow-2xl">
               {[
                 { icon: LayoutDashboard, label: 'Home', action: () => {}, active: true },
                 { icon: Trophy, label: 'Liga', action: onOpenLeague },
                 { icon: BarChart3, label: 'Stats', action: onOpenStats },
-                { icon: Newspaper, label: 'News', action: onOpenNews, badge: unreadNewsCount },
-                { icon: Users, label: 'Perfil', action: onOpenProfile },
-                { icon: Settings, label: 'Ajustes', action: onOpenSettings },
               ].map((item, i) => (
-                <button 
+                <button
                   key={i}
-                  onClick={() => { hapticSelection(); item.action(); }} 
+                  onClick={() => { hapticSelection(); item.action(); }}
                   className={clsx(
                     "flex-1 flex flex-col items-center gap-1 transition-all active:scale-90 relative py-1",
                     item.active ? "text-primary" : "text-secondary hover:text-white"
                   )}
+                >
+                   <item.icon size={19} />
+                   <span className="text-[8px] font-black uppercase tracking-widest">{item.label}</span>
+                   {item.active && <motion.div layoutId="nav-glow" className="absolute -bottom-1 w-4 h-0.5 bg-primary rounded-full shadow-[0_0_8px_rgba(31,177,133,1)]" />}
+                </button>
+              ))}
+
+              {/* Spacer reserving room for the raised FAB */}
+              <div className="w-14 shrink-0" />
+
+              {[
+                { icon: Newspaper, label: 'News', action: onOpenNews, badge: unreadNewsCount },
+                { icon: Users, label: 'Perfil', action: onOpenProfile },
+                { icon: Settings, label: 'Ajustes', action: onOpenSettings },
+              ].map((item, i) => (
+                <button
+                  key={i}
+                  onClick={() => { hapticSelection(); item.action(); }}
+                  className="flex-1 flex flex-col items-center gap-1 transition-all active:scale-90 relative py-1 text-secondary hover:text-white"
                 >
                    <item.icon size={19} />
                    <span className="text-[8px] font-black uppercase tracking-widest">{item.label}</span>
@@ -390,10 +384,28 @@ export default function DashboardScreen({
                         {item.badge}
                       </div>
                    ) : null}
-                   {item.active && <motion.div layoutId="nav-glow" className="absolute -bottom-1 w-4 h-0.5 bg-primary rounded-full shadow-[0_0_8px_rgba(31,177,133,1)]" />}
                 </button>
               ))}
+
+              {/* Play Button — raised FAB, centered on top of the nav bar */}
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.94 }}
+                animate={{
+                  boxShadow: ["0 0 14px rgba(31,177,133,0.3)", "0 0 26px rgba(31,177,133,0.55)", "0 0 14px rgba(31,177,133,0.3)"]
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+                onClick={() => { impactMedium(); onSimulate(); }}
+                aria-label="Começar Rodada"
+                title="Começar Rodada"
+                className="absolute -top-[22px] left-1/2 -translate-x-1/2 h-14 w-14 bg-primary rounded-2xl border-4 border-background flex items-center justify-center shadow-2xl"
+              >
+                 <Play size={20} fill="currentColor" className="text-white ml-0.5" />
+              </motion.button>
             </nav>
+            <div className="text-center mt-2 text-[8px] font-black uppercase tracking-[0.3em] text-secondary opacity-60">
+              Começar Rodada
+            </div>
          </div>
       </footer>
     </div>
