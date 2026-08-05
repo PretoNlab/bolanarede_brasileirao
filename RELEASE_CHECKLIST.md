@@ -1,6 +1,6 @@
 # Release Checklist
 
-Domínio alvo: `bolanared.ia.br`
+Domínio alvo: `bolanarede.ia.br`
 
 ## Gate Técnico
 
@@ -16,17 +16,15 @@ Domínio alvo: `bolanared.ia.br`
 - onboarding conclui sem travar o fluxo
 - nova carreira inicia corretamente
 - continuar save local funciona
-- fluxo de Copa abre seleção, pré-convocação e dashboard sem erro
+- competições continentais (Libertadores/Sul-Americana) abrem a partir do dashboard sem erro
 - mercado, finanças, tática e calendário abrem sem tela quebrada
 - artilharia da Série A e Série B renderiza corretamente
-- nomes da pré-lista da Copa não aparecem com números ou mistura artificial
 
 ## Gate de Dados
 
-- jogadores benchmark da Copa têm posição principal coerente
-- jogadores benchmark da Copa têm pé dominante coerente
-- craques benchmark não aparecem com overall absurdo para baixo
-- pré-lista da Copa usa base curada + CSV + fallback por país
+- elencos brasileiros usam a base real (CBF/Transfermarkt) quando disponível, com fallback gerado sinalizado
+- clubes estrangeiros da Libertadores/Sul-Americana não aparecem com nomes numerados ("Clube 2", "Clube 3") além do estritamente necessário para completar o chaveamento
+- nenhum clube disputa Libertadores e Sul-Americana na mesma temporada
 
 ## Gate de Marca e Página Pública
 
@@ -40,7 +38,7 @@ Domínio alvo: `bolanared.ia.br`
 - consolidar mudanças locais em commits claros
 - subir branch/`main` com estado reprodutível
 - validar deploy preview antes de promover produção
-- conferir domínio `bolanared.ia.br` apontando para o projeto certo
+- conferir domínio `bolanarede.ia.br` apontando para o projeto certo
 - revisar se launch será `beta` ou `oficial`
 
 ## Recomendação Atual
