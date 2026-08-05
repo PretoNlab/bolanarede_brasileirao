@@ -19,6 +19,22 @@ function getForeignTeams(): Team[] {
   }));
 }
 
+// Only reached if the real club roster (South America + qualified Brazilian
+// clubs) still can't fill 32 slots. Clones are clearly numbered so they never
+// masquerade as a real, distinct club.
+function fillWithClones(pool: Team[], seeds: Team[], tag: 'lib' | 'sud') {
+  if (seeds.length === 0) return;
+
+  while (pool.length < 32) {
+    const seed = seeds[pool.length % seeds.length];
+    pool.push({
+      ...seed,
+      id: `${seed.id}-${tag}-${pool.length}`,
+      name: `${seed.name} ${Math.floor(pool.length / seeds.length) + 1}`
+    });
+  }
+}
+
 function getBaseTeamId(id: string) {
   return id.replace(/-(lib|sud)-\d+$/, '');
 }
@@ -61,34 +77,25 @@ export function initializeContinentalTournaments(
     return b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga);
   });
 
-  // Libertadores Teams (6 Brazilian + 26 Foreign / Seeds)
+  // Libertadores Teams (6 Brazilian + up to 26 Foreign)
   const libBrazilian = sortedSerieA.length >= 6 ? sortedSerieA.slice(0, 6) : sortedSerieA;
-  const libForeign = foreignTeams.slice(0, 6);
-  const libPool = [...libBrazilian, ...libForeign];
-
-  // Fill up to 32 teams with clones / foreign seeds if needed
-  while (libPool.length < 32) {
-    const seed = foreignTeams[libPool.length % foreignTeams.length];
-    libPool.push({
-      ...seed,
-      id: `${seed.id}-lib-${libPool.length}`,
-      name: `${seed.name} ${Math.floor(libPool.length / foreignTeams.length) + 1}`
-    });
-  }
-
-  // Sul-Americana Teams (6 Brazilian: 7th to 12th + Foreign)
   const sudBrazilian = sortedSerieA.length >= 12 ? sortedSerieA.slice(6, 12) : sortedSerieA.slice(Math.min(6, sortedSerieA.length));
-  const sudForeign = foreignTeams.slice(2);
-  const sudPool = [...sudBrazilian, ...sudForeign];
 
-  while (sudPool.length < 32) {
-    const seed = foreignTeams[sudPool.length % foreignTeams.length];
-    sudPool.push({
-      ...seed,
-      id: `${seed.id}-sud-${sudPool.length}`,
-      name: `${seed.name} ${Math.floor(sudPool.length / foreignTeams.length) + 1}`
-    });
-  }
+  // Split the real foreign clubs into two disjoint groups (strongest go to
+  // Libertadores) so the same club never plays both continental cups in the
+  // same season. Only fabricate numbered clones once this real pool runs out.
+  const sortedForeign = [...foreignTeams].sort((a, b) => (b.attack + b.defense) - (a.attack + a.defense));
+  const libForeignSlots = Math.max(0, 32 - libBrazilian.length);
+  const libForeign = sortedForeign.slice(0, libForeignSlots);
+  const sudForeignPool = sortedForeign.slice(libForeign.length);
+
+  const libPool = [...libBrazilian, ...libForeign];
+  fillWithClones(libPool, libForeign.length > 0 ? libForeign : sortedForeign, 'lib');
+
+  const sudForeignSlots = Math.max(0, 32 - sudBrazilian.length);
+  const sudForeign = sudForeignPool.slice(0, sudForeignSlots);
+  const sudPool = [...sudBrazilian, ...sudForeign];
+  fillWithClones(sudPool, sudForeign.length > 0 ? sudForeign : sortedForeign, 'sud');
 
   const libTournament = createTournament('LIBERTADORES', 'Copa Libertadores', libPool);
   const sudTournament = createTournament('SUDAMERICANA', 'Copa Sul-Americana', sudPool);
