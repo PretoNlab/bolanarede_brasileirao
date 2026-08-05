@@ -23,7 +23,7 @@ export default function ChampionScreen({ champion, userTeam, onNewSeason, onQuit
    const promoted = standingsB.slice(0, 4);
 
    return (
-      <div className="relative flex flex-col h-screen w-full bg-background overflow-hidden">
+      <div className="relative flex flex-col h-dvh w-full bg-background overflow-hidden">
          <div className={clsx(
             "absolute inset-0 bg-gradient-to-b opacity-40 z-0",
             isUserChampion ? "from-yellow-500/20 via-background to-background" : "from-blue-500/20 via-background to-background"

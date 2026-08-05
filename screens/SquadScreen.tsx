@@ -47,47 +47,48 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
    };
 
    return (
-      <div className="flex flex-col h-screen bg-background text-white selection:bg-primary/30 overflow-hidden">
+      <div className="flex flex-col min-h-dvh bg-background text-white selection:bg-primary/30 w-full relative">
          <Header 
             title="Escritório Técnico"
             subtitle="Gestão Integrada do Elenco"
             onBack={onBack}
             rightAction={
-                <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-2xl border border-white/5">
-                    <Activity size={14} className="text-emerald-500" />
-                    <span className="font-black text-[10px] uppercase tracking-widest text-white/40">{team.roster.length} Atletas</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-2xl border border-white/10">
+                    <Activity size={16} className="text-emerald-400" />
+                    <span className="font-extrabold text-xs uppercase tracking-wider text-slate-300">{team.roster.length} Atletas</span>
                 </div>
             }
          />
 
-         {/* Cinematic Tab Navigation */}
-         <div className="px-6 py-6 overflow-x-auto no-scrollbar flex items-center gap-2 bg-background/80 backdrop-blur-3xl sticky top-0 z-30 border-b border-white/5">
-            {(['ALL', 'GOL', 'DEF', 'MID', 'ATT', 'PENDING'] as PositionFilter[]).map((tab) => (
-               <button 
-                  key={tab} 
-                  onClick={() => setFilter(tab)} 
-                  className={clsx(
-                    "px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap italic",
-                    filter === tab 
-                      ? "bg-emerald-500 text-white shadow-[0_10px_20px_rgba(31,177,133,0.2)] border border-emerald-400/20" 
-                      : "bg-white/[0.02] text-white/30 border border-white/5 hover:bg-white/[0.05]"
-                  )}
-               >
-                  {tab === 'ALL' ? 'Geral' : tab === 'PENDING' ? 'Revisar' : tab}
-               </button>
-            ))}
-         </div>
+         <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col">
+           {/* Cinematic Tab Navigation */}
+           <div className="px-4 sm:px-6 py-4 overflow-x-auto no-scrollbar flex items-center gap-2 bg-background/80 backdrop-blur-3xl sticky top-0 z-30 border-b border-white/5">
+              {(['ALL', 'GOL', 'DEF', 'MID', 'ATT', 'PENDING'] as PositionFilter[]).map((tab) => (
+                 <button 
+                    key={tab} 
+                    onClick={() => setFilter(tab)} 
+                    className={clsx(
+                      "px-4 sm:px-5 py-2.5 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 whitespace-nowrap italic min-h-[44px]",
+                      filter === tab 
+                        ? "bg-emerald-500 text-white shadow-[0_10px_20px_rgba(31,177,133,0.2)] border border-emerald-400/20" 
+                        : "bg-white/[0.03] text-slate-400 border border-white/10 hover:bg-white/[0.08]"
+                    )}
+                 >
+                    {tab === 'ALL' ? 'Geral' : tab === 'PENDING' ? 'Revisar' : tab}
+                 </button>
+              ))}
+           </div>
 
-         <div className="mx-6 mt-5 flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
-            <div className="flex min-w-0 items-center gap-3">
-               <Database size={17} className="shrink-0 text-emerald-400" />
-               <div className="min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/75">Auditoria do elenco</p>
-                  <p className="mt-1 text-[11px] text-white/45">{verifiedPlayers} com posição e idade verificadas</p>
-               </div>
-            </div>
-            {modeledPlayers > 0 && (
-               <span className="shrink-0 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-amber-300">
+           <div className="mx-4 sm:mx-6 mt-4 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+              <div className="flex min-w-0 items-center gap-3">
+                 <Database size={18} className="shrink-0 text-emerald-400" />
+                 <div className="min-w-0">
+                    <p className="text-xs font-extrabold uppercase tracking-wider text-slate-200">Auditoria do elenco</p>
+                    <p className="mt-0.5 text-xs text-slate-400">{verifiedPlayers} com posição e idade verificadas</p>
+                 </div>
+              </div>
+              {modeledPlayers > 0 && (
+                 <span className="shrink-0 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-300">
                   {modeledPlayers} pendentes
                </span>
             )}
@@ -332,7 +333,8 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                </motion.div>
             </div>
          )}
-         </AnimatePresence>
-      </div>
-   );
+          </AnimatePresence>
+       </div>
+    </div>
+ );
 }

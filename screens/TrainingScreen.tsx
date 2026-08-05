@@ -52,7 +52,7 @@ export default function TrainingScreen({
   const totalBonus = (coachingBonus + infraBonus) * 100;
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white selection:bg-primary/30 overflow-hidden">
+    <div className="flex flex-col h-dvh bg-background text-white selection:bg-primary/30 overflow-hidden">
       <Header 
         title="Centro de Alta Performance"
         subtitle={team.name}

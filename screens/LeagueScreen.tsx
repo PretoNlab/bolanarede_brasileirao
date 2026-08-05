@@ -33,7 +33,7 @@ export default function LeagueScreen({ teams, userTeamId, onBack }: Props) {
   }, [teams, div]);
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white/90 selection:bg-primary/30">
+    <div className="flex flex-col h-dvh bg-background text-white/90 selection:bg-primary/30">
       <Header 
         title={div === 1 ? 'Série A' : 'Série B'} 
         subtitle="Competição Nacional"

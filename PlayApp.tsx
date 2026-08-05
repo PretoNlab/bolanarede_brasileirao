@@ -52,7 +52,7 @@ interface PlayAppProps {
 }
 
 function ScreenFallback() {
-  return <div className="min-h-screen w-full bg-background" />;
+  return <div className="min-h-dvh w-full bg-background" />;
 }
 
 function runWhenIdle(task: () => void) {
@@ -1270,7 +1270,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
   );
 
   return (
-    <div className="min-h-screen bg-background text-on-surface font-sans selection:bg-primary/30 relative overflow-hidden h-full">
+    <div className="min-h-dvh bg-background text-on-surface font-sans selection:bg-primary/30 relative overflow-hidden h-full">
       <Toaster
         position="top-right"
         gutter={12}

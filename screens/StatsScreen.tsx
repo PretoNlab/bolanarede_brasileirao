@@ -78,7 +78,7 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
   }, [teams]);
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white/90 selection:bg-primary/30">
+    <div className="flex flex-col h-dvh bg-background text-white/90 selection:bg-primary/30">
       <Header 
         title="Estatísticas" 
         subtitle={`Temporada ${season} • Rodada ${round}`}

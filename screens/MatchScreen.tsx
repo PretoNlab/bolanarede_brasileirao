@@ -392,7 +392,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
    };
 
    return (
-      <div className="flex flex-col h-screen bg-[#020617] text-white relative font-sans overflow-hidden">
+      <div className="flex flex-col h-dvh bg-[#020617] text-white relative font-sans overflow-hidden">
          
          {/* TV STYLE HEADER (PHASE 3) */}
          <header className="px-6 py-4 pt-12 flex justify-between items-center z-50">
@@ -930,16 +930,16 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                                     <button
                                        key={player.id}
                                        onClick={() => { hapticSelection(); setSelectedSubOut(player.id); }}
-                                       className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all group"
+                                       className="flex items-center justify-between gap-3 p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all group"
                                     >
-                                       <div className="flex flex-col items-start">
-                                          <span className="text-[12px] font-black uppercase tracking-tight text-white">{player.name}</span>
+                                       <div className="flex min-w-0 flex-1 flex-col items-start">
+                                          <span className="w-full truncate text-[12px] font-black uppercase tracking-tight text-white">{player.name}</span>
                                           <span className="text-[9px] font-bold text-secondary flex items-center gap-2 mt-0.5">
                                              <Sparkles size={10} className="text-amber-400" />
                                              OVR {player.overall} • {player.position}
                                           </span>
                                        </div>
-                                       <div className="h-8 w-8 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all">
+                                       <div className="h-8 w-8 shrink-0 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all">
                                           <TrendingDown size={14} />
                                        </div>
                                     </button>
@@ -957,16 +957,16 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                                     <button
                                        key={player.id}
                                        onClick={() => { hapticSelection(); handleSubstitution(selectedSubOut, player.id); }}
-                                       className="flex items-center justify-between p-4 bg-primary/5 border border-primary/10 rounded-2xl hover:bg-primary/20 transition-all group"
+                                       className="flex items-center justify-between gap-3 p-4 bg-primary/5 border border-primary/10 rounded-2xl hover:bg-primary/20 transition-all group"
                                     >
-                                       <div className="flex flex-col items-start">
-                                          <span className="text-[12px] font-black uppercase tracking-tight text-white">{player.name}</span>
+                                       <div className="flex min-w-0 flex-1 flex-col items-start">
+                                          <span className="w-full truncate text-[12px] font-black uppercase tracking-tight text-white">{player.name}</span>
                                           <span className="text-[9px] font-bold text-secondary flex items-center gap-2 mt-0.5">
                                              <Zap size={10} className="text-primary" />
                                              OVR {player.overall} • {player.position}
                                           </span>
                                        </div>
-                                       <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-primary group-hover:text-white transition-all">
+                                       <div className="h-8 w-8 shrink-0 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-primary group-hover:text-white transition-all">
                                           <TrendingUp size={14} />
                                        </div>
                                     </button>

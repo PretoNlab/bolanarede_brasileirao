@@ -81,7 +81,7 @@ export default function InfrastructureScreen({ infrastructure, funds, onUpgrade,
   const totalLevel = Object.values(infrastructure).reduce((a, b) => (a as number) + (b as number), 0);
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white selection:bg-primary/30 overflow-hidden">
+    <div className="flex flex-col h-dvh bg-background text-white selection:bg-primary/30 overflow-hidden">
       <Header 
         title="Patrimônio do Clube"
         subtitle="Gestão de Infraestrutura"

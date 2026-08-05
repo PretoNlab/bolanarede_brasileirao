@@ -196,17 +196,17 @@ export default function MarketScreen({
   );
 
   return (
-    <div className="flex h-screen flex-col bg-background font-sans text-white overflow-hidden">
+    <div className="flex min-h-dvh flex-col bg-background font-sans text-white w-full relative">
       <Header 
         title="Mercado"
         subtitle="Transferências"
         onBack={onBack}
-        rightAction={<div className="px-3 py-1.5 bg-primary/10 rounded-xl border border-primary/20 text-primary font-black text-xs">{formatMoney(funds)}</div>}
+        rightAction={<div className="px-3 py-1.5 bg-primary/10 rounded-xl border border-primary/20 text-primary font-bold text-xs">{formatMoney(funds)}</div>}
       />
 
-      <main className="flex-1 space-y-6 overflow-y-auto p-6 pb-28 no-scrollbar">
+      <main className="flex-1 space-y-6 overflow-y-auto p-4 sm:p-6 pb-36 no-scrollbar max-w-4xl mx-auto w-full">
         {/* Market Pulse Card */}
-        <section className="ui-card-premium p-8 relative overflow-hidden group">
+        <section className="ui-card-premium p-6 sm:p-8 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 blur-[100px] rounded-full group-hover:bg-primary/10 transition-colors duration-1000" />
           

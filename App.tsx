@@ -16,7 +16,7 @@ function normalizePath(pathname: string): RoutePath {
 
 function LoadingScreen() {
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[#050505] text-white">
+    <div className="flex min-h-dvh w-full flex-col items-center justify-center bg-[#050505] text-white">
       <div className="relative mb-8">
         <div className="absolute inset-0 bg-[#10B981] blur-3xl opacity-20" />
         <img src="/logo.svg" alt="BNR" className="h-16 w-16 relative z-10 animate-float" />
@@ -28,7 +28,7 @@ function LoadingScreen() {
 
 function ErrorScreen({ title, message }: { title: string; message: string }) {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-[#050505] px-6 text-white stadium-glow">
+    <div className="flex min-h-dvh w-full items-center justify-center bg-[#050505] px-6 text-white stadium-glow">
       <div className="max-w-2xl rounded-[42px] border border-white/5 bg-white/[0.03] p-10 shadow-2xl backdrop-blur-xl">
         <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#10B981]">Erro de Runtime</div>
         <div className="font-editorial mt-6 text-[2.2rem] font-bold tracking-[-0.06em] italic">{title}</div>

@@ -41,7 +41,7 @@ export default function StaffScreen({ hiredStaff, staffMarket, funds, onHire, on
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white selection:bg-primary/30 overflow-hidden">
+    <div className="flex flex-col h-dvh bg-background text-white selection:bg-primary/30 overflow-hidden">
       <Header 
         title="Departamento Técnico"
         subtitle="Gestão de Staff Profissional"

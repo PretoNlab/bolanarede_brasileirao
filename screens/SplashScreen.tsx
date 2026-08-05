@@ -96,7 +96,7 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
   };
 
   return (
-    <div className="h-screen w-full overflow-y-auto overflow-x-hidden bg-[#020617] text-white no-scrollbar font-sans selection:bg-emerald-500/30">
+    <div className="h-dvh w-full overflow-y-auto overflow-x-hidden bg-[#020617] text-white no-scrollbar font-sans selection:bg-emerald-500/30">
       {/* Sticky Header */}
       <header className="sticky top-0 z-50 h-16 border-b border-white/10 bg-[#020617]/85 backdrop-blur-xl">
         <div className="mx-auto flex h-full w-full max-w-[1240px] items-center justify-between px-4 sm:px-6 lg:px-8">

@@ -10,7 +10,7 @@ interface Props {
 
 export default function GameHomeScreen({ onStart, onContinue, hasSave, onBackHome }: Props) {
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-between overflow-hidden bg-[#050505] p-8 text-white relative">
+    <div className="flex h-dvh w-full flex-col items-center justify-between overflow-hidden bg-[#050505] p-8 text-white relative">
       <div className="absolute top-[-10%] right-[-10%] h-64 w-64 rounded-full bg-[#1FB185]/10 blur-[100px]" />
       <div className="absolute bottom-[-10%] left-[-10%] h-64 w-64 rounded-full bg-[#1FB185]/5 blur-[120px]" />
 

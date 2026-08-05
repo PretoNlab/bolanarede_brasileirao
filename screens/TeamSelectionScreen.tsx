@@ -104,7 +104,7 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
   ] as const;
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white font-sans">
+    <div className="flex flex-col h-dvh bg-background text-white font-sans">
 
       {/* HEADER */}
       <header className="px-5 pt-12 pb-4 bg-background z-10">

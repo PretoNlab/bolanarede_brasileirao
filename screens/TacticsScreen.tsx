@@ -193,7 +193,7 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
   );
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white/90 selection:bg-primary/30 overflow-hidden">
+    <div className="flex flex-col min-h-dvh bg-background text-white/90 selection:bg-primary/30 w-full relative">
       <Header 
         title="Tática & Estratégia" 
         subtitle={team.name}
@@ -202,7 +202,7 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
           <button 
             onClick={() => onSave(tempFormation, tempStyle, tempLineup, tempInstructions)}
             className={clsx(
-                "w-12 h-12 rounded-2xl flex items-center justify-center transition-all active:scale-95 border shadow-lg",
+                "w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all active:scale-95 border shadow-lg shrink-0",
                 isComplete ? "bg-emerald-600 border-emerald-500/50 text-white shadow-emerald-600/20" : "bg-white/5 border-white/5 text-white/20 opacity-50 cursor-not-allowed"
             )}
             disabled={!isComplete}
@@ -212,18 +212,18 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
         }
       />
 
-      <main className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
+      <main className="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden max-w-6xl mx-auto w-full pb-16 md:pb-0">
         {/* Lado Esquerdo: Campo (Pitch) */}
-        <div className="relative flex items-center justify-center p-4 bg-[radial-gradient(circle_at_center,rgba(31,177,133,0.05),transparent_70%)] md:flex-1 md:min-h-0">
-           <div className="relative aspect-[3/4] w-full max-w-[480px] select-none">
-              <div className="absolute inset-0 rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl bg-[#020617]">
+        <div className="relative flex items-center justify-center p-4 bg-[radial-gradient(circle_at_center,rgba(31,177,133,0.05),transparent_70%)] md:flex-1 min-h-[380px] sm:min-h-[460px]">
+           <div className="relative aspect-[3/4] w-full max-w-[440px] select-none">
+              <div className="absolute inset-0 rounded-[2.5rem] sm:rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl bg-[#020617]">
                  <div className="absolute inset-0 bg-gradient-to-b from-[#1e5231]/10 to-[#123620]/20" />
                  <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 10%, rgba(255,255,255,0.05) 10%, rgba(255,255,255,0.05) 20%)' }} />
-                 <div className="absolute inset-0 border-[1.5px] border-white/5 rounded-[3rem] m-3" />
-                 <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/5" />
-                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-[1px] border-white/5 rounded-full" />
-                 <div className="absolute top-6 left-1/2 -translate-x-1/2 w-64 h-24 border-[1px] border-white/5 border-t-0 rounded-b-2xl" />
-                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-64 h-24 border-[1px] border-white/5 border-b-0 rounded-t-2xl" />
+                 <div className="absolute inset-0 border-[1.5px] border-white/10 rounded-[2.5rem] sm:rounded-[3rem] m-3" />
+                 <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/10" />
+                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 sm:w-32 h-28 sm:h-32 border-[1px] border-white/10 rounded-full" />
+                 <div className="absolute top-6 left-1/2 -translate-x-1/2 w-56 sm:w-64 h-20 sm:h-24 border-[1px] border-white/10 border-t-0 rounded-b-2xl" />
+                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-56 sm:w-64 h-20 sm:h-24 border-[1px] border-white/10 border-b-0 rounded-t-2xl" />
               </div>
 
               {currentSlots.map((slot, index) => {
@@ -236,30 +236,30 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
                     key={slot.id}
                     onClick={() => setSelectedSlotIndex(index)}
                     style={{ left: `${slot.x}%`, top: `${slot.y}%`, transform: 'translate(-50%, -50%)' }}
-                    className="absolute z-10 flex flex-col items-center gap-2 cursor-pointer group"
+                    className="absolute z-10 flex flex-col items-center gap-1.5 cursor-pointer group"
                   >
                     <div className={clsx(
-                      "w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-500 shadow-2xl group-active:scale-90",
-                      !player ? "bg-white/5 border-dashed border-white/10" : 
-                      fit?.level === 'PRIMARY' ? "bg-emerald-500 border-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.3)] scale-110" :
-                      fit?.level === 'SECONDARY' ? "bg-amber-500 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.3)]" :
-                      "bg-rose-600 border-rose-400 shadow-[0_0_20px_rgba(225,29,72,0.3)]"
+                      "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center border transition-all duration-300 shadow-2xl group-active:scale-90",
+                      !player ? "bg-white/5 border-dashed border-white/20" : 
+                      fit?.level === 'PRIMARY' ? "bg-emerald-500 border-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.4)] scale-105" :
+                      fit?.level === 'SECONDARY' ? "bg-amber-500 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.4)]" :
+                      "bg-rose-600 border-rose-400 shadow-[0_0_20px_rgba(225,29,72,0.4)]"
                     )}>
                       {player ? (
                         <div className="flex flex-col items-center">
-                            <span className="text-white font-black text-sm drop-shadow-md leading-none">
+                            <span className="text-white font-black text-xs sm:text-sm drop-shadow-md leading-none">
                               {Math.round(player.overall * (fit?.multiplier || 1))}
                             </span>
                         </div>
                       ) : (
-                        <div className="w-1.5 h-1.5 rounded-full bg-white/20 animate-pulse" />
+                        <div className="w-2 h-2 rounded-full bg-white/30 animate-pulse" />
                       )}
                     </div>
 
-                    <div className="bg-black/80 backdrop-blur-md px-3 py-1 rounded-xl border border-white/10 max-w-[90px] shadow-lg">
+                    <div className="bg-black/90 backdrop-blur-md px-2.5 py-1 rounded-xl border border-white/15 max-w-[95px] shadow-lg text-center">
                         <p className={clsx(
-                            "text-[8px] font-black uppercase text-center truncate tracking-[0.14em]",
-                            player ? "text-white" : "text-white/40"
+                            "text-[10px] font-extrabold uppercase truncate tracking-wider",
+                            player ? "text-white" : "text-slate-400"
                         )}>
                             {player ? player.name.split(' ').pop() : slot.label}
                         </p>
@@ -271,12 +271,12 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
         </div>
 
         {renderControlPanel(
-          "hidden md:flex md:w-[420px] bg-white/[0.02] border-l border-white/5 backdrop-blur-3xl overflow-y-auto no-scrollbar pb-safe flex-col gap-6 p-6"
+          "hidden md:flex md:w-[420px] bg-white/[0.02] border-l border-white/10 backdrop-blur-3xl overflow-y-auto no-scrollbar pb-safe flex-col gap-6 p-6"
         )}
       </main>
 
       {renderControlPanel(
-        "md:hidden border-t border-white/5 bg-[#020617]/95 backdrop-blur-3xl px-4 pt-4 pb-safe max-h-[42vh] overflow-y-auto no-scrollbar flex flex-col gap-4"
+        "md:hidden border-t border-white/10 bg-[#020617]/95 backdrop-blur-3xl px-4 pt-4 pb-safe max-h-[50vh] overflow-y-auto no-scrollbar flex flex-col gap-4"
       )}
 
       {selectedSlotIndex !== null && (

@@ -36,7 +36,7 @@ export default function YouthAcademyScreen({ userTeam, roster, funds, infrastruc
   const scoutLvl = infrastructure.scout || 1;
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white selection:bg-primary/30 overflow-hidden">
+    <div className="flex flex-col h-dvh bg-background text-white selection:bg-primary/30 overflow-hidden">
       <Header 
         title="Categorias de Base"
         subtitle="Centro de Formação de Talentos"

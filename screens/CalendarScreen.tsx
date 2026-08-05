@@ -21,7 +21,7 @@ export default function CalendarScreen({ history, currentRound, onBack }: Props)
   const rounds = Object.keys(historyByRound).map(Number).sort((a, b) => b - a);
 
   return (
-    <div className="flex flex-col h-screen bg-background text-white font-sans overflow-hidden">
+    <div className="flex flex-col h-dvh bg-background text-white font-sans overflow-hidden">
       <header className="p-6 flex items-center justify-between bg-background/40 backdrop-blur-xl pt-safe">
         <motion.button whileTap={{ scale: 0.9 }} onClick={onBack} className="w-10 h-10 rounded-xl bg-surface-low flex items-center justify-center border border-white/5 transition-all">
           <ArrowLeft size={18} />

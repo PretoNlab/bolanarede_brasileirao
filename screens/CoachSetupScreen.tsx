@@ -73,7 +73,7 @@ export default function CoachSetupScreen({ onComplete, onBack }: Props) {
     };
 
     return (
-        <div className="flex flex-col h-screen bg-background text-white font-sans overflow-hidden">
+        <div className="flex flex-col h-dvh bg-background text-white font-sans overflow-hidden">
             
             {/* Tactical Header Progress */}
             <div className="px-8 pt-16 pb-6">

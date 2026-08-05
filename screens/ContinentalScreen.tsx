@@ -38,7 +38,7 @@ export default function ContinentalScreen({
   const isUserInCurrent = userQual?.tournament === selectedTournament;
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-[#020617] text-white p-4 pb-24 md:p-8 pt-safe">
+    <div className="flex flex-col min-h-dvh w-full bg-[#020617] text-white p-4 pb-24 md:p-8 pt-safe">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-white/10 pb-4">
         <div>

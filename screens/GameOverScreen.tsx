@@ -8,7 +8,7 @@ interface Props {
 
 export default function GameOverScreen({ reason, onRestart }: Props) {
   return (
-    <div className="flex flex-col h-screen w-full bg-background items-center justify-center p-6 text-center relative overflow-hidden">
+    <div className="flex flex-col h-dvh w-full bg-background items-center justify-center p-6 text-center relative overflow-hidden">
       {/* Red ambient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-red-900/20 via-background to-background z-0"></div>
 

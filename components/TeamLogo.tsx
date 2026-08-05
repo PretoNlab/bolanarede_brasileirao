@@ -41,11 +41,11 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ team, className = "", size =
   // Se houver logoUrl e nenhum erro de carregamento, tenta renderizar a imagem
   if (team.logoUrl && !error) {
     return (
-      <div className={clsx("relative flex-shrink-0 flex items-center justify-center overflow-hidden rounded-full bg-white/10", sizeClasses[size], className)}>
+      <div className={clsx("relative flex-shrink-0 flex items-center justify-center overflow-hidden drop-shadow-md", sizeClasses[size], className)}>
         <img 
           src={team.logoUrl} 
           alt={team.name} 
-          className="w-full h-full object-contain p-1"
+          className="w-full h-full object-contain p-0"
           onError={() => setError(true)}
         />
       </div>
