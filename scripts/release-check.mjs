@@ -42,6 +42,15 @@ function runBuild() {
   }
 }
 
+function runTests() {
+  try {
+    execSync('npm test', { cwd: root, stdio: 'pipe' });
+    pass('testes automatizados passaram');
+  } catch (error) {
+    fail('testes automatizados falharam');
+  }
+}
+
 function checkManifest() {
   const manifest = readJson('manifest.json');
 
@@ -112,6 +121,7 @@ function checkEnvExample() {
 }
 
 runBuild();
+runTests();
 ensureFile('index.html');
 ensureFile('manifest.json');
 ensureFile('metadata.json');
