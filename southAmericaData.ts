@@ -63,6 +63,7 @@ export const SOUTH_AMERICAN_FOREIGN_CLUBS: Omit<Team, 'instructions'>[] = [
     city: 'Buenos Aires',
     logoColor1: 'from-blue-700',
     logoColor2: 'to-yellow-500',
+    logoUrl: '/logos/boca.svg',
     attack: 88,
     defense: 86,
     roster: [
@@ -95,6 +96,7 @@ export const SOUTH_AMERICAN_FOREIGN_CLUBS: Omit<Team, 'instructions'>[] = [
     city: 'Buenos Aires',
     logoColor1: 'from-red-600',
     logoColor2: 'to-white',
+    logoUrl: '/logos/river.svg',
     attack: 90,
     defense: 88,
     roster: [
@@ -127,6 +129,7 @@ export const SOUTH_AMERICAN_FOREIGN_CLUBS: Omit<Team, 'instructions'>[] = [
     city: 'Montevideo',
     logoColor1: 'from-yellow-400',
     logoColor2: 'to-black',
+    logoUrl: '/logos/penarol.svg',
     attack: 84,
     defense: 83,
     roster: [
@@ -156,6 +159,7 @@ export const SOUTH_AMERICAN_FOREIGN_CLUBS: Omit<Team, 'instructions'>[] = [
     city: 'Montevideo',
     logoColor1: 'from-blue-600',
     logoColor2: 'to-white',
+    logoUrl: '/logos/nacional.svg',
     attack: 83,
     defense: 82,
     roster: [
@@ -185,6 +189,7 @@ export const SOUTH_AMERICAN_FOREIGN_CLUBS: Omit<Team, 'instructions'>[] = [
     city: 'Quito',
     logoColor1: 'from-white',
     logoColor2: 'to-red-600',
+    logoUrl: '/logos/ldu.svg',
     attack: 83,
     defense: 83,
     roster: [
@@ -213,6 +218,7 @@ export const SOUTH_AMERICAN_FOREIGN_CLUBS: Omit<Team, 'instructions'>[] = [
     city: 'Sangolquí',
     logoColor1: 'from-blue-800',
     logoColor2: 'to-black',
+    logoUrl: '/logos/idv.svg',
     attack: 83,
     defense: 82,
     roster: [
@@ -241,6 +247,7 @@ export const SOUTH_AMERICAN_FOREIGN_CLUBS: Omit<Team, 'instructions'>[] = [
     city: 'Asunción',
     logoColor1: 'from-white',
     logoColor2: 'to-black',
+    logoUrl: '/logos/olimpia.svg',
     attack: 81,
     defense: 81,
     roster: [
@@ -269,6 +276,7 @@ export const SOUTH_AMERICAN_FOREIGN_CLUBS: Omit<Team, 'instructions'>[] = [
     city: 'Santiago',
     logoColor1: 'from-white',
     logoColor2: 'to-black',
+    logoUrl: '/logos/colocolo.svg',
     attack: 82,
     defense: 81,
     roster: [

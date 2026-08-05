@@ -4,7 +4,7 @@ import { ArrowUpRight, ShieldCheck, Trophy, Zap, Users, TrendingUp } from 'lucid
 const standings = [
   { position: 1, team: 'Flamengo', logo: '/logos/landing/flamengo.png', points: 28, active: true },
   { position: 2, team: 'Palmeiras', logo: '/logos/landing/palmeiras.png', points: 26 },
-  { position: 3, team: 'Boca Juniors', logo: '/logos/landing/boca.png', points: 24 },
+  { position: 3, team: 'Boca Juniors', logo: '/logos/boca.svg', points: 24 },
   { position: 4, team: 'Botafogo', logo: '/logos/landing/botafogo.png', points: 23 },
 ];
 
@@ -93,7 +93,7 @@ export function HeroShowcase() {
                   <div className="text-[9px] font-bold text-slate-400">Oitavas (Ida)</div>
                 </div>
                 <div className="text-center">
-                  <TeamLogo src="/logos/landing/boca.png" name="Boca Juniors" size="lg" />
+                  <TeamLogo src="/logos/boca.svg" name="Boca Juniors" size="lg" />
                   <div className="mt-2 text-xs font-black text-white">Boca Juniors</div>
                 </div>
               </div>
