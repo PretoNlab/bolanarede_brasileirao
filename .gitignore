@@ -19,6 +19,8 @@ lighthouse-*.json
 serie_a_logos_profissionais_2026/
 serie_b_logos_profissionais_2026/
 world_cup_shields/
+scratch/
+test_wiki_*.py
 
 # Editor directories and files
 .vscode/*

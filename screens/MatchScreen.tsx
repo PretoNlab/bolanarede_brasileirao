@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { impactLight, impactMedium, impactHeavy, hapticNotificationSuccess, hapticNotificationError, hapticSelection } from '../haptics';
+import { calculateDynamicTeamStrength, selectGoalParticipants } from '../engine/tacticsEngine';
 
 
 
@@ -31,22 +32,6 @@ interface Narration {
 }
 
 const MATCH_FORMATIONS: FormationType[] = ['4-4-2', '4-3-3', '4-2-3-1', '3-5-2', '4-5-1', '5-3-2', '5-4-1', '3-4-3', '4-1-4-1', '4-1-2-1-2', '4-2-4'];
-
-function getFormationBias(formation: FormationType) {
-   switch (formation) {
-      case '3-5-2': return { attack: 5, defense: -2, control: 4 };
-      case '4-3-3': return { attack: 6, defense: -1, control: 2 };
-      case '4-2-3-1': return { attack: 4, defense: 1, control: 4 };
-      case '3-4-3': return { attack: 7, defense: -3, control: 1 };
-      case '4-1-4-1': return { attack: 1, defense: 4, control: 5 };
-      case '4-1-2-1-2': return { attack: 5, defense: 0, control: 3 };
-      case '4-2-4': return { attack: 8, defense: -5, control: -2 };
-      case '4-5-1': return { attack: -3, defense: 4, control: 3 };
-      case '5-3-2': return { attack: -2, defense: 5, control: 1 };
-      case '5-4-1': return { attack: -5, defense: 7, control: -1 };
-      default: return { attack: 1, defense: 1, control: 1 };
-   }
-}
 
 export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initialAwayTeam, round, ddaFactor, onFinish, mode = 'league', wcPhase }: Props) {
    const [minute, setMinute] = useState(0);
@@ -90,6 +75,8 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
    const [feed, setFeed] = useState<Narration[]>([]);
    const [matchEvents, setMatchEvents] = useState<MatchEvent[]>([]);
    const [stats, setStats] = useState({ homeShots: 0, awayShots: 0, possession: 50, momentum: 50 });
+   const minuteRef = useRef(0);
+   const statsRef = useRef(stats);
 
    const [isDanger, setIsDanger] = useState(false);
    const [dangerTeamId, setDangerTeamId] = useState<string | null>(null);
@@ -119,30 +106,59 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
       return { title: 'Equilíbrio Tático', copy: 'A partida segue em disputa territorial intensa.', tone: 'neutral' } as const;
    }, [dangerTeamId, homeTeam.id, homeTeam.shortName, initialAwayTeam.id, initialAwayTeam.shortName, isDanger]);
 
-   const pickRandomLineupPlayer = (team: Team) => {
-      const lineupPlayers = team.roster.filter(p => team.lineup.includes(p.id));
-      const pool = lineupPlayers.length ? lineupPlayers : team.roster;
-      return pool[Math.floor(Math.random() * Math.max(1, pool.length))];
-   };
-
-   const maybePickAssistant = (team: Team, scorerName?: string) => {
-      const lineupPlayers = team.roster.filter(p => team.lineup.includes(p.id));
-      const pool = (lineupPlayers.length ? lineupPlayers : team.roster).filter(p => p.name !== scorerName);
-      if (!pool.length) return undefined;
-      return pool[Math.floor(Math.random() * pool.length)];
-   };
-
    const penaltyScore = useMemo(() => ({
       home: pkResults.home.filter(r => r === 1).length,
       away: pkResults.away.filter(r => r === 1).length,
    }), [pkResults]);
 
-   const formationBias = useMemo(() => getFormationBias(currentFormation), [currentFormation]);
+   const homeStrength = useMemo(() => calculateDynamicTeamStrength(homeTeam), [homeTeam]);
+   const awayStrength = useMemo(() => calculateDynamicTeamStrength(initialAwayTeam), [initialAwayTeam]);
 
-   const getStochasticEvent = (momentum: number) => {
-      const isHomeAttacking = Math.random() < (momentum / 100);
+   const decisiveFactors = useMemo(() => {
+      const homeConversion = homeScore / Math.max(1, stats.homeShots);
+      const awayConversion = awayScore / Math.max(1, stats.awayShots);
+      const tacticalEdge = (homeStrength.att - awayStrength.def) - (awayStrength.att - homeStrength.def);
+      const factors = [
+         {
+            label: 'Volume ofensivo',
+            value: `${stats.homeShots} x ${stats.awayShots} chutes`,
+            homeEdge: stats.homeShots - stats.awayShots,
+         },
+         {
+            label: 'Controle do jogo',
+            value: `${stats.possession}% x ${100 - stats.possession}% de posse`,
+            homeEdge: stats.possession - 50,
+         },
+         {
+            label: 'Eficiência',
+            value: `${Math.round(homeConversion * 100)}% x ${Math.round(awayConversion * 100)}%`,
+            homeEdge: (homeConversion - awayConversion) * 100,
+         },
+         {
+            label: 'Encaixe tático',
+            value: Math.abs(tacticalEdge) < 3 ? 'Confronto equilibrado' : tacticalEdge > 0 ? `Vantagem ${homeTeam.shortName}` : `Vantagem ${initialAwayTeam.shortName}`,
+            homeEdge: tacticalEdge,
+         },
+      ];
+
+      return factors
+         .sort((a, b) => Math.abs(b.homeEdge) - Math.abs(a.homeEdge))
+         .slice(0, 3);
+   }, [awayScore, awayStrength, homeScore, homeStrength, homeTeam.shortName, initialAwayTeam.shortName, stats]);
+
+   const commitStats = (nextStats: typeof stats) => {
+      statsRef.current = nextStats;
+      setStats(nextStats);
+   };
+
+   const getStochasticEvent = (momentum: number, eventMinute: number) => {
+      const controlEdge = homeStrength.control - awayStrength.control;
+      const homeAttackChance = Math.min(0.82, Math.max(0.18, (momentum + controlEdge * 0.35) / 100));
+      const isHomeAttacking = Math.random() < homeAttackChance;
       const attackingTeam = isHomeAttacking ? homeTeam : initialAwayTeam;
       const defendingTeam = isHomeAttacking ? initialAwayTeam : homeTeam;
+      const attackingStrength = isHomeAttacking ? homeStrength : awayStrength;
+      const defendingStrength = isHomeAttacking ? awayStrength : homeStrength;
 
       const dangerScenarios = [
          `OLHA O PERIGO! ${attackingTeam.shortName} chega forte!`,
@@ -151,35 +167,22 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
          `A bola sobra na entrada da área...`
       ];
 
-      if (Math.random() < 0.15) {
-         addNarration(dangerScenarios[Math.floor(Math.random() * dangerScenarios.length)], 'danger', attackingTeam.id);
-         setStats(s => ({
-            ...s,
-            homeShots: isHomeAttacking ? s.homeShots + 1 : s.homeShots,
-            awayShots: !isHomeAttacking ? s.awayShots + 1 : s.awayShots
-         }));
+      if (Math.random() < 0.12) {
+         addNarration(dangerScenarios[Math.floor(Math.random() * dangerScenarios.length)], 'danger', attackingTeam.id, eventMinute);
+         commitStats({
+            ...statsRef.current,
+            homeShots: isHomeAttacking ? statsRef.current.homeShots + 1 : statsRef.current.homeShots,
+            awayShots: !isHomeAttacking ? statsRef.current.awayShots + 1 : statsRef.current.awayShots,
+         });
 
-         let goalProb = 0.2;
-         if (isHomeAttacking && currentStyle === 'Ultra-Defensivo') goalProb -= 0.08;
-         if (isHomeAttacking && currentStyle === 'Defensivo') goalProb -= 0.03;
-         if (isHomeAttacking && currentStyle === 'Ofensivo') goalProb += 0.07;
-         if (isHomeAttacking && currentStyle === 'Tudo-ou-Nada') goalProb += 0.15;
-         if (isHomeAttacking) {
-            goalProb += formationBias.attack * 0.01;
-            goalProb -= Math.max(0, formationBias.defense) * 0.003;
-            if (currentInstructions.passing === 'CURTO') goalProb += 0.015;
-            if (currentInstructions.passing === 'LONGO') goalProb += 0.025;
-            if (currentInstructions.tempo === 'VELOZ') goalProb += 0.03;
-            if (currentInstructions.tempo === 'LENTO') goalProb -= 0.015;
-            if (currentInstructions.pressing === 'ALTA') goalProb += 0.02;
-            if (currentInstructions.pressing === 'BAIXA') goalProb -= 0.01;
-         }
-         goalProb = Math.min(0.55, Math.max(0.08, goalProb));
+         const qualityEdge = attackingStrength.att - defendingStrength.def;
+         let goalProb = 0.13 + Math.min(0.07, Math.max(-0.06, qualityEdge * 0.003));
+         if (!isHomeAttacking) goalProb *= ddaFactor;
+         goalProb = Math.min(0.28, Math.max(0.05, goalProb));
          
          if (Math.random() < goalProb) {
-            const scorer = pickRandomLineupPlayer(attackingTeam);
+            const { scorer, assist: assister } = selectGoalParticipants(attackingTeam);
             if (!scorer) return;
-            const assister = maybePickAssistant(attackingTeam, scorer?.name);
 
             if (isHomeAttacking) setHomeScore(s => s + 1);
             else setAwayScore(s => s + 1);
@@ -188,11 +191,11 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                ? `GOOOL! ${scorer.name} marcou com assistência de ${assister.name}!`
                : `GOOOL! ${scorer.name} balança as redes!`;
 
-            addNarration(goalText, 'goal', attackingTeam.id);
+            addNarration(goalText, 'goal', attackingTeam.id, eventMinute);
             setMatchEvents(prev => [
                ...prev,
                {
-                  minute,
+                  minute: eventMinute,
                   type: 'goal',
                   teamId: attackingTeam.id,
                   playerName: scorer.name,
@@ -201,7 +204,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                },
             ]);
             toast.success(`GOL DO ${attackingTeam.shortName.toUpperCase()}!`, { icon: '⚽' });
-            setStats(s => ({ ...s, momentum: 50 })); 
+            commitStats({ ...statsRef.current, momentum: 50 });
             setIsGoalAnimation(true);
             setTimeout(() => setIsGoalAnimation(false), 3000);
             impactHeavy();
@@ -223,83 +226,87 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
       if (!isPaused && isActiveGame) {
          const intervalTime = speed === 1 ? 1200 : (speed === 10 ? 250 : 60);
          interval = setInterval(() => {
-            setMinute(m => {
-               const nextMinute = m + 1;
+               const nextMinute = minuteRef.current + 1;
 
                if (gameState === '1H' && nextMinute > 45 + stoppageTime) {
                   setGameState('HT');
                   setIsPaused(true);
-                  addNarration("INTERVALO DE PARTIDA", 'event');
-                  return 45;
+                  minuteRef.current = 45;
+                  setMinute(45);
+                  addNarration("INTERVALO DE PARTIDA", 'event', undefined, nextMinute);
+                  return;
                }
 
                if (gameState === '2H' && nextMinute > 90 + stoppageTime) {
                   if (isKnockout && homeScore === awayScore) {
                      setGameState('ET_INT');
                      setIsPaused(true);
-                     addNarration("PRORROGAÇÃO CONFIRMADA!", 'event');
-                     return 90;
+                     minuteRef.current = 90;
+                     setMinute(90);
+                     addNarration("PRORROGAÇÃO CONFIRMADA!", 'event', undefined, nextMinute);
+                     return;
                   } else {
                      setGameState('FT');
                      setIsFinished(true);
                      setIsPaused(true);
-                     addNarration("FIM DE JOGO!", 'event');
+                     minuteRef.current = 90;
+                     setMinute(90);
+                     addNarration("FIM DE JOGO!", 'event', undefined, nextMinute);
                      hapticNotificationSuccess();
-                     return 90;
+                     return;
                   }
                }
 
                if (gameState === 'ET1' && nextMinute > 105) {
                   setGameState('ET2');
                   setIsPaused(true);
-                  addNarration("INTERVALO DA PRORROGAÇÃO", 'event');
-                  return 105;
+                  minuteRef.current = 105;
+                  setMinute(105);
+                  addNarration("INTERVALO DA PRORROGAÇÃO", 'event', undefined, nextMinute);
+                  return;
                }
 
                if (gameState === 'ET2' && nextMinute > 120) {
                   if (homeScore === awayScore) {
                      setGameState('PK');
                      setIsPaused(true);
-                     addNarration("DECISÃO NOS PÊNALTIS!", 'event');
-                     return 120;
+                     minuteRef.current = 120;
+                     setMinute(120);
+                     addNarration("DECISÃO NOS PÊNALTIS!", 'event', undefined, nextMinute);
+                     return;
                   }
                   setGameState('FT');
                   setIsFinished(true);
                   setIsPaused(true);
-                  addNarration("FIM DE JOGO!", 'event');
+                  minuteRef.current = 120;
+                  setMinute(120);
+                  addNarration("FIM DE JOGO!", 'event', undefined, nextMinute);
                   hapticNotificationSuccess();
-                  return 120;
+                  return;
                }
 
-               let shift = (Math.random() * 22 - 11);
-               shift += formationBias.attack * 0.18;
-               shift += formationBias.control * 0.2;
-               shift -= Math.max(0, formationBias.defense) * 0.08;
-               if (currentStyle === 'Ultra-Defensivo') shift -= 4;
-               if (currentStyle === 'Defensivo') shift -= 2;
-               if (currentStyle === 'Ofensivo') shift += 3;
-               if (currentStyle === 'Tudo-ou-Nada') shift += 6;
-               if (currentInstructions.pressing === 'ALTA') shift += 3;
-               if (currentInstructions.pressing === 'BAIXA') shift -= 2;
-               if (currentInstructions.tempo === 'VELOZ') shift += 2;
-               if (currentInstructions.tempo === 'LENTO') shift -= 2;
-               if (currentInstructions.passing === 'CURTO') shift += 1;
-               if (currentInstructions.passing === 'LONGO') shift += 1.5;
-               const newMomentum = Math.min(95, Math.max(5, stats.momentum + shift));
+               const territorialEdge =
+                  (homeStrength.control - awayStrength.control) * 0.08 +
+                  ((homeStrength.att - awayStrength.def) - (awayStrength.att - homeStrength.def)) * 0.03;
+               const targetMomentum = Math.min(65, Math.max(35, 50 + territorialEdge));
+               const randomSwing = Math.random() * 10 - 5;
+               const newMomentum = Math.min(78, Math.max(22,
+                  statsRef.current.momentum * 0.75 + targetMomentum * 0.25 + randomSwing
+               ));
 
-               setStats(prev => ({
-                  ...prev,
+               commitStats({
+                  ...statsRef.current,
                   momentum: newMomentum,
-                  possession: Math.round(prev.possession * 0.96 + (newMomentum * 0.04))
-               }));
+                  possession: Math.round(statsRef.current.possession * 0.96 + (newMomentum * 0.04)),
+               });
 
-               getStochasticEvent(newMomentum);
-               return nextMinute;
-            });
+               minuteRef.current = nextMinute;
+               setMinute(nextMinute);
+               getStochasticEvent(newMomentum, nextMinute);
          }, intervalTime);
       }
       return () => clearInterval(interval);
-   }, [gameState, isPaused, speed, stats.momentum, currentStyle, currentFormation, currentInstructions, formationBias, isKnockout, homeScore, awayScore]);
+   }, [gameState, isPaused, speed, homeStrength, awayStrength, isKnockout, homeScore, awayScore, ddaFactor]);
 
    useEffect(() => {
       if (gameState !== 'PK' || isFinished || pkResults.home.length + pkResults.away.length > 0) return;
@@ -716,6 +723,26 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                            <div className="bg-white/5 rounded-2xl p-4 border border-white/5 text-center">
                               <span className="ui-label-caps text-[8px] block mb-1 opacity-30">Posse</span>
                               <span className="text-lg font-black italic tabular-nums">{stats.possession}% - {100 - stats.possession}%</span>
+                           </div>
+                        </div>
+
+                        <div className="mt-8 border-t border-white/5 pt-7">
+                           <div className="mb-4 flex items-center gap-2">
+                              <BarChart3 size={15} className="text-primary" />
+                              <span className="ui-label-caps text-[9px] opacity-60">Por que o jogo terminou assim</span>
+                           </div>
+                           <div className="space-y-3">
+                              {decisiveFactors.map(factor => (
+                                 <div key={factor.label} className="flex items-center justify-between gap-4 rounded-xl bg-white/[0.03] px-4 py-3">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.08em] text-white/55">{factor.label}</span>
+                                    <span className={clsx(
+                                       "text-right text-[11px] font-black",
+                                       factor.homeEdge > 2 ? "text-emerald-400" : factor.homeEdge < -2 ? "text-rose-400" : "text-white/65"
+                                    )}>
+                                       {factor.value}
+                                    </span>
+                                 </div>
+                              ))}
                            </div>
                         </div>
                      </div>

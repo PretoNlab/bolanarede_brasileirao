@@ -1,5 +1,6 @@
-import { Team, Player, SeasonHistory, PlayerHistoryEvent, StaffMember } from '../types';
+import { Team, Player, SeasonHistory, PlayerHistoryEvent, StaffMember, ContinentalSeasonState } from '../types';
 import { generateSchedule } from '../data';
+import { initializeContinentalTournaments } from './continentalEngine';
 
 export interface SeasonTransitionInput {
   teams: Team[];
@@ -12,6 +13,7 @@ export interface SeasonTransitionOutput {
   teams: Team[];
   fixtures: any[];
   historyEntry: SeasonHistory;
+  continentalState: ContinentalSeasonState;
 }
 
 export function processSeasonTransition(input: SeasonTransitionInput): SeasonTransitionOutput {
@@ -68,18 +70,16 @@ export function processSeasonTransition(input: SeasonTransitionInput): SeasonTra
       const isUserTeam = team.id === userTeamId;
       const isYoung = player.age < 23;
       const isOld = player.age > 30;
-      const efficiency = isUserTeam ? (1 + coachBonus) : 1.0;
+      const efficiency = isUserTeam ? (1 + coachBonus / 100) : 1.0;
 
-      let newOvr = player.overall;
+      let nextOverall = player.overall;
 
       if (isYoung) {
         const growth = Math.floor(Math.random() * 4) + 1;
-        newOvr = Math.min(player.potential, newOvr + Math.round(growth * efficiency));
+        nextOverall = Math.min(player.potential, nextOverall + Math.round(growth * efficiency));
+      } else if (isOld && Math.random() > 0.5) {
+        nextOverall -= Math.floor(Math.random() * 2);
       }
-
-      let ovrChange = 0;
-      if (isYoung && Math.random() > 0.4) ovrChange = Math.floor(Math.random() * 3);
-      else if (isOld && Math.random() > 0.5) ovrChange = -Math.floor(Math.random() * 2);
 
       const history: PlayerHistoryEvent[] = [...(player.history || [])];
       if (player.goals > 0 || player.assists > 0) {
@@ -96,7 +96,7 @@ export function processSeasonTransition(input: SeasonTransitionInput): SeasonTra
       return {
         ...player,
         age: player.age + 1,
-        overall: Math.min(99, Math.max(40, player.overall + ovrChange)),
+        overall: Math.min(99, Math.max(40, nextOverall)),
         goals: 0,
         assists: 0,
         energy: 100,
@@ -120,10 +120,16 @@ export function processSeasonTransition(input: SeasonTransitionInput): SeasonTra
   });
 
   const newFixtures = generateSchedule(updatedTeams);
+  const continentalState = initializeContinentalTournaments(
+    updatedTeams,
+    userTeamId,
+    standingsA.map(team => team.id)
+  );
 
   return {
     teams: updatedTeams,
     fixtures: newFixtures,
-    historyEntry
+    historyEntry,
+    continentalState
   };
 }

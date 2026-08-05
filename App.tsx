@@ -1,17 +1,16 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { hasAnyLocalSave } from './save';
+import { markPerformance } from './performanceMetrics';
 
 const LandingPage = lazy(() => import('./screens/SplashScreen'));
-const WorldCupLandingScreen = lazy(() => import('./screens/WorldCupLandingScreen'));
 const PlayApp = lazy(() => import('./PlayApp'));
 
-type RoutePath = '/' | '/play' | '/copa';
-type PlayIntent = 'career' | 'continue' | 'worldcup' | null;
+type RoutePath = '/' | '/play';
+type PlayIntent = 'career' | 'continue' | null;
 
 function normalizePath(pathname: string): RoutePath {
   if (pathname === '/play') return '/play';
-  if (pathname === '/copa' || pathname === '/worldcup') return '/copa';
   return '/';
 }
 
@@ -107,6 +106,10 @@ export default function App() {
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
 
   useEffect(() => {
+    markPerformance('app_opened');
+  }, []);
+
+  useEffect(() => {
     const onError = (event: ErrorEvent) => {
       setRuntimeError(event.error instanceof Error ? `${event.error.name}: ${event.error.message}` : event.message);
     };
@@ -145,9 +148,14 @@ export default function App() {
 
   const landingProps = useMemo(
     () => ({
-      onStart: () => navigateTo('/play', 'career'),
-      onContinue: () => navigateTo('/play', 'continue'),
-      onWorldCup: () => navigateTo('/play', 'worldcup'),
+      onStart: () => {
+        markPerformance('start_clicked');
+        navigateTo('/play', 'career');
+      },
+      onContinue: () => {
+        markPerformance('continue_clicked');
+        navigateTo('/play', 'continue');
+      },
       hasSave: typeof window !== 'undefined' && hasAnyLocalSave(),
     }),
     [navigateTo]
@@ -155,6 +163,7 @@ export default function App() {
 
   useEffect(() => {
     if (routePath !== '/') return;
+    markPerformance('landing_viewed');
 
     return runWhenIdle(() => {
       void import('./PlayApp');
@@ -180,20 +189,6 @@ export default function App() {
               className="w-full h-full"
             >
               <LandingPage {...landingProps} />
-            </motion.div>
-          ) : routePath === '/copa' ? (
-            <motion.div
-              key="copa-landing"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.02 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full h-full"
-            >
-              <WorldCupLandingScreen
-                onPlayWorldCup={() => navigateTo('/play', 'worldcup')}
-                onBackHome={() => navigateTo('/')}
-              />
             </motion.div>
           ) : (
             <motion.div

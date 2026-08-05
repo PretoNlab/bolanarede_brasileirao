@@ -32,6 +32,8 @@ export interface Player {
   isForSale?: boolean;
   isListedForLoan?: boolean;
   valueTrend?: 'up' | 'down' | 'stable';
+  dataSource?: 'CBF_TRANSFERMARKT' | 'CBF_MODEL' | 'GENERATED';
+  attributesEstimated?: boolean;
 
   // New Fields
   history: PlayerHistoryEvent[];
@@ -70,18 +72,6 @@ export interface Player {
   };
   individualFocus?: string;
   trainingProgress?: number;
-}
-
-export interface WCTeamPlayer {
-  name: string;
-  position: 'GOL' | 'ZAG' | 'LAT' | 'VOL' | 'MEI' | 'ATA';
-  age: number;
-  overall: number;
-  mainPosition?: DetailedPosition;
-  secondaryPositions?: DetailedPosition[];
-  preferredFoot?: 'LEFT' | 'RIGHT' | 'BOTH';
-  statsOverrides?: Partial<Player['stats']>;
-  potential?: number;
 }
 
 // ========== TÁTICA AVANÇADA ==========
@@ -264,7 +254,7 @@ export interface Infrastructure {
   scout: number; // Escritório de Scouting (1-3)
 }
 
-export type ScreenState = 'SPLASH' | 'PRE_MATCH' | 'COACH_SETUP' | 'TEAM_SELECT' | 'DASHBOARD' | 'SQUAD' | 'TACTICS' | 'MATCH' | 'MARKET' | 'FINANCE' | 'CALENDAR' | 'LEAGUE' | 'NEWS' | 'STATS' | 'SETTINGS' | 'CHAMPION' | 'GAME_OVER' | 'PROFILE' | 'TRAINING' | 'INFRASTRUCTURE' | 'STAFF' | 'YOUTH' | 'WC_TEAM_SELECT' | 'WC_SQUAD_CALLUP' | 'WC_DASHBOARD' | 'WC_GROUPS' | 'WC_BRACKET' | 'WC_PRE_MATCH' | 'WC_MATCH' | 'WC_CHAMPION' | 'WC_ELIMINATED';
+export type ScreenState = 'SPLASH' | 'PRE_MATCH' | 'COACH_SETUP' | 'TEAM_SELECT' | 'DASHBOARD' | 'SQUAD' | 'TACTICS' | 'MATCH' | 'MARKET' | 'FINANCE' | 'CALENDAR' | 'LEAGUE' | 'NEWS' | 'STATS' | 'SETTINGS' | 'CHAMPION' | 'GAME_OVER' | 'PROFILE' | 'TRAINING' | 'INFRASTRUCTURE' | 'STAFF' | 'YOUTH' | 'CONTINENTAL';
 
 export interface SeasonHistory {
   year: number;
@@ -275,57 +265,57 @@ export interface SeasonHistory {
   userFinishPosition: number;
   userDivision: 1 | 2;
   topScorer: { name: string; goals: number; teamShort: string };
+  libertadoresChampion?: { teamId: string; teamName: string };
+  sudamericanaChampion?: { teamId: string; teamName: string };
 }
 
-// ========== COPA DO MUNDO 2026 ==========
+// ========== COPAS CONTINENTAIS (LIBERTADORES & SUL-AMERICANA) ==========
 
-export type WCConfederation = 'UEFA' | 'CONMEBOL' | 'CONCACAF' | 'AFC' | 'CAF' | 'OFC';
+export type ContinentalTournamentType = 'LIBERTADORES' | 'SUDAMERICANA';
 
-export type WCPhase = 'GROUP' | 'ROUND_OF_32' | 'ROUND_OF_16' | 'QUARTER' | 'SEMI' | 'THIRD_PLACE' | 'FINAL' | 'FINISHED';
+export type ContinentalPhase = 'GROUPS' | 'ROUND_OF_16' | 'QUARTER' | 'SEMI' | 'FINAL' | 'FINISHED';
 
-export interface WCGroup {
+export interface ContinentalGroup {
   name: string;
   teamIds: string[];
 }
 
-export interface WCBracketMatch {
+export interface ContinentalMatch {
   id: string;
-  phase: WCPhase;
+  phase: ContinentalPhase;
   matchNumber: number;
   team1Id: string | null;
   team2Id: string | null;
-  score1?: number;
-  score2?: number;
+  score1Leg1?: number;
+  score2Leg1?: number;
+  score1Leg2?: number;
+  score2Leg2?: number;
   penalties1?: number;
   penalties2?: number;
-  played: boolean;
+  playedLeg1: boolean;
+  playedLeg2: boolean;
   winnerId?: string;
   nextMatchId?: string;
 }
 
-export interface WorldCupGameState {
-  groups: WCGroup[];
-  bracket: WCBracketMatch[];
-  fixtures: Fixture[];
-  currentPhase: WCPhase;
+export interface ContinentalTournamentState {
+  type: ContinentalTournamentType;
+  name: string;
+  groups: ContinentalGroup[];
+  groupFixtures: Fixture[];
+  bracket: ContinentalMatch[];
+  currentPhase: ContinentalPhase;
   currentMatchday: number;
-  teams: Team[];
-  userTeamId: string;
-  matchHistory: MatchResult[];
-  isEliminated: boolean;
-  provisionalSquad?: Player[]; // Lista de 40 nomes
+  qualifiedTeamIds: string[];
+  winnerId?: string;
+  totalPrizePool: number;
 }
 
-export interface WCTeamData {
-  id: string;
-  name: string;
-  shortName: string;
-  confederation: WCConfederation;
-  logoColor1: string;
-  logoColor2: string;
-  logoUrl?: string;
-  attack: number;
-  defense: number;
-  players: WCTeamPlayer[];
-  managerName?: string;
+export interface ContinentalSeasonState {
+  libertadores: ContinentalTournamentState;
+  sudamericana: ContinentalTournamentState;
+  userQualification?: {
+    tournament: ContinentalTournamentType;
+    groupName?: string;
+  };
 }

@@ -49,6 +49,39 @@ export function calculatePlayerFitForPosition(player: Player, slotPos: DetailedP
   return { level: 'IMPROVISED', multiplier: 0.50, label: 'Improvisado' };
 }
 
+function roleRating(player: Player, position: DetailedPosition) {
+  const stats = player.stats;
+
+  if (position === 'GK') return average([stats.keeping, stats.reflexes, stats.handling, player.overall]);
+  if (position === 'CB') return average([stats.defending, stats.marking, stats.tackling, stats.heading, stats.strength]);
+  if (position === 'RB' || position === 'LB') return average([stats.defending, stats.pace, stats.stamina, stats.crossing]);
+  if (position === 'DM') return average([stats.defending, stats.tackling, stats.passing, stats.positioning]);
+  if (position === 'CM') return average([stats.passing, stats.vision, stats.stamina, stats.positioning]);
+  if (position === 'AM') return average([stats.passing, stats.vision, stats.dribbling, stats.longShot]);
+  if (position === 'RW' || position === 'LW') return average([stats.pace, stats.dribbling, stats.crossing, stats.finishing]);
+  return average([stats.finishing, stats.shooting, stats.positioning, stats.heading]);
+}
+
+export function selectBestLineupForFormation(roster: Player[], formation: FormationType) {
+  const available = roster.filter(player => player.status !== 'injured' && !player.isSuspended);
+  const selected = new Set<string>();
+
+  return FORMATIONS_SLOTS[formation].map(slot => {
+    const best = available
+      .filter(player => !selected.has(player.id))
+      .map(player => {
+        const fit = calculatePlayerFitForPosition(player, slot.position);
+        const score = (player.overall * 0.4 + roleRating(player, slot.position) * 0.6) * fit.multiplier;
+        return { player, score };
+      })
+      .sort((a, b) => b.score - a.score || b.player.overall - a.player.overall)[0]?.player;
+
+    if (!best) return '';
+    selected.add(best.id);
+    return best.id;
+  });
+}
+
 /**
  * Verifica se as posições são "vizinhas" no campo para reduzir a penalidade de improviso.
  */

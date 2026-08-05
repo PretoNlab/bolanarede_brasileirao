@@ -11,13 +11,13 @@ Fonte principal: [screens/SplashScreen.tsx](/Users/diegomachado/bolanarede-manag
 
 ### Menu
 - `Carreira`
-- `Copa do Mundo`
+- `Libertadores`
 - `Mercado`
 - `Estatísticas`
 - `Ajuda`
 
 ### CTAs do topo
-- `Jogar Copa do Mundo`
+- `Continuar save`
 - `Começar carreira`
 
 ## Hero
@@ -39,7 +39,7 @@ Fonte principal: [screens/SplashScreen.tsx](/Users/diegomachado/bolanarede-manag
 
 ### CTAs
 - Primário: `Começar carreira`
-- Secundário: `Jogar Copa do Mundo`
+- Secundário: `Ver Libertadores`
 - Terciário: `Continuar save`
 
 ## Cards de Ambientação
@@ -171,11 +171,11 @@ Fonte principal: [screens/SplashScreen.tsx](/Users/diegomachado/bolanarede-manag
 
 ### Recurso 6
 - Título: `Clubes, competições e torneios`
-- Texto: `Alterne entre campanhas longas e torneios curtos de alta pressão.`
+- Texto: `Conquiste vaga continental e sustente o clube em jogos de alta pressão.`
 
 ### CTAs da seção
 - `Começar carreira`
-- `Jogar Copa do Mundo`
+- `Ver competições continentais`
 
 ## Seção “Tudo o que Você Controla”
 
@@ -226,12 +226,12 @@ Fonte principal: [screens/SplashScreen.tsx](/Users/diegomachado/bolanarede-manag
 - CTA: `Entrar na carreira`
 - Linha de apoio: `Evolução, contexto e campanha longa.`
 
-### Card 2 — Copa do Mundo
-- Kicker: `Para quem quer tensão imediata`
-- Título: `Copa do Mundo`
-- Texto: `Entre direto em partidas que pesam mais e cobram rápido.`
-- CTA: `Entrar na Copa`
-- Linha de apoio: `Partidas diretas e peso imediato.`
+### Card 2 — Libertadores e Sul-Americana
+- Kicker: `Para quem quer noites grandes`
+- Título: `CONMEBOL`
+- Texto: `Termine bem no Brasileirão e leve o clube para competições continentais.`
+- CTA: `Ver torneios`
+- Linha de apoio: `Fase de grupos, mata-mata e premiação.`
 
 ## Seção de Visão do Produto
 
@@ -294,5 +294,5 @@ Fonte principal: [screens/SplashScreen.tsx](/Users/diegomachado/bolanarede-manag
 
 ### CTAs finais
 - `Começar carreira`
-- `Jogar Copa do Mundo`
+- `Ver Libertadores`
 - `Continuar save`

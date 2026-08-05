@@ -1,540 +1,326 @@
-import React, { Suspense, lazy } from 'react';
-import { ChevronRight, Globe, History, Play, Trophy } from 'lucide-react';
+import React from 'react';
+import {
+  ArrowRight,
+  BarChart3,
+  Check,
+  ChevronDown,
+  CircleDollarSign,
+  Clock3,
+  History,
+  Play,
+  Shield,
+  Trophy,
+  Users,
+} from 'lucide-react';
+import { HeroShowcase, ProductFacts, TriplePhoneShowcase } from './LandingShowcases';
 
 interface Props {
   onStart: () => void;
   onContinue: () => void;
-  onWorldCup: () => void;
   hasSave: boolean;
 }
 
-const LazyHeroShowcase = lazy(() => import('./LandingShowcases').then((m) => ({ default: m.HeroShowcase })));
-const LazyTriplePhoneShowcase = lazy(() =>
-  import('./LandingShowcases').then((m) => ({ default: m.TriplePhoneShowcase }))
-);
+const clubs = [
+  { name: 'Bahia', logo: '/logos/landing/bahia.png' },
+  { name: 'Flamengo', logo: '/logos/landing/flamengo.png' },
+  { name: 'Palmeiras', logo: '/logos/landing/palmeiras.png' },
+  { name: 'Corinthians', logo: '/logos/landing/corinthians.png' },
+  { name: 'São Paulo', logo: '/logos/landing/saopaulo.png' },
+  { name: 'Santos', logo: '/logos/landing/santos.png' },
+  { name: 'Cruzeiro', logo: '/logos/landing/cruzeiro.png' },
+  { name: 'Botafogo', logo: '/logos/landing/botafogo.png' },
+  { name: 'Grêmio', logo: '/logos/landing/gremio.png' },
+  { name: 'Internacional', logo: '/logos/landing/internacional.png' },
+  { name: 'Vasco', logo: '/logos/landing/vasco.png' },
+  { name: 'Vitória', logo: '/logos/landing/vitoria.png' },
+];
 
-const floatingCards = [
+const journey = [
   {
-    className: 'left-[11%] top-[12%] hidden xl:flex',
-    title: 'O mercado abriu uma chance',
-    text: 'Um atacante livre pode resolver a rodada ou estourar o caixa.',
+    number: '01',
+    title: 'Escolha o clube',
+    text: 'Entre pela Série A ou B e assuma um elenco com objetivos, orçamento e pressão próprios.',
   },
   {
-    className: 'left-[9%] top-[44%] hidden lg:flex',
-    title: 'A cobrança já começou',
-    text: 'A diretoria cobra agora. A tabela não espera.',
+    number: '02',
+    title: 'Monte o plano',
+    text: 'Defina escalação e tática, avalie o mercado e organize o clube para a próxima rodada.',
   },
   {
-    className: 'right-[11%] top-[14%] hidden xl:flex',
-    title: 'Hoje é jogo grande',
-    text: 'Moral, desgaste e contexto pesam junto com a escalação.',
-  },
-  {
-    className: 'right-[9%] top-[46%] hidden lg:flex',
-    title: 'O jogo pede leitura',
-    text: 'Uma troca certa no momento certo pode salvar a campanha.',
+    number: '03',
+    title: 'Vá para o jogo',
+    text: 'Chegue à primeira partida em poucos minutos e intervenha quando o cenário pedir mudança.',
   },
 ];
 
-const proofItems = ['Modo Carreira', 'Clubes Originais', 'Mercado Dinâmico'];
-
-const featuredClubs = [
-  { name: 'Bahia', logo: '/logos/bahia.png' },
-  { name: 'Palmeiras', logo: '/logos/palmeiras.png' },
-  { name: 'Flamengo', logo: '/logos/flamengo.png' },
-  { name: 'Corinthians', logo: '/logos/corinthians.png' },
-  { name: 'Santos', logo: '/logos/santos.png' },
-  { name: 'Cruzeiro', logo: '/logos/cruzeiro.png' },
-  { name: 'Grêmio', logo: '/logos/gremio.png' },
-  { name: 'Vitória', logo: '/logos/vitoria.png' },
-];
-
-const seasonActs = [
-  {
-    step: '01',
-    title: 'Assuma com contexto real',
-    text: 'Elenco curto, caixa apertado e pressão antes do tempo de trabalho.',
-  },
-  {
-    step: '02',
-    title: 'Responda rodada por rodada',
-    text: 'Cada rodada muda moral, ambiente e o peso da próxima decisão.',
-  },
-  {
-    step: '03',
-    title: 'Administre mais do que o campo',
-    text: 'Mercado, caixa, staff e estrutura pesam o tempo todo.',
-  },
-  {
-    step: '04',
-    title: 'Cresça para novos palcos',
-    text: 'A jornada começa no clube e pode crescer para competições e torneios maiores.',
-  },
-];
-
-const featureCards = [
-  {
-    title: 'Campanhas de clube',
-    text: 'Assuma um time, cumpra metas e sustente um projeto sob pressão.',
-  },
-  {
-    title: 'Partidas com intervenção',
-    text: 'Leia o jogo, mude a postura e altere o rumo da partida.',
-  },
-  {
-    title: 'Mercado e elenco',
-    text: 'Contrate, venda e reorganize o grupo sem perder a ideia de jogo.',
-  },
-  {
-    title: 'Caixa e estrutura',
-    text: 'Receita, folha e estrutura definem até onde sua ambição vai.',
-  },
-  {
-    title: 'Staff e desenvolvimento',
-    text: 'Comissão, ambiente e evolução do elenco sustentam a campanha.',
-  },
-  {
-    title: 'Clubes, competições e torneios',
-    text: 'Alterne entre campanhas longas e torneios curtos de alta pressão.',
-  },
-];
-
-const modeCards = [
-  {
-    title: 'Carreira',
-    kicker: 'Para quem quer construir',
-    text: 'Monte elenco, responda à tabela e sustente uma temporada inteira.',
-    cta: 'Entrar na carreira',
-    dark: false,
-  },
-  {
-    title: 'Copa do Mundo',
-    kicker: 'Para quem quer tensão imediata',
-    text: 'Entre direto em partidas que pesam mais e cobram rápido.',
-    cta: 'Entrar na Copa',
-    dark: true,
-  },
+const pillars = [
+  { icon: Users, title: '40 clubes', text: 'Série A e Série B para começar uma carreira.' },
+  { icon: BarChart3, title: '1.039 jogadores', text: 'Posições, idades e referências de mercado.' },
+  { icon: Trophy, title: 'Continente', text: 'Libertadores e Sul-Americana na trajetória.' },
+  { icon: CircleDollarSign, title: 'Gestão completa', text: 'Mercado, caixa, staff e infraestrutura.' },
 ];
 
 const faqs = [
   {
-    q: 'O jogo fica preso a um único cenário?',
-    a: 'Não. A proposta é expandir o universo do jogo com novas ligas, competições, contextos e camadas de gestão.',
+    question: 'Preciso criar uma conta?',
+    answer: 'Não. Você pode escolher o clube e começar a carreira direto no navegador. O save fica armazenado localmente.',
   },
   {
-    q: 'Já existem modos além da carreira?',
-    a: 'Sim. Além da carreira, o jogo também inclui torneios curtos com tensão imediata e decisões de alto peso.',
+    question: 'Quais clubes estão disponíveis?',
+    answer: 'A base atual reúne 40 clubes brasileiros das Séries A e B, com elencos de julho e posições revisadas.',
   },
   {
-    q: 'O foco é carreira longa ou torneio curto?',
-    a: 'Os dois. Você pode construir uma trajetória em clubes ao longo do tempo ou entrar direto em modos mais intensos, em que cada partida tem peso imediato.',
+    question: 'As notas dos jogadores são oficiais?',
+    answer: 'Não. Posição, idade e referências de valor usam pesquisa de mercado; os atributos de gameplay são estimativas balanceadas para o jogo.',
   },
-];
-
-const closingMoments = [
-  'Ganhar jogo grande mexendo certo.',
-  'Encontrar valor antes do mercado reagir.',
-  'Segurar o projeto quando a pressão sobe.',
-  'Chegar a decisões com algo real construído.',
+  {
+    question: 'Existe competição continental?',
+    answer: 'Sim. O desempenho no Brasileirão abre o caminho para Libertadores e Sul-Americana, com grupos e mata-mata.',
+  },
 ];
 
 const navItems = [
-  { label: 'Carreira', target: 'modes' },
-  { label: 'Copa do Mundo', target: 'modes' },
-  { label: 'Mercado', target: 'features' },
-  { label: 'Estatísticas', target: 'proof' },
-  { label: 'Ajuda', target: 'faq' },
+  { label: 'O jogo', target: 'produto' },
+  { label: 'Clubes', target: 'clubes' },
+  { label: 'Como funciona', target: 'jornada' },
+  { label: 'Dúvidas', target: 'duvidas' },
 ];
 
-function ShowcaseFallback({ hero = false }: { hero?: boolean }) {
-  return (
-    <div className={hero ? 'h-[610px] w-[286px]' : 'h-[420px] w-[196px]'}>
-      <div className="flex h-full w-full items-center justify-center rounded-[42px] bg-[#171717] shadow-[0_40px_90px_rgba(17,17,17,0.14)]">
-        <div className="h-[92%] w-[90%] rounded-[32px] bg-[linear-gradient(180deg,#e7f3eb_0%,#fbf8f3_54%,#fbf8f3_100%)]" />
-      </div>
-    </div>
-  );
-}
-
-export default function SplashScreen({ onStart, onContinue, onWorldCup, hasSave }: Props) {
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (!element) {
-      return;
-    }
-
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
-    <div className="h-screen w-full overflow-y-auto overflow-x-hidden bg-[#f4ecde] text-[#2f2418] no-scrollbar">
-      <div className="mx-auto min-h-screen w-full max-w-[1320px] px-5 pb-24 pt-5 sm:px-8 lg:px-10">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <img src="/logo.svg" alt="BNR" className="h-10 w-10" />
-            <div className="font-editorial text-lg font-bold tracking-[-0.04em] text-[#2f2418]">BNR <span className="opacity-35">Manager</span></div>
-          </div>
+    <div className="h-screen w-full overflow-y-auto overflow-x-hidden bg-[#f4f6f2] text-[#101411] no-scrollbar">
+      <header className="sticky top-0 z-50 h-16 border-b border-white/10 bg-[#0b0e0c]/95 text-white backdrop-blur-md">
+        <div className="mx-auto flex h-full w-full max-w-[1240px] items-center justify-between px-4 sm:px-6 lg:px-8">
+          <button onClick={() => scrollTo('inicio')} className="flex items-center gap-3" title="Voltar ao início">
+            <img src="/logo.svg" alt="" className="h-9 w-9" />
+            <span className="text-[15px] font-black">Bola na Rede <span className="font-semibold text-white/55">Manager</span></span>
+          </button>
 
-          <nav className="hidden items-center gap-8 text-[13px] font-semibold text-[#6e6251] lg:flex">
+          <nav className="hidden items-center gap-7 lg:flex" aria-label="Navegação principal">
             {navItems.map((item) => (
               <button
                 key={item.label}
-                onClick={() => scrollToSection(item.target)}
-                className="transition-colors hover:text-[#2f2418]"
+                onClick={() => scrollTo(item.target)}
+                className="text-[12px] font-bold text-white/58 transition-colors hover:text-white"
               >
                 {item.label}
               </button>
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onWorldCup}
-              className="hidden h-11 items-center justify-center rounded-full bg-amber-600 px-4 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-md sm:flex hover:bg-amber-700 transition-colors"
-            >
-              Copa do Mundo 2026
-            </button>
-            <button
-              onClick={onStart}
-              className="flex h-11 items-center justify-center rounded-full border border-[#d1c2ab] bg-[#fbf7ef] px-5 text-[11px] font-black uppercase tracking-[0.14em] text-[#5f5446] shadow-sm hover:bg-[#efe9dd] transition-colors"
-            >
-              Começar Carreira
-            </button>
-          </div>
-        </header>
+          <button
+            onClick={hasSave ? onContinue : onStart}
+            className="flex h-10 items-center justify-center gap-2 border border-white/16 bg-white px-4 text-[11px] font-black text-[#101411] transition-colors hover:bg-[#dff7e8] sm:px-5"
+          >
+            {hasSave ? <History className="h-4 w-4" /> : <Play className="h-3.5 w-3.5 fill-current" />}
+            <span className="hidden sm:inline">{hasSave ? 'Continuar carreira' : 'Jogar agora'}</span>
+            <span className="sm:hidden">{hasSave ? 'Continuar' : 'Jogar'}</span>
+          </button>
+        </div>
+      </header>
 
-        <main className="relative flex flex-col items-center pt-14 sm:pt-18">
-          <section className="relative flex w-full flex-col items-center overflow-hidden rounded-[42px] border border-[#dacbb4] bg-[#efe4d2]/90 px-6 pb-10 pt-10 shadow-[0_30px_80px_rgba(95,72,43,0.12)] sm:px-10 sm:pt-14">
-            <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_top,rgba(217,119,6,0.12),transparent_58%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,transparent,rgba(255,248,238,0.55))]" />
-            <div className="max-w-4xl text-center relative z-10">
-              
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-600/25 bg-amber-600/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-amber-700">
-                🏆 MODO COPA DO MUNDO 2026 LIBERADO!
+      <main>
+        <section id="inicio" className="relative overflow-hidden bg-[#0b0e0c] text-white">
+          <div className="pointer-events-none absolute inset-x-0 top-[42%] h-px bg-white/8" />
+          <div className="pointer-events-none absolute bottom-0 left-[8%] top-0 w-px bg-white/5" />
+          <div className="pointer-events-none absolute bottom-0 right-[8%] top-0 w-px bg-white/5" />
+
+          <div className="relative mx-auto flex min-h-[calc(100svh-64px)] w-full max-w-[1240px] flex-col px-4 pb-0 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pt-20">
+            <div className="mx-auto max-w-[820px] text-center">
+              <div className="inline-flex items-center gap-2 border border-[#3ee58f]/35 bg-[#10251a] px-3 py-2 text-[10px] font-black uppercase text-[#76ecad]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#3ee58f]" /> Série A + Série B · 40 clubes
               </div>
-
-              <h1 className="font-editorial mt-6 text-[3.2rem] font-bold leading-[0.9] tracking-[-0.08em] text-[#2f2418] sm:text-[4.6rem] lg:text-[5rem] italic">
-                Escale, ajuste, negocie e sustente sua campanha até o topo.
+              <h1 className="mt-6 text-[42px] font-black leading-[1.02] sm:text-[58px] lg:text-[68px]">
+                O manager do futebol brasileiro.
               </h1>
-
-              <p className="mx-auto mt-5 max-w-3xl text-[16px] font-semibold leading-8 text-[#6f6253]">
-                Monte o elenco, leia o jogo e sustente o projeto quando a pressão subir.
+              <p className="mx-auto mt-5 max-w-[660px] text-[15px] font-medium leading-7 text-white/65 sm:text-[17px]">
+                Escolha seu clube, monte o time e chegue à primeira partida em poucos minutos. Sem cadastro obrigatório.
               </p>
 
-              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <button
-                  onClick={onWorldCup}
-                  className="flex h-12 items-center justify-center gap-3 rounded-full bg-amber-600 hover:bg-amber-700 px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_34px_rgba(217,119,6,0.2)] active:scale-95 transition-all"
-                >
-                  <Globe className="h-4 w-4" />
-                  Jogar Copa do Mundo 2026
-                </button>
+              <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <button
                   onClick={onStart}
-                  className="flex h-12 items-center justify-center gap-3 rounded-full border border-[#d2c4af] bg-[#fbf7ef] px-8 text-[12px] font-black uppercase tracking-[0.14em] text-[#5a4d40] shadow-[0_10px_22px_rgba(80,61,34,0.08)] active:scale-95 transition-all"
+                  className="flex h-12 w-full items-center justify-center gap-2 bg-[#e32935] px-7 text-[12px] font-black text-white transition-colors hover:bg-[#c91825] sm:w-auto"
                 >
-                  <Play className="h-4 w-4 fill-current text-emerald-700" />
-                  Começar Carreira
+                  Criar minha carreira <ArrowRight className="h-4 w-4" />
                 </button>
-              </div>
-            </div>
-
-            <div className="relative mt-10 flex w-full justify-center pb-2 pt-0">
-              {floatingCards.map((card) => (
-                <div
-                  key={card.title}
-                  className={`absolute z-10 w-[216px] items-start gap-3 rounded-[22px] border border-[#d7c8b1] bg-[#fbf6ee]/92 px-4 py-4 shadow-[0_24px_40px_rgba(93,72,44,0.08)] ${card.className}`}
-                >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-700/10 text-[10px] font-black text-emerald-700">
-                    •
-                  </div>
-                  <div>
-                    <div className="text-[13px] font-black leading-tight text-[#2f2418]">{card.title}</div>
-                    <div className="mt-1 text-[12px] font-medium leading-5 text-[#6e6252]">{card.text}</div>
-                  </div>
-                </div>
-              ))}
-
-              <Suspense fallback={<ShowcaseFallback hero />}>
-                <div className="-translate-y-3 scale-[1.18] origin-top sm:-translate-y-5 sm:scale-[1.22]">
-                  <LazyHeroShowcase />
-                </div>
-              </Suspense>
-            </div>
-          </section>
-
-          <section id="proof" className="mx-auto mt-24 max-w-6xl w-full">
-            <div className="rounded-[42px] border border-[#ddcfba] bg-[#fbf7f0] p-8 shadow-[0_24px_60px_rgba(95,72,43,0.07)] sm:p-12">
-              <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-                <div className="max-w-4xl">
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Engine Realista</div>
-                  <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-[#2f2418] sm:text-[3.6rem] italic">
-                    Um Simulador para quem não aceita roteiros prontos.
-                  </h2>
-                  <p className="mt-6 max-w-3xl text-[17px] font-medium leading-8 text-[#6d6254]">
-                    BNR Series foi construído para quem busca profundidade técnica. Cada decisão no mercado ou no gramado reverbera na trajetória do clube.
-                  </p>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
-                  {['Telas reais do jogo', 'Sem Pay-to-win', 'Dados Autênticos'].map((item) => (
-                    <div key={item} className="rounded-[24px] border border-[#dfd1bc] bg-[#f5ecdf] px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-[#6a5f51] text-center">
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="mx-auto mt-24 max-w-6xl w-full">
-            <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-              <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Conexão Global</div>
-                <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-[#2f2418] sm:text-[3.4rem] italic">
-                  O ecossistema oficial da Série A e B.
-                </h2>
-                <p className="mt-6 max-w-xl text-[17px] font-medium leading-8 text-[#6d6254]">
-                  Assuma o controle dos clubes brasileiros com elencos atualizados e contexto de mercado realista.
-                </p>
-              </div>
-
-              <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-                {featuredClubs.map((club, index) => (
-                  <div
-                    key={club.name}
-                    className={`flex h-[120px] flex-col items-center justify-center rounded-[32px] border border-[#e1d4c0] bg-[#fbf7f0] shadow-[0_18px_35px_rgba(95,72,43,0.06)] transition-transform hover:scale-105 ${index % 2 === 1 ? 'sm:-translate-y-4' : ''}`}
+                {hasSave && (
+                  <button
+                    onClick={onContinue}
+                    className="flex h-12 w-full items-center justify-center gap-2 border border-white/20 px-7 text-[12px] font-black text-white transition-colors hover:bg-white/8 sm:w-auto"
                   >
-                    <img src={club.logo} alt={club.name} loading="lazy" decoding="async" className="h-12 w-12 object-contain" />
-                    <div className="mt-4 text-[9px] font-black uppercase tracking-[0.2em] text-[#796d5e]">{club.name}</div>
-                  </div>
-                ))}
+                    <History className="h-4 w-4" /> Continuar save
+                  </button>
+                )}
+              </div>
+
+              <div className="mt-6 flex justify-center">
+                <ProductFacts />
               </div>
             </div>
-          </section>
 
-          <section id="features" className="mx-auto mt-24 max-w-6xl w-full">
-            <div className="rounded-[42px] border border-[#ddcfba] bg-[#fbf7f0] px-8 py-10 shadow-[0_24px_60px_rgba(95,72,43,0.07)]">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Deep Systems</div>
-              <p className="mt-4 max-w-3xl text-[17px] font-medium leading-8 text-[#716555]">
-                BNR Series não é sobre simular resultados, é sobre <span className="text-[#2f2418]">sustentar processos sob pressão.</span>
+            <div className="relative mt-10 translate-y-px sm:mt-12">
+              <HeroShowcase />
+            </div>
+          </div>
+        </section>
+
+        <section aria-label="Números do jogo" className="border-b border-[#d7ddd7] bg-white">
+          <div className="mx-auto grid w-full max-w-[1240px] grid-cols-2 px-4 sm:px-6 lg:grid-cols-4 lg:px-8">
+            {pillars.map(({ icon: Icon, title, text }, index) => (
+              <div
+                key={title}
+                className={`min-h-[132px] border-[#e1e5e1] px-4 py-6 sm:px-6 ${index % 2 ? '' : 'border-r'} lg:border-r lg:last:border-r-0`}
+              >
+                <Icon className="h-4 w-4 text-[#19734a]" />
+                <div className="mt-3 text-[17px] font-black text-[#111612]">{title}</div>
+                <div className="mt-1 text-[12px] font-medium leading-5 text-[#657067]">{text}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="produto" className="scroll-mt-16 bg-[#f4f6f2] py-20 sm:py-24">
+          <div className="mx-auto w-full max-w-[1240px] px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
+              <div>
+                <div className="text-[11px] font-black uppercase text-[#19734a]">Decisão por decisão</div>
+                <h2 className="mt-4 max-w-[520px] text-[34px] font-black leading-[1.08] sm:text-[46px]">
+                  Você decide. A temporada responde.
+                </h2>
+              </div>
+              <p className="max-w-[620px] text-[15px] font-medium leading-7 text-[#59635b] lg:justify-self-end">
+                O jogo mantém a informação essencial perto da próxima decisão: quem escalar, onde reforçar e quanto o clube pode gastar. Menos espera, mais rodadas jogadas.
               </p>
-              <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {proofItems.map((item) => (
-                  <div key={item} className="rounded-[28px] border border-[#e0d3c0] bg-[#f6eee2] px-6 py-8 shadow-sm">
-                    <div className="font-editorial text-[1.8rem] font-bold tracking-[-0.05em] text-[#2f2418] italic">{item}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section id="modes" className="mx-auto mt-24 max-w-6xl w-full">
-            <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
-              <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Escalabilidade</div>
-                <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-[#2f2418] sm:text-[3.4rem] italic">
-                  A jornada define o gestor.
-                </h2>
-                <p className="mt-6 max-w-xl text-[17px] font-medium leading-8 text-[#6d6254]">
-                  Comece onde a pressão é maior e prove que seu método sobrevive ao calendário brasileiro.
-                </p>
-              </div>
-
-              <div className="grid gap-4">
-                {seasonActs.map((act) => (
-                  <div key={act.step} className="grid gap-6 rounded-[32px] border border-[#e0d3c0] bg-[#fbf7f0] p-8 shadow-sm sm:grid-cols-[80px_1fr]">
-                    <div className="font-editorial text-[2.4rem] font-bold leading-none tracking-[-0.08em] text-[#c8b79e] italic">{act.step}</div>
-                    <div>
-                      <h3 className="font-editorial text-[1.8rem] font-bold leading-[1] tracking-[-0.05em] text-[#2f2418] italic">{act.title}</h3>
-                      <p className="mt-4 text-[16px] font-medium leading-7 text-[#6d6254]">{act.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section id="faq" className="mx-auto mt-32 max-w-6xl w-full">
-            <div className="max-w-3xl">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Controle Absoluto</div>
-              <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-[#2f2418] sm:text-[3.4rem] italic">
-                Ferramentas para quem domina o caos.
-              </h2>
             </div>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {featureCards.map((feature, index) => (
+            <div className="mt-12">
+              <TriplePhoneShowcase />
+            </div>
+          </div>
+        </section>
+
+        <section id="clubes" className="scroll-mt-16 border-y border-[#d7ddd7] bg-white py-20 sm:py-24">
+          <div className="mx-auto grid w-full max-w-[1240px] gap-12 px-4 sm:px-6 lg:grid-cols-[0.68fr_1.32fr] lg:px-8">
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <div className="text-[11px] font-black uppercase text-[#2350a3]">Série A e Série B</div>
+              <h2 className="mt-4 text-[34px] font-black leading-[1.08] sm:text-[46px]">Seu clube está esperando.</h2>
+              <p className="mt-5 max-w-[430px] text-[15px] font-medium leading-7 text-[#59635b]">
+                Comece por um candidato ao título, um gigante sob pressão ou um projeto de acesso. São 40 caminhos para construir uma temporada diferente.
+              </p>
+              <button onClick={onStart} className="mt-7 flex items-center gap-2 text-[12px] font-black text-[#19734a]">
+                Ver todos os clubes <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 border-l border-t border-[#e0e4e0] sm:grid-cols-4">
+              {clubs.map((club) => (
                 <div
-                  key={feature.title}
-                  className={`rounded-[32px] border p-8 shadow-sm transition-all hover:bg-[#f8f0e5] ${index === 0 ? 'border-emerald-700/20 bg-emerald-700/5' : 'border-[#ddd0bc] bg-[#fbf7f0]'}`}
+                  key={club.name}
+                  className="flex aspect-square min-h-[112px] flex-col items-center justify-center border-b border-r border-[#e0e4e0] bg-[#fafbf9] p-3 transition-colors hover:bg-[#eaf6ef]"
                 >
-                  <h3 className="font-editorial text-[1.8rem] font-bold leading-[1] tracking-[-0.05em] text-[#2f2418] italic">{feature.title}</h3>
-                  <p className="mt-4 text-[16px] font-medium leading-7 text-[#6d6254]">{feature.text}</p>
+                  <img src={club.logo} alt={club.name} loading="lazy" decoding="async" className="h-11 w-11 object-contain sm:h-14 sm:w-14" />
+                  <span className="mt-3 text-center text-[10px] font-black text-[#303832]">{club.name}</span>
                 </div>
               ))}
             </div>
+          </div>
+        </section>
 
-            <div className="mt-12 flex flex-col gap-4 sm:flex-row">
-              <button
-                onClick={onStart}
-                className="flex h-12 items-center justify-center gap-3 rounded-full bg-emerald-600 px-8 text-[11px] font-black uppercase tracking-[0.15em] text-white shadow-lg"
-              >
-                Inaugurar Carreira
-              </button>
-              <button
-                onClick={onWorldCup}
-                className="flex h-12 items-center justify-center gap-3 rounded-full border border-[#d1c2ab] bg-[#fbf7ef] px-8 text-[11px] font-black uppercase tracking-[0.15em] text-[#5f5446]"
-              >
-                Copa do Mundo
-              </button>
-            </div>
-          </section>
-
-          <section className="mx-auto mt-32 max-w-6xl w-full">
-            <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
+        <section id="jornada" className="scroll-mt-16 bg-[#e32935] py-20 text-white sm:py-24">
+          <div className="mx-auto w-full max-w-[1240px] px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col justify-between gap-6 border-b border-white/25 pb-8 lg:flex-row lg:items-end">
               <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-700">Diferentes Intensidades</div>
-                <h2 className="font-editorial mt-6 text-[2.4rem] font-bold leading-[0.9] tracking-[-0.06em] text-[#2f2418] sm:text-[3.4rem] italic">
-                  Escolha seu campo de batalha.
-                </h2>
+                <div className="text-[11px] font-black uppercase text-white/68">Do primeiro clique ao apito</div>
+                <h2 className="mt-4 max-w-[700px] text-[34px] font-black leading-[1.08] sm:text-[46px]">Entre rápido. Aprofunde no seu ritmo.</h2>
               </div>
-
-              <div className="grid gap-6 md:grid-cols-2">
-                {modeCards.map((card) => (
-                  <div
-                    key={card.title}
-                    className={`rounded-[40px] border p-8 shadow-sm transition-all hover:scale-[1.02] ${card.dark ? 'border-emerald-700/20 bg-[#eef3eb]' : 'border-[#ddd0bc] bg-[#fbf7f0]'}`}
-                  >
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#847767]">{card.kicker}</div>
-                    <h3 className="font-editorial mt-6 text-[2.2rem] font-bold leading-[1] tracking-[-0.05em] text-[#2f2418] italic">{card.title}</h3>
-                    <p className="mt-4 text-[16px] font-medium leading-7 text-[#6d6254]">{card.text}</p>
-                    <button
-                      onClick={card.dark ? onWorldCup : onStart}
-                      className={`mt-8 flex h-12 w-full items-center justify-center rounded-full px-6 text-[11px] font-black uppercase tracking-[0.15em] ${card.dark ? 'bg-emerald-700 text-white' : 'border border-[#d3c4ad] bg-[#f5ecde] text-[#5f5446]'}`}
-                    >
-                      {card.cta}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="mx-auto mt-24 max-w-6xl">
-            <div className="rounded-[36px] border border-[#ddd0bc] bg-[#f0e5d2] px-7 py-8 text-[#2f2418] shadow-[0_24px_60px_rgba(95,72,43,0.10)] sm:px-10">
-              <div className="max-w-4xl">
-                <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#8b7b67]">Visão de futuro</div>
-                <h2 className="font-editorial mt-4 text-[2.7rem] font-bold leading-[0.92] tracking-[-0.08em] sm:text-[3.5rem]">
-                  Identidade forte. Ambição global.
-                </h2>
-                <p className="mt-4 max-w-3xl text-[15px] font-semibold leading-7 text-[#6d6254]">
-                  A base é forte. O próximo passo é abrir espaço para mais contextos, ligas, competições e torneios.
-                </p>
-              </div>
-
-              <Suspense
-                fallback={
-                  <div className="mt-12 grid gap-8 lg:grid-cols-3 lg:items-start">
-                    <div className="flex justify-center lg:justify-start">
-                      <ShowcaseFallback />
-                    </div>
-                    <div className="flex justify-center">
-                      <ShowcaseFallback />
-                    </div>
-                    <div className="flex justify-center lg:justify-end">
-                      <ShowcaseFallback />
-                    </div>
-                  </div>
-                }
-              >
-                <div className="mt-12">
-                  <LazyTriplePhoneShowcase />
-                </div>
-              </Suspense>
-            </div>
-          </section>
-
-          <section className="mx-auto mt-24 max-w-6xl">
-            <div className="grid gap-8 lg:grid-cols-[0.86fr_1.14fr]">
-              <div>
-                <div className="text-[11px] font-black uppercase tracking-[0.24em] text-emerald-700">Perguntas frequentes</div>
-                <h2 className="font-editorial mt-4 text-[2.4rem] font-bold leading-[0.92] tracking-[-0.08em] text-[#2f2418] sm:text-[3.2rem]">
-                  O essencial antes de entrar no jogo.
-                </h2>
-                <p className="mt-4 max-w-xl text-[15px] font-semibold leading-7 text-[#6d6254]">
-                  O básico, sem enrolação.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                {faqs.map((item) => (
-                  <div key={item.q} className="rounded-[26px] border border-[#ddd0bc] bg-[#fbf7f0] p-6 shadow-sm">
-                    <div className="text-[15px] font-black text-[#2f2418]">{item.q}</div>
-                    <div className="mt-2 text-[15px] font-semibold leading-7 text-[#6d6254]">{item.a}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="mx-auto mt-40 max-w-6xl w-full pb-safe">
-            <div className="relative overflow-hidden rounded-[48px] bg-[linear-gradient(135deg,#d9c1a1_0%,#ead9c2_45%,#f4ebdd_100%)] px-8 py-16 text-[#2f2418] shadow-[0_34px_90px_rgba(95,72,43,0.14)]">
-              <div className="absolute top-0 right-0 h-96 w-96 rounded-full bg-white/30 blur-3xl -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-emerald-900/10 blur-3xl -translate-x-1/3 translate-y-1/3" />
-              <div className="grid gap-12 lg:grid-cols-[1fr_auto] lg:items-center relative z-10">
-                <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6b5f4f]">Final de Temporada</div>
-                  <h2 className="font-editorial mt-6 max-w-4xl text-[3rem] font-bold leading-[0.85] tracking-[-0.06em] sm:text-[4.2rem] italic">
-                    Assuma o controle.<br />Escale sua história.
-                  </h2>
-                  <p className="mt-8 max-w-xl text-[18px] font-bold leading-8 text-[#5f5446] italic">
-                    BNR Manager: Onde cada tática é um risco e cada vitória é real.
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-4 lg:w-[320px]">
-                  <button
-                    onClick={onStart}
-                    className="flex h-14 items-center justify-center gap-3 rounded-full bg-white px-8 text-[12px] font-black uppercase tracking-[0.15em] text-black shadow-2xl transition-transform hover:scale-105"
-                  >
-                    Novo Projeto
-                  </button>
-                  <button
-                    onClick={onWorldCup}
-                    className="flex h-14 items-center justify-center gap-3 rounded-full border-2 border-[#cab79a] bg-[#fff8ef] px-8 text-[12px] font-black uppercase tracking-[0.15em] text-[#5b5044]"
-                  >
-                    World Cup 2026
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <footer className="mx-auto mt-20 flex w-full max-w-6xl flex-col gap-10 border-t border-[#ddcfba] py-12 text-[#746858] sm:flex-row sm:items-start sm:justify-between">
-            <div className="max-w-sm">
-              <div className="flex items-center gap-4">
-                <div className="font-editorial text-xl font-bold tracking-[-0.05em] text-[#2f2418] italic">BNR <span className="opacity-20">Manager</span></div>
-              </div>
-              <div className="mt-4 text-[14px] font-medium leading-7">
-                A próxima geração de simulação esportiva focada em narrativa, contexto e trajetória real de clubes.
+              <div className="flex items-center gap-2 text-[12px] font-bold text-white/75">
+                <Clock3 className="h-4 w-4" /> Sem tutorial longo ou cadastro obrigatório
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-8 text-[12px] font-black uppercase tracking-[0.15em]">
-              {navItems.map((item) => (
-                <button
-                  key={`footer-${item.label}`}
-                  onClick={() => scrollToSection(item.target)}
-                  className="transition-colors hover:text-[#2f2418]"
-                >
-                  {item.label}
-                </button>
+            <div className="grid lg:grid-cols-3">
+              {journey.map((step, index) => (
+                <article key={step.number} className={`py-8 lg:min-h-[250px] lg:px-8 lg:py-10 ${index ? 'border-t border-white/25 lg:border-l lg:border-t-0' : ''}`}>
+                  <div className="text-[12px] font-black text-white/55">{step.number}</div>
+                  <h3 className="mt-8 text-[23px] font-black">{step.title}</h3>
+                  <p className="mt-3 max-w-[330px] text-[14px] font-medium leading-7 text-white/72">{step.text}</p>
+                </article>
               ))}
             </div>
-          </footer>
-        </main>
-      </div>
+          </div>
+        </section>
+
+        <section className="bg-[#12233f] py-20 text-white sm:py-24">
+          <div className="mx-auto grid w-full max-w-[1240px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-8">
+            <div>
+              <div className="flex h-10 w-10 items-center justify-center border border-[#77a9ff]/35 bg-[#19335e]">
+                <Shield className="h-5 w-5 text-[#77a9ff]" />
+              </div>
+              <h2 className="mt-6 max-w-[520px] text-[34px] font-black leading-[1.08] sm:text-[46px]">Dados claros, jogo honesto.</h2>
+            </div>
+
+            <div className="border-t border-white/18">
+              {[
+                'Elencos de julho com posições e idades revisadas',
+                'Referências de valor de mercado quando disponíveis',
+                'Atributos de gameplay estimados e balanceados',
+                'Carreira salva localmente no seu navegador',
+              ].map((item) => (
+                <div key={item} className="flex min-h-14 items-center gap-3 border-b border-white/18 py-3 text-[13px] font-bold text-white/78">
+                  <Check className="h-4 w-4 shrink-0 text-[#77a9ff]" /> {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="duvidas" className="scroll-mt-16 bg-[#f4f6f2] py-20 sm:py-24">
+          <div className="mx-auto grid w-full max-w-[1120px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.7fr_1.3fr] lg:px-8">
+            <div>
+              <div className="text-[11px] font-black uppercase text-[#19734a]">Antes de começar</div>
+              <h2 className="mt-4 text-[34px] font-black leading-[1.08] sm:text-[42px]">Perguntas diretas.</h2>
+            </div>
+            <div className="border-t border-[#cfd6cf]">
+              {faqs.map((item, index) => (
+                <details key={item.question} className="group border-b border-[#cfd6cf]" open={index === 0}>
+                  <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-[14px] font-black text-[#172019]">
+                    {item.question}
+                    <ChevronDown className="h-4 w-4 shrink-0 text-[#19734a] transition-transform group-open:rotate-180" />
+                  </summary>
+                  <p className="max-w-[670px] pb-5 pr-8 text-[13px] font-medium leading-6 text-[#59635b]">{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[#0b0e0c] py-20 text-white sm:py-24">
+          <div className="mx-auto flex w-full max-w-[980px] flex-col items-center px-4 text-center sm:px-6">
+            <img src="/logo.svg" alt="" className="h-12 w-12" loading="lazy" />
+            <h2 className="mt-6 text-[36px] font-black leading-[1.06] sm:text-[50px]">Seu próximo jogo começa agora.</h2>
+            <p className="mt-4 max-w-[560px] text-[15px] font-medium leading-7 text-white/60">
+              Escolha um dos 40 clubes e transforme a primeira escalação no começo de uma carreira inteira.
+            </p>
+            <button onClick={onStart} className="mt-8 flex h-12 items-center gap-2 bg-[#e32935] px-7 text-[12px] font-black transition-colors hover:bg-[#c91825]">
+              Escolher meu clube <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-white/10 bg-[#0b0e0c] text-white/48">
+        <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-5 px-4 py-8 text-[11px] font-semibold sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2.5">
+            <img src="/logo.svg" alt="" className="h-7 w-7 opacity-75" loading="lazy" /> Bola na Rede Manager
+          </div>
+          <div>Feito para quem acompanha futebol brasileiro rodada por rodada.</div>
+        </div>
+      </footer>
     </div>
   );
 }

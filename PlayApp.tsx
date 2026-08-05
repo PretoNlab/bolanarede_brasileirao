@@ -1,24 +1,16 @@
 import React, { Suspense, lazy, useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Team, Player, ScreenState, MatchResult, Fixture, MatchEvent, NewsItem, Coach, SeasonHistory, PlayerHistoryEvent, StaffMember, Infrastructure, TrainingFocus, TrainingIntensity, WorldCupGameState } from './types';
+import { Team, Player, ScreenState, MatchResult, Fixture, MatchEvent, NewsItem, Coach, SeasonHistory, PlayerHistoryEvent, StaffMember, Infrastructure, TrainingFocus, TrainingIntensity, ContinentalSeasonState } from './types';
 import { INITIAL_TEAMS, generateSchedule } from './data';
+import { ROSTER_DATA_VERSION } from './realBrazilianRosters';
+import { advanceContinentalMatchday, initializeContinentalTournaments } from './engine/continentalEngine';
+import { processSeasonTransition } from './engine/seasonManager';
 import {
-  WC_TEAMS_DATA,
-  WORLD_CUP_REGIONAL_FALLBACK_NAMES,
-  WORLD_CUP_TEAM_NAME_POOLS,
-  createPlayer,
-  getWorldCupSupplementalCandidates,
-  getWorldCupTeams,
-} from './worldCupData';
-import {
-  PHASE_LABELS,
-  findUserNextMatch,
-  generateGroupFixtures,
-  generateWorldCupGroups,
-  processWCMatchday,
-  simulatePenalties,
-  advanceBracket,
-} from './engine/worldCupEngine';
+  markFirstMatchStarted,
+  markPerformance,
+  resetCareerPerformanceMarks,
+  trackPerformanceEvent
+} from './performanceMetrics';
 import GameHomeScreen from './screens/GameHomeScreen';
 import CoachSetupScreen from './screens/CoachSetupScreen';
 import TeamSelectionScreen from './screens/TeamSelectionScreen';
@@ -45,13 +37,8 @@ const TrainingScreen = lazy(() => import('./screens/TrainingScreen'));
 const StaffScreen = lazy(() => import('./screens/StaffScreen'));
 const InfrastructureScreen = lazy(() => import('./screens/InfrastructureScreen'));
 const YouthAcademyScreen = lazy(() => import('./screens/YouthAcademyScreen'));
-const WorldCupTeamSelectScreen = lazy(() => import('./screens/WorldCupTeamSelectScreen'));
-const WorldCupDashboardScreen = lazy(() => import('./screens/WorldCupDashboardScreen'));
-const WorldCupGroupScreen = lazy(() => import('./screens/WorldCupGroupScreen'));
-const WorldCupBracketScreen = lazy(() => import('./screens/WorldCupBracketScreen'));
-const WorldCupChampionScreen = lazy(() => import('./screens/WorldCupChampionScreen'));
-const WorldCupEliminatedScreen = lazy(() => import('./screens/WorldCupEliminatedScreen'));
-const WCSquadCallupScreen = lazy(() => import('./screens/WCSquadCallupScreen'));
+const ContinentalScreen = lazy(() => import('./screens/ContinentalScreen'));
+
 
 const DEFAULT_TICKET_PRICE = 50;
 
@@ -61,7 +48,7 @@ function clamp(n: number, min: number, max: number) {
 
 interface PlayAppProps {
   onBackHome: () => void;
-  initialIntent?: 'career' | 'continue' | 'worldcup' | null;
+  initialIntent?: 'career' | 'continue' | null;
 }
 
 function ScreenFallback() {
@@ -85,43 +72,32 @@ function runWhenIdle(task: () => void) {
   return () => globalThis.clearTimeout(timeout);
 }
 
-function buildExtraWorldCupPlayerName(
-  teamData: (typeof WC_TEAMS_DATA)[number],
-  usedNames: Set<string>,
-  index: number
-) {
-  const fallback = WORLD_CUP_TEAM_NAME_POOLS[teamData.id] || WORLD_CUP_REGIONAL_FALLBACK_NAMES[teamData.confederation];
-  const firstPool = [...fallback.first];
-  const lastPool = [...fallback.last];
-
-  for (let attempt = 0; attempt < 120; attempt++) {
-    const first = firstPool[Math.floor(Math.random() * firstPool.length)];
-    const last = lastPool[Math.floor(Math.random() * lastPool.length)];
-    const candidate = `${first} ${last}`;
-
-    if (!usedNames.has(candidate)) {
-      usedNames.add(candidate);
-      return candidate;
-    }
-  }
-
-  const fallbackName = `${firstPool[index % firstPool.length]} ${lastPool[(index + 3) % lastPool.length]}`;
-  usedNames.add(fallbackName);
-  return fallbackName;
+function cloneRosterFromCurrentData(team: Team) {
+  return team.roster.map(player => ({
+    ...player,
+    stats: { ...player.stats },
+    history: [...(player.history || [])],
+    seasonStats: { ...player.seasonStats },
+  }));
 }
 
-function normalizeWorldCupSquadNames(players: Player[]) {
-  return players;
-}
+function migrateTeamsToCurrentRosterData(savedTeams: Team[], shouldMigrate: boolean) {
+  if (!shouldMigrate) return savedTeams;
 
-function isSupplementalCandidateCompatible(
-  positionGroup: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward',
-  position: Player['position']
-) {
-  if (position === 'GOL') return positionGroup === 'Goalkeeper';
-  if (position === 'ZAG' || position === 'LAT') return positionGroup === 'Defender';
-  if (position === 'VOL' || position === 'MEI') return positionGroup === 'Midfielder';
-  return positionGroup === 'Forward';
+  const currentTeamsById = new Map(INITIAL_TEAMS.map(team => [team.id, team]));
+
+  return savedTeams.map(team => {
+    if (team.id === 'free_agent') return team;
+
+    const currentTeam = currentTeamsById.get(team.id);
+    if (!currentTeam) return team;
+
+    return {
+      ...team,
+      roster: cloneRosterFromCurrentData(currentTeam),
+      lineup: [...currentTeam.lineup],
+    };
+  });
 }
 
 export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppProps) {
@@ -164,9 +140,8 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
   const [lastLocalSaveAt, setLastLocalSaveAt] = useState<string | null>(null);
   const [lastScreen, setLastScreen] = useState<ScreenState>('DASHBOARD');
 
-  // ========== COPA DO MUNDO STATE ==========
-  const [wcState, setWcState] = useState<WorldCupGameState | null>(null);
-  const [isWorldCupMode, setIsWorldCupMode] = useState(false);
+  // ========== COPAS CONTINENTAIS STATE ==========
+  const [continentalState, setContinentalState] = useState<ContinentalSeasonState | null>(null);
 
 
   const userTeam = useMemo(() => teams.find(t => t.id === userTeamId), [teams, userTeamId]);
@@ -197,8 +172,8 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
       trainingIntensity,
       squadTrainingIntensity: trainingIntensity,
       youthRoster,
-      worldCupState: wcState,
-      isWorldCupMode,
+      continentalState: continentalState ?? initializeContinentalTournaments(teams, userTeamId),
+      rosterDataVersion: ROSTER_DATA_VERSION,
     };
   }, [
     season,
@@ -220,11 +195,13 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     squadFocus,
     trainingIntensity,
     youthRoster,
-    wcState,
-    isWorldCupMode,
+    continentalState,
   ]);
 
   const applySave = useCallback((save: SaveGame) => {
+    const shouldMigrateRosters = save.rosterDataVersion !== ROSTER_DATA_VERSION;
+    const loadedTeams = migrateTeamsToCurrentRosterData(save.teams as Team[], shouldMigrateRosters);
+
     setSeason(save.season);
     setCurrentRound(save.currentRound);
     setFunds(save.funds);
@@ -233,7 +210,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     setMatchHistory(save.matchHistory as MatchResult[]);
     setFixtures(save.fixtures as Fixture[]);
     setNews(save.news as NewsItem[]);
-    setPlayerStats(save.playerStats ?? {});
+    setPlayerStats(shouldMigrateRosters ? {} : save.playerStats ?? {});
     setCoach(save.coach ?? null);
     setPastSeasons(save.pastSeasons || []);
     setDdaFactor(save.ddaFactor ?? 1.0);
@@ -243,11 +220,12 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     setSquadFocus((save.squadTrainingFocus ?? save.squadFocus ?? 'BALANCEADO') as TrainingFocus);
     setTrainingIntensity((save.squadTrainingIntensity ?? save.trainingIntensity ?? 'MEDIA') as TrainingIntensity);
     setYouthRoster(save.youthRoster ?? []);
-    setWcState((save.worldCupState as WorldCupGameState | undefined) ?? null);
-    setIsWorldCupMode(save.isWorldCupMode ?? false);
+    setContinentalState(
+      (save.continentalState as ContinentalSeasonState | undefined) ??
+        initializeContinentalTournaments(loadedTeams, save.userTeamId ?? null)
+    );
 
     // MIGRATION: Ensure Free Agents team exists for old saves
-    const loadedTeams = save.teams as Team[];
     const hasFreeAgent = loadedTeams.some(t => t.id === 'free_agent');
     if (!hasFreeAgent) {
       const freeAgentTeam = INITIAL_TEAMS.find(t => t.id === 'free_agent');
@@ -259,21 +237,13 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
       setTeams(loadedTeams);
     }
 
-    if (save.isWorldCupMode && save.worldCupState) {
-      const restoredWCState = save.worldCupState as WorldCupGameState;
-      const nextScreen = restoredWCState.provisionalSquad
-        ? 'WC_SQUAD_CALLUP'
-        : restoredWCState.userTeamId
-          ? 'WC_DASHBOARD'
-          : 'WC_TEAM_SELECT';
-      setCurrentScreen(nextScreen);
-      setLastScreen('WC_DASHBOARD');
-    } else {
-      setCurrentScreen('DASHBOARD');
-      setLastScreen('DASHBOARD');
-    }
+    setCurrentScreen('DASHBOARD');
+    setLastScreen('DASHBOARD');
 
-    toast.success('Save carregado!', { icon: '💾' });
+    toast.success(
+      shouldMigrateRosters ? 'Save carregado com elencos CBF 2026!' : 'Save carregado!',
+      { icon: '💾' }
+    );
   }, []);
 
   const saveToSlot = useCallback(
@@ -567,10 +537,10 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
       });
     }
 
-    // 5) Copa do Mundo 2026 Flavor Text
+    // 5) Competições continentais
     if (season === 2026) {
-      if (round === 10) newsList.push({ id: Math.random().toString(36), round, title: 'Copa 2026: Olheiros no Estádio', body: 'A comissão técnica da Seleção enviou olheiros para observar destaques do campeonato. Todos querem uma vaga na Copa!', category: 'BOARD', isRead: false });
-      if (round === 18) newsList.push({ id: Math.random().toString(36), round, title: 'Pausa para a Copa Aproxima-se', body: 'O calendário ficará apertado devido ao Mundial nos EUA. Prepare o elenco para a maratona.', category: 'BOARD', isRead: false });
+      if (round === 10) newsList.push({ id: Math.random().toString(36), round, title: 'CONMEBOL: olheiros no estádio', body: 'Clubes sul-americanos observam destaques do Brasileirão. Uma boa campanha pode render vaga e vitrine continental.', category: 'BOARD', isRead: false });
+      if (round === 18) newsList.push({ id: Math.random().toString(36), round, title: 'Noites continentais no horizonte', body: 'A reta final pode decidir quem entra na Libertadores e quem fica com a Sul-Americana. Cada ponto pesa.', category: 'BOARD', isRead: false });
     }
 
     // 6) Garantir pelo menos 1 notícia/rodada
@@ -1001,10 +971,18 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
 
     // Finalizar
     const wageCost = (userTeam?.roster.length || 0) * 1500;
-    const finalFunds = funds + roundRevenue - wageCost;
+    let finalFunds = funds + roundRevenue - wageCost;
+    const activeContinentalState = continentalState ?? initializeContinentalTournaments(newTeams, userTeamId);
+    const continentalAdvance = advanceContinentalMatchday(activeContinentalState, newTeams, userTeamId);
+
+    if (continentalAdvance.prize > 0) {
+      finalFunds += continentalAdvance.prize;
+      toast.success(`Cota continental recebida: ${formatCurrency(continentalAdvance.prize)}`, { icon: '🏆' });
+    }
 
     setFunds(finalFunds);
     setTeams(newTeams);
+    setContinentalState(continentalAdvance.state);
     setPlayerStats(updatedPlayerStats);
     setMatchHistory(prev => [...roundResults, ...prev]);
 
@@ -1073,107 +1051,21 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
   };
 
   const handleNextSeason = () => {
-    // 1. Calcular Classificação Final
-    const standingsA = [...teams].filter(t => t.division === 1).sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga));
-    const standingsB = [...teams].filter(t => t.division === 2).sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga));
-
-    const relegatedIds = standingsA.slice(-4).map(t => t.id);
-    const promotedIds = standingsB.slice(0, 4).map(t => t.id);
-
-    // 1.5 Gravar Histórico
-    const champion = standingsA[0];
-    const runnerUp = standingsA[1];
-
-    // Encontrar artilheiro global na marra
-    let topScorer = { name: 'Ninguém', goals: 0, teamShort: '-' };
-    let maxG = -1;
-
-    teams.forEach(t => {
-      t.roster.forEach(p => {
-        if (p.goals > maxG) {
-          maxG = p.goals;
-          topScorer = { name: p.name, goals: p.goals, teamShort: t.shortName };
-        }
-      });
+    const transition = processSeasonTransition({
+      teams,
+      userTeamId,
+      season,
+      hiredStaff
     });
 
-    const userPos = standingsA.findIndex(t => t.id === userTeamId);
-    const userPosB = standingsB.findIndex(t => t.id === userTeamId);
-    let finalPos = userPos !== -1 ? userPos + 1 : (userPosB !== -1 ? userPosB + 1 : 0);
-
-    const historyEntry: SeasonHistory = {
-      year: season,
-      championId: champion.id,
-      championName: champion.name,
-      runnerUpId: runnerUp.id,
-      runnerUpName: runnerUp.name,
-      userFinishPosition: finalPos,
-      userDivision: userTeam?.division || 1,
-      topScorer
-    };
-
-    setPastSeasons(prev => [...prev, historyEntry]);
-
-    // 2. Atualizar Times (Promoção/Rebaixamento, Idade, Evolução e Reset)
-    const updatedTeams = teams.map(team => {
-      let newDiv = team.division;
-      if (relegatedIds.includes(team.id)) newDiv = 2;
-      if (promotedIds.includes(team.id)) newDiv = 1;
-
-      const updatedRoster = team.roster.map(player => {
-        const isYoung = player.age < 23;
-        const isOld = player.age > 30;
-        let ovrChange = 0;
-
-        if (isYoung && Math.random() > 0.4) ovrChange = Math.floor(Math.random() * 3);
-        else if (isOld && Math.random() > 0.5) ovrChange = -Math.floor(Math.random() * 2);
-
-        // Arquivar histórico
-        const history: PlayerHistoryEvent[] = [...(player.history || [])]; // keep existing
-
-        // Add summary of the season
-        if (player.goals > 0 || player.assists > 0) {
-          history.unshift({
-            id: Math.random().toString(36),
-            round: (teams.filter(t => t.division === champion.division).length - 1) * 2,
-            season,
-            type: 'AWARD',
-            description: `Temporada ${season}: ${player.goals} gols, ${player.assists} assistências`,
-            icon: '📊'
-          });
-        }
-
-        return {
-          ...player,
-          age: player.age + 1,
-          overall: Math.min(99, Math.max(40, player.overall + ovrChange)),
-          goals: 0,
-          assists: 0,
-          energy: 100,
-          yellowCards: 0,
-          redCards: 0,
-          matchesSuspended: 0,
-          isSuspended: false,
-          status: 'fit',
-          seasonStats: { yellowCards: 0, redCards: 0, matchesSuspended: 0 },
-          history
-        };
-      });
-
-      return {
-        ...team,
-        division: newDiv,
-        played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0,
-        roster: updatedRoster,
-        moral: 70 // Reset de moral para nova temporada
-      };
-    });
-
-    setTeams(updatedTeams);
+    setPastSeasons(prev => [...prev, transition.historyEntry]);
+    setTeams(transition.teams);
     setSeason(s => s + 1);
     setCurrentRound(1);
     setMatchHistory([]);
-    setFixtures(generateSchedule(updatedTeams));
+    setPlayerStats({});
+    setFixtures(transition.fixtures);
+    setContinentalState(transition.continentalState);
     setCurrentScreen('DASHBOARD');
     toast.success(`Temporada ${season + 1} iniciada!`, { icon: '🗓️' });
   };
@@ -1183,8 +1075,15 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     setCurrentRound(1);
     setSeason(2026);
     setFunds(1200000);
+    setFixtures([]);
     setMatchHistory([]);
     setNews([]);
+    setPlayerStats({});
+    setPastSeasons([]);
+    setUserTeamId(null);
+    setCoach(null);
+    setContinentalState(null);
+    resetCareerPerformanceMarks();
     setCurrentScreen('SPLASH');
   };
 
@@ -1287,314 +1186,18 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
   };
 
   const handleTacticsSave = (f: any, s: any, l: any, instructions: any) => {
-    if (isWorldCupMode && wcState) {
-      // Salvar táticas no time da Copa
-      setWcState(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          teams: prev.teams.map(t => t.id === prev.userTeamId ? { ...t, formation: f, style: s, lineup: l, instructions } : t),
-        };
-      });
-      setCurrentScreen('WC_DASHBOARD');
-    } else {
-      setTeams(prev => prev.map(t => t.id === userTeamId ? { ...t, formation: f, style: s, lineup: l, instructions } : t));
-      setCurrentScreen(lastScreen);
-    }
+    setTeams(prev => prev.map(t => t.id === userTeamId ? { ...t, formation: f, style: s, lineup: l, instructions } : t));
+    setCurrentScreen(lastScreen);
   };
 
-  // ========== COPA DO MUNDO HANDLERS ==========
-
-  const handleStartWorldCup = useCallback(() => {
-    setIsWorldCupMode(true);
-    const wcTeams = getWorldCupTeams();
-    setWcState({
-      groups: [],
-      bracket: [],
-      fixtures: [],
-      currentPhase: 'GROUP',
-      currentMatchday: 1,
-      teams: wcTeams,
-      userTeamId: '',
-      matchHistory: [],
-      isEliminated: false,
-    });
-    setCurrentScreen('WC_TEAM_SELECT');
-  }, []);
-
-  const handleWCTeamSelect = useCallback((teamId: string) => {
-    if (!wcState) return;
-    
-    // Pegar dados da seleção selecionada
-    const teamData = WC_TEAMS_DATA.find(t => t.id === teamId);
-    if (!teamData) return;
-
-    // Gerar pré-lista de 40 jogadores
-    // 1. Jogadores reais
-    const realPlayers = [...teamData.players];
-    const supplementalCandidates = getWorldCupSupplementalCandidates(teamId, realPlayers);
-    // 2. Gerar mais 14 jogadores para completar 40
-    const extraPlayers: Player[] = [];
-    const avgOvr = realPlayers.reduce((sum, p) => sum + p.overall, 0) / realPlayers.length;
-    const usedNames = new Set(realPlayers.map((player) => player.name));
-    const usedSupplementalIndexes = new Set<number>();
-    const extraPositionPlan: Player['position'][] = ['GOL', 'ZAG', 'ZAG', 'LAT', 'LAT', 'VOL', 'VOL', 'MEI', 'MEI', 'MEI', 'ATA', 'ATA', 'ATA', 'ATA'];
-
-    for (let i = 0; i < extraPositionPlan.length; i++) {
-      const pos = extraPositionPlan[i];
-      const supplementalIndex = supplementalCandidates.findIndex(
-        (candidate, candidateIndex) =>
-          !usedSupplementalIndexes.has(candidateIndex) &&
-          isSupplementalCandidateCompatible(candidate.positionGroup, pos)
-      );
-
-      if (supplementalIndex >= 0) {
-        const candidate = supplementalCandidates[supplementalIndex];
-        const comparablePlayers = realPlayers.filter((player) => player.position === pos);
-        const sampleBase = comparablePlayers.length > 0 ? comparablePlayers : realPlayers;
-        const avgAge = sampleBase.reduce((sum, player) => sum + player.age, 0) / sampleBase.length;
-        const avgComparableOvr = sampleBase.reduce((sum, player) => sum + player.overall, 0) / sampleBase.length;
-
-        usedSupplementalIndexes.add(supplementalIndex);
-        usedNames.add(candidate.playerName);
-        extraPlayers.push(
-          createPlayer(
-            candidate.playerName,
-            pos,
-            Math.max(18, Math.round(avgAge + (Math.random() * 4 - 2))),
-            Math.max(64, Math.round(avgComparableOvr + (Math.random() * 6 - 3)))
-          )
-        );
-        continue;
-      }
-
-      const name = buildExtraWorldCupPlayerName(teamData, usedNames, i);
-      const age = 18 + Math.floor(Math.random() * 15);
-      const ovr = Math.round(avgOvr - 3 + Math.random() * 6);
-
-      extraPlayers.push(createPlayer(name, pos, age, ovr));
-    }
-
-    // Converter os realPlayers (que são WCTeamPlayer) em Player completo usando a mesma lógica
-    const completeRealPlayers = realPlayers.map((p) => createPlayer(p));
-
-    const provisionalSquad = normalizeWorldCupSquadNames([...completeRealPlayers, ...extraPlayers]);
-
-    setWcState(prev => prev ? {
-      ...prev,
-      userTeamId: teamId,
-      provisionalSquad,
-    } : prev);
-
-    setCurrentScreen('WC_SQUAD_CALLUP');
-  }, [wcState]);
-
-  const handleWCCallupConfirm = useCallback((selectedPlayerIds: string[]) => {
-    if (!wcState || !wcState.userTeamId || !wcState.provisionalSquad) return;
-    
-    // Filtrar os 26 selecionados
-    const finalRoster = wcState.provisionalSquad.filter(p => selectedPlayerIds.includes(p.id));
-
-    // Atualizar o time do usuário na lista de times da Copa
-    const updatedTeams = wcState.teams.map(t => {
-      if (t.id === wcState.userTeamId) {
-        // Inicializar lineup com os 11 melhores da lista de convocados
-        const sortedRoster = [...finalRoster].sort((a, b) => b.overall - a.overall);
-        const initialLineup = sortedRoster.slice(0, 11).map(p => p.id);
-        return { ...t, roster: finalRoster, lineup: initialLineup };
-      }
-      return t;
-    });
-
-    const groups = generateWorldCupGroups(updatedTeams);
-    const groupFixtures = generateGroupFixtures(groups);
-
-    setWcState(prev => prev ? {
-      ...prev,
-      teams: updatedTeams,
-      groups,
-      fixtures: groupFixtures,
-      provisionalSquad: undefined,
-    } : prev);
-
-    setCurrentScreen('WC_DASHBOARD');
-    toast.success('Convocação confirmada e grupos sorteados!', { icon: '🏆' });
-  }, [wcState]);
-
-  const handleWCMatchFinished = useCallback((homeScore: number, awayScore: number, events: MatchEvent[], pkHome?: number, pkAway?: number) => {
-    if (!wcState) return;
-    const { currentPhase, userTeamId: wcUserTeamId } = wcState;
-    const userTeamWC = wcState.teams.find(t => t.id === wcUserTeamId);
-    if (!userTeamWC) return;
-
-    let newState = { ...wcState, fixtures: wcState.fixtures.map(f => ({ ...f })), teams: wcState.teams.map(t => ({ ...t })), matchHistory: [...wcState.matchHistory], bracket: wcState.bracket.map(m => ({ ...m })) };
-
-    if (currentPhase === 'GROUP') {
-      // Marcar o jogo do usuário como jogado
-      const userFixture = newState.fixtures.find(f =>
-        f.round === wcState.currentMatchday && !f.played &&
-        (f.homeTeamId === wcUserTeamId || f.awayTeamId === wcUserTeamId)
-      );
-      if (userFixture) {
-        userFixture.played = true;
-        if (userFixture.homeTeamId === wcUserTeamId) {
-          userFixture.homeScore = homeScore;
-          userFixture.awayScore = awayScore;
-        } else {
-          userFixture.homeScore = awayScore;
-          userFixture.awayScore = homeScore;
-        }
-
-        // Atualizar stats do time do usuário
-        const opponent = newState.teams.find(t => t.id === (userFixture.homeTeamId === wcUserTeamId ? userFixture.awayTeamId : userFixture.homeTeamId));
-        const ut = newState.teams.find(t => t.id === wcUserTeamId);
-        if (ut && opponent) {
-          ut.played++; opponent.played++;
-          const uGoals = homeScore, oGoals = awayScore;
-          ut.gf += uGoals; ut.ga += oGoals;
-          opponent.gf += oGoals; opponent.ga += uGoals;
-          if (uGoals > oGoals) { ut.won++; ut.points += 3; opponent.lost++; }
-          else if (uGoals < oGoals) { opponent.won++; opponent.points += 3; ut.lost++; }
-          else { ut.drawn++; opponent.drawn++; ut.points++; opponent.points++; }
-        }
-
-        const opponentName = opponent?.name || 'Adversário';
-        newState.matchHistory.push({
-          round: wcState.currentMatchday,
-          homeTeamName: userFixture.homeTeamId === wcUserTeamId ? userTeamWC.name : opponentName,
-          awayTeamName: userFixture.awayTeamId === wcUserTeamId ? userTeamWC.name : opponentName,
-          homeScore: userFixture.homeScore!,
-          awayScore: userFixture.awayScore!,
-          isUserMatch: true,
-          events,
-        });
-      }
-
-      // Processar o restante da rodada (IA)
-      newState = processWCMatchday(newState);
-    } else {
-      // Mata-mata: marcar jogo do usuário
-      const userBracketMatch = newState.bracket.find(m =>
-        m.phase === currentPhase && !m.played &&
-        (m.team1Id === wcUserTeamId || m.team2Id === wcUserTeamId)
-      );
-      if (userBracketMatch) {
-        userBracketMatch.played = true;
-        
-        // Atribuir placares de acordo com quem é time1 e time2 no bracket
-        if (userBracketMatch.team1Id === wcUserTeamId) {
-          userBracketMatch.score1 = homeScore;
-          userBracketMatch.score2 = awayScore;
-          if (pkHome !== undefined) {
-             userBracketMatch.penalties1 = pkHome;
-             userBracketMatch.penalties2 = pkAway;
-          }
-        } else {
-          userBracketMatch.score1 = awayScore;
-          userBracketMatch.score2 = homeScore;
-          if (pkHome !== undefined) {
-             userBracketMatch.penalties1 = pkAway;
-             userBracketMatch.penalties2 = pkHome;
-          }
-        }
-
-        let winnerId: string;
-        if (userBracketMatch.score1 === userBracketMatch.score2) {
-          // Pênaltis
-          if (pkHome !== undefined && pkAway !== undefined) {
-             // Caso os pênaltis já tenham sido jogados na MatchScreen
-             const userIsTeam1 = userBracketMatch.team1Id === wcUserTeamId;
-             const p1 = userIsTeam1 ? pkHome : pkAway;
-             const p2 = userIsTeam1 ? pkAway : pkHome;
-             winnerId = p1 > p2 ? userBracketMatch.team1Id! : userBracketMatch.team2Id!;
-          } else {
-             // Fallback caso algo falhe
-             const t1 = newState.teams.find(t => t.id === userBracketMatch.team1Id)!;
-             const t2 = newState.teams.find(t => t.id === userBracketMatch.team2Id)!;
-             const pens = simulatePenalties(t1, t2);
-             userBracketMatch.penalties1 = pens.score1;
-             userBracketMatch.penalties2 = pens.score2;
-             winnerId = pens.score1 > pens.score2 ? userBracketMatch.team1Id! : userBracketMatch.team2Id!;
-          }
-        } else {
-          winnerId = userBracketMatch.score1! > userBracketMatch.score2! ? userBracketMatch.team1Id! : userBracketMatch.team2Id!;
-        }
-
-        userBracketMatch.winnerId = winnerId;
-        newState.bracket = advanceBracket(newState.bracket, userBracketMatch.id, winnerId);
-
-        if (winnerId !== wcUserTeamId && userBracketMatch.phase !== 'SEMI' && userBracketMatch.phase !== 'FINAL') {
-          newState.isEliminated = true;
-        }
-
-        const opponentId = userBracketMatch.team1Id === wcUserTeamId ? userBracketMatch.team2Id : userBracketMatch.team1Id;
-        const opponent = newState.teams.find(t => t.id === opponentId);
-        newState.matchHistory.push({
-          round: 100,
-          homeTeamName: userBracketMatch.team1Id === wcUserTeamId ? userTeamWC.name : (opponent?.name || ''),
-          awayTeamName: userBracketMatch.team2Id === wcUserTeamId ? userTeamWC.name : (opponent?.name || ''),
-          homeScore: userBracketMatch.score1!,
-          awayScore: userBracketMatch.score2!,
-          isUserMatch: true,
-          events,
-        });
-      }
-
-      // Processar restante do mata-mata (IA)
-      newState = processWCMatchday(newState);
-    }
-
-    setWcState(newState);
-
-    if (newState.currentPhase === 'FINISHED') {
-      setCurrentScreen('WC_CHAMPION');
-    } else if (newState.isEliminated) {
-      setCurrentScreen('WC_ELIMINATED');
-    } else {
-      setCurrentScreen('WC_DASHBOARD');
-    }
-  }, [wcState]);
-
-  const handleQuitWorldCup = () => {
-    setIsWorldCupMode(false);
-    setWcState(null);
-    setCurrentScreen('SPLASH');
-  };
-
-  const wcUserTeam = wcState ? wcState.teams.find(t => t.id === wcState.userTeamId) : null;
-  const wcNextMatch = useMemo(() => {
-    if (!wcState || !wcUserTeam) return null;
-    return findUserNextMatch(wcState);
-  }, [wcState, wcUserTeam]);
-
-  const handleWCAdvance = useCallback(() => {
-    if (!wcState) return;
-
-    if (
-      wcNextMatch &&
-      (!wcNextMatch.bracketMatch || wcNextMatch.bracketMatch.phase === wcState.currentPhase)
-    ) {
-      setCurrentScreen('WC_MATCH');
-      return;
-    }
-
-    const advancedState = processWCMatchday(wcState);
-    setWcState(advancedState);
-
-    if (advancedState.currentPhase === 'FINISHED') {
-      setCurrentScreen('WC_CHAMPION');
-    } else if (advancedState.isEliminated) {
-      setCurrentScreen('WC_ELIMINATED');
-    } else {
-      setCurrentScreen('WC_DASHBOARD');
-    }
-  }, [wcNextMatch, wcState]);
+  // ========== CARREIRA HANDLERS ==========
 
   const handleStartCareer = useCallback(() => {
+    resetCareerPerformanceMarks();
+    markPerformance('career_started');
     setTeams(INITIAL_TEAMS);
     setFixtures(generateSchedule(INITIAL_TEAMS));
     setMatchHistory([]);
-    setNews([]);
     setNews([]);
     setPlayerStats({});
     setPastSeasons([]);
@@ -1609,8 +1212,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     setSquadFocus('BALANCEADO');
     setTrainingIntensity('MEDIA');
     setYouthRoster([]);
-    setIsWorldCupMode(false);
-    setWcState(null);
+    setContinentalState(null);
     setLastScreen('DASHBOARD');
     setCurrentScreen('COACH_SETUP');
   }, []);
@@ -1627,16 +1229,15 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     }
   }, [applySave]);
 
-  const handleOpenWorldCup = useCallback(() => {
-    handleStartWorldCup();
-  }, []);
+  useEffect(() => {
+    trackPerformanceEvent('play_loaded', { initial_intent: initialIntent });
+  }, [initialIntent]);
 
   useEffect(() => {
     if (currentScreen !== 'SPLASH') return;
     if (initialIntent === 'career') handleStartCareer();
     if (initialIntent === 'continue') handleContinueCareer();
-    if (initialIntent === 'worldcup') handleOpenWorldCup();
-  }, [currentScreen, handleContinueCareer, handleOpenWorldCup, handleStartCareer, initialIntent]);
+  }, [currentScreen, handleContinueCareer, handleStartCareer, initialIntent]);
 
   useEffect(() => {
     if (currentScreen !== 'SPLASH' && currentScreen !== 'DASHBOARD') return;
@@ -1651,18 +1252,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
       void import('./screens/StaffScreen');
       void import('./screens/InfrastructureScreen');
       void import('./screens/YouthAcademyScreen');
-    });
-  }, [currentScreen]);
-
-  useEffect(() => {
-    if (currentScreen !== 'SPLASH') return;
-
-    return runWhenIdle(() => {
-      void import('./screens/WorldCupTeamSelectScreen');
-      void import('./screens/WorldCupDashboardScreen');
-      void import('./screens/WorldCupGroupScreen');
-      void import('./screens/WorldCupBracketScreen');
-      void import('./screens/WorldCupChampionScreen');
+      void import('./screens/ContinentalScreen');
     });
   }, [currentScreen]);
 
@@ -1732,7 +1322,6 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 hasSave={hasAnySave}
                 onStart={handleStartCareer}
                 onContinue={handleContinueCareer}
-                onWorldCup={handleOpenWorldCup}
                 onBackHome={handleBackToMain}
               />
             </PageWrapper>
@@ -1742,6 +1331,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
             <PageWrapper id="coach_setup">
               <CoachSetupScreen
                 onComplete={(newCoach) => {
+                  markPerformance('coach_created');
                   setCoach(newCoach);
                   setCurrentScreen('TEAM_SELECT');
                   toast.success(`Bem-vindo, Professor ${newCoach.name}!`);
@@ -1756,9 +1346,12 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
               <TeamSelectionScreen
                 teams={teams}
                 onSelect={(id) => {
+                  markPerformance('team_selected');
                   setUserTeamId(id);
                   setFixtures(generateSchedule(teams));
+                  setContinentalState(initializeContinentalTournaments(teams, id));
                   generateRoundNews(1);
+                  markPerformance('dashboard_reached');
                   setCurrentScreen('DASHBOARD');
                   setLastScreen('DASHBOARD');
                   setActiveSlot(1);
@@ -1788,13 +1381,20 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 onOpenStats={() => setCurrentScreen('STATS')}
                 onOpenNews={() => setCurrentScreen('NEWS')}
                 onOpenSettings={() => setCurrentScreen('SETTINGS')}
-                onSimulate={() => setCurrentScreen('PRE_MATCH')}
+                onSimulate={() => {
+                  markPerformance('prematch_opened');
+                  setCurrentScreen('PRE_MATCH');
+                }}
                 onOpenTactics={() => { setLastScreen('DASHBOARD'); setCurrentScreen('TACTICS'); }}
                 onOpenProfile={() => setCurrentScreen('PROFILE')}
                 onOpenTraining={() => setCurrentScreen('TRAINING' as any)}
                 onOpenStaff={() => setCurrentScreen('STAFF' as any)}
                 onOpenInfrastructure={() => setCurrentScreen('INFRASTRUCTURE' as any)}
                 onOpenYouth={() => setCurrentScreen('YOUTH' as any)}
+                onOpenContinental={() => {
+                  setContinentalState(prev => prev ?? initializeContinentalTournaments(teams, userTeamId));
+                  setCurrentScreen('CONTINENTAL');
+                }}
                 onBackHome={handleBackToMain}
               />
             </PageWrapper>
@@ -1808,7 +1408,10 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 onBack={() => setCurrentScreen('DASHBOARD')}
                 onTactics={() => { setLastScreen('PRE_MATCH'); setCurrentScreen('TACTICS'); }}
                 onSquad={() => { setLastScreen('PRE_MATCH'); setCurrentScreen('SQUAD'); }}
-                onStartMatch={() => setCurrentScreen('MATCH')}
+                onStartMatch={() => {
+                  markFirstMatchStarted();
+                  setCurrentScreen('MATCH');
+                }}
               />
             </PageWrapper>
           )}
@@ -1864,13 +1467,13 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
             </PageWrapper>
           )}
 
-          {currentScreen === 'SQUAD' && !isWorldCupMode && userTeam && (
+          {currentScreen === 'SQUAD' && userTeam && (
             <PageWrapper id="squad">
               <SquadScreen team={userTeam} onBack={() => setCurrentScreen(lastScreen)} onRenew={handleContractRenewal} />
             </PageWrapper>
           )}
 
-          {currentScreen === 'TACTICS' && !isWorldCupMode && userTeam && (
+          {currentScreen === 'TACTICS' && userTeam && (
             <PageWrapper id="tactics">
               <TacticsScreen team={userTeam} onBack={() => setCurrentScreen(lastScreen)} onSave={handleTacticsSave} />
             </PageWrapper>
@@ -2015,122 +1618,13 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
             </PageWrapper>
           )}
 
-          {/* ========== COPA DO MUNDO SCREENS ========== */}
-          
-          {currentScreen === 'WC_SQUAD_CALLUP' && wcState && wcState.provisionalSquad && (
-            <PageWrapper id="wc_squad_callup">
-              <WCSquadCallupScreen
-                provisionalSquad={wcState.provisionalSquad}
-                userTeam={wcState.teams.find(t => t.id === wcState.userTeamId)!}
-                onConfirm={handleWCCallupConfirm}
-                onBack={() => setCurrentScreen('WC_TEAM_SELECT')}
-              />
-            </PageWrapper>
-          )}
-
-          {currentScreen === 'WC_TEAM_SELECT' && wcState && (
-            <PageWrapper id="wc_team_select">
-              <WorldCupTeamSelectScreen
-                teams={wcState.teams}
-                onSelect={handleWCTeamSelect}
-                onBack={handleQuitWorldCup}
-              />
-            </PageWrapper>
-          )}
-
-          {currentScreen === 'WC_DASHBOARD' && wcState && wcUserTeam && (
-            <PageWrapper id="wc_dashboard">
-              <WorldCupDashboardScreen
-                wcState={wcState}
-                userTeam={wcUserTeam}
-                onSimulate={handleWCAdvance}
-                onOpenSquad={() => { setLastScreen('WC_DASHBOARD'); setCurrentScreen('SQUAD'); }}
-                onOpenTactics={() => { setLastScreen('WC_DASHBOARD'); setCurrentScreen('TACTICS'); }}
-                onOpenGroups={() => setCurrentScreen('WC_GROUPS')}
-                onOpenBracket={() => setCurrentScreen('WC_BRACKET')}
-                onQuit={handleQuitWorldCup}
-                onBackHome={onBackHome}
-              />
-            </PageWrapper>
-          )}
-
-          {currentScreen === 'WC_GROUPS' && wcState && (
-            <PageWrapper id="wc_groups">
-              <WorldCupGroupScreen
-                groups={wcState.groups}
-                teams={wcState.teams}
-                fixtures={wcState.fixtures}
-                userTeamId={wcState.userTeamId}
-                currentMatchday={wcState.currentMatchday}
-                groupPhaseComplete={wcState.currentPhase !== 'GROUP'}
-                onBack={() => setCurrentScreen('WC_DASHBOARD')}
-              />
-            </PageWrapper>
-          )}
-
-          {currentScreen === 'WC_BRACKET' && wcState && (
-            <PageWrapper id="wc_bracket">
-              <WorldCupBracketScreen
-                bracket={wcState.bracket}
-                teams={wcState.teams}
-                userTeamId={wcState.userTeamId}
-                onBack={() => setCurrentScreen('WC_DASHBOARD')}
-              />
-            </PageWrapper>
-          )}
-
-          {currentScreen === 'WC_MATCH' && wcState && wcUserTeam && wcNextMatch?.opponent && (
-            <PageWrapper id="wc_match">
-              <MatchScreen
-                homeTeam={wcUserTeam}
-                awayTeam={wcNextMatch.opponent}
-                round={wcState.currentMatchday}
-                ddaFactor={1.0}
-                onFinish={handleWCMatchFinished}
-                mode="worldcup"
-                wcPhase={
-                  wcState.currentPhase === 'GROUP' 
-                    ? `Grupo ${wcState.groups.find(g => g.teamIds.includes(wcUserTeam.id))?.name} • ${PHASE_LABELS.GROUP}`
-                    : PHASE_LABELS[wcNextMatch.bracketMatch?.phase || wcState.currentPhase]
-                }
-              />
-            </PageWrapper>
-          )}
-
-          {currentScreen === 'WC_CHAMPION' && wcState && (
-            <PageWrapper id="wc_champion">
-              <WorldCupChampionScreen
-                wcState={wcState}
-                onQuit={handleQuitWorldCup}
-              />
-            </PageWrapper>
-          )}
-          
-          {currentScreen === 'WC_ELIMINATED' && wcState && (
-            <PageWrapper id="wc_eliminated">
-              <WorldCupEliminatedScreen
-                wcState={wcState}
-                onQuit={handleQuitWorldCup}
-              />
-            </PageWrapper>
-          )}
-
-          {/* Squad/Tactics em modo Copa usam o time WC */}
-          {isWorldCupMode && currentScreen === 'SQUAD' && wcUserTeam && (
-            <PageWrapper id="wc_squad">
-              <SquadScreen
-                team={wcUserTeam}
-                onBack={() => setCurrentScreen('WC_DASHBOARD')}
-                onRenew={() => { }}
-              />
-            </PageWrapper>
-          )}
-          {isWorldCupMode && currentScreen === 'TACTICS' && wcUserTeam && (
-            <PageWrapper id="wc_tactics">
-              <TacticsScreen
-                team={wcUserTeam}
-                onBack={() => setCurrentScreen('WC_DASHBOARD')}
-                onSave={handleTacticsSave}
+          {currentScreen === 'CONTINENTAL' && (
+            <PageWrapper id="continental">
+              <ContinentalScreen
+                continentalState={continentalState ?? initializeContinentalTournaments(teams, userTeamId)}
+                teams={teams}
+                userTeamId={userTeamId}
+                onBackToDashboard={() => setCurrentScreen('DASHBOARD')}
               />
             </PageWrapper>
           )}

@@ -36,6 +36,7 @@ interface Props {
   onOpenStaff: () => void;
   onOpenInfrastructure: () => void;
   onOpenYouth: () => void;
+  onOpenContinental?: () => void;
   onBackHome?: () => void;
   news?: NewsItem[];
   offers?: TransferOffer[];
@@ -45,7 +46,7 @@ export default function DashboardScreen({
   team, nextOpponent, round, funds, isWindowOpen, onboardingComplete, onCompleteOnboarding,
   onOpenSquad, onOpenMarket, onOpenFinance, onOpenCalendar,
   onOpenLeague, onOpenStats, onOpenNews, onOpenSettings, onSimulate, onOpenTactics, onOpenProfile,
-  onOpenTraining, onOpenStaff, onOpenInfrastructure, onOpenYouth,
+  onOpenTraining, onOpenStaff, onOpenInfrastructure, onOpenYouth, onOpenContinental,
   onBackHome,
   news = [], offers = []
 }: Props) {
@@ -126,7 +127,7 @@ export default function DashboardScreen({
     { label: 'Treino', icon: Zap, onClick: onOpenTraining, color: 'text-orange-400 bg-orange-400/10' },
     { label: 'Staff', icon: ShieldAlert, onClick: onOpenStaff, color: 'text-fuchsia-400 bg-fuchsia-400/10' },
     { label: 'Infra', icon: Building2, onClick: onOpenInfrastructure, color: 'text-pink-400 bg-pink-400/10' },
-    { label: 'Base', icon: Trophy, onClick: onOpenYouth, color: 'text-cyan-400 bg-cyan-400/10' },
+    { label: 'CONMEBOL', icon: Trophy, onClick: onOpenContinental, color: 'text-yellow-400 bg-yellow-400/10' },
   ];
 
   return (
@@ -136,6 +137,10 @@ export default function DashboardScreen({
           teamName={team.name}
           nextOpponentName={nextOpponent.name}
           onComplete={onCompleteOnboarding}
+          onPlay={() => {
+            onCompleteOnboarding();
+            onSimulate();
+          }}
         />
       )}
 

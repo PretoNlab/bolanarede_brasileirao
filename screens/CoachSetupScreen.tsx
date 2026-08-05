@@ -47,18 +47,18 @@ const STYLES = [
 ];
 
 export default function CoachSetupScreen({ onComplete, onBack }: Props) {
-    const [step, setStep] = useState(0); // 0: Intro, 1: Name, 2: Style, 3: Success
+    const [step, setStep] = useState(1); // 1: Name, 2: Style
     const [name, setName] = useState('');
     const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
 
-    const totalSteps = 4;
-    const progress = ((step + 1) / totalSteps) * 100;
+    const totalSteps = 2;
+    const progress = (step / totalSteps) * 100;
 
     const handleNext = () => {
         if (step === 1 && !name.trim()) return toast.error("Como devemos te chamar?");
         if (step === 2 && !selectedStyle) return toast.error("Escolha um estilo!");
 
-        if (step === 3) {
+        if (step === 2) {
             const styleObj = STYLES.find(s => s.id === selectedStyle)!;
             onComplete({
                 name,
@@ -79,7 +79,7 @@ export default function CoachSetupScreen({ onComplete, onBack }: Props) {
             <div className="px-8 pt-16 pb-6">
                 <div className="flex justify-between items-end mb-3 px-1">
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary font-display">SISTEMA DE ONBOARDING</span>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant opacity-40 font-display">PASSO {step + 1} DE {totalSteps}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant opacity-40 font-display">PASSO {step} DE {totalSteps}</span>
                 </div>
                 <div className="h-1.5 bg-surface-low rounded-full overflow-hidden border border-white/5 shadow-inner">
                     <motion.div
@@ -256,13 +256,13 @@ export default function CoachSetupScreen({ onComplete, onBack }: Props) {
                     onClick={handleNext}
                     className={clsx(
                         "w-full h-16 rounded-[2rem] font-bold uppercase tracking-[0.3em] font-display shadow-2xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group",
-                        step === 3
+                        step === 2
                             ? "bg-[#1FB185] text-black shadow-[#1FB185]/20 hover:bg-[#1FB185]/90"
                             : "bg-white text-black hover:bg-white/90"
                     )}
                 >
-                    <span className="relative z-10">{step === 3 ? "INICIAR CARREIRA" : step === 0 ? "VAMOS LÁ" : "CONFIRMAR"}</span>
-                    {step !== 3 && <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />}
+                    <span className="relative z-10">{step === 2 ? "ESCOLHER CLUBE" : "CONTINUAR"}</span>
+                    <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 </motion.button>
             </footer>

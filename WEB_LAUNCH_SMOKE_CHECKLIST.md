@@ -11,7 +11,7 @@ Use esta checklist antes de publicar uma nova versão web.
 ## Funil público
 
 - Abrir `/` e validar hero, CTAs e navegação para `/play`.
-- Validar `Começar`, `Continuar` e `Copa do Mundo`.
+- Validar `Começar`, `Continuar` e a entrada de `CONMEBOL` no dashboard.
 - Confirmar que a landing carrega com a paleta bege e sem blocos quebrados.
 
 ## Fluxo principal do jogo
@@ -20,6 +20,7 @@ Use esta checklist antes de publicar uma nova versão web.
 - Continuar uma carreira já salva.
 - Abrir `Tática`, `Elenco`, `Mercado`, `Finanças` e `Ajustes`.
 - Simular uma partida e retornar ao dashboard sem travar.
+- Confirmar que `bolanarede_perf_events` registra `start_clicked`, `team_selected`, `prematch_opened` e `first_match_started`.
 
 ## Saves e ajustes
 
@@ -30,12 +31,12 @@ Use esta checklist antes de publicar uma nova versão web.
 - Reiniciar a carreira e confirmar que o fluxo volta ao estado inicial.
 - Confirmar em `Ajustes` que apenas o fluxo local está exposto, sem promessa de sincronização por conta.
 
-## Copa do Mundo
+## Competições continentais
 
-- Entrar no modo Copa.
-- Passar pela fase de grupos sem repetir adversário.
-- Verificar que goleiros não aparecem como artilheiros.
-- Verificar que a final fecha corretamente e a tela do campeão abre.
+- Abrir a tela `CONMEBOL`.
+- Alternar entre Libertadores e Sul-Americana.
+- Verificar que grupos, classificação e premiações aparecem sem times desconhecidos.
+- Iniciar uma nova temporada e confirmar que a classificação continental foi recalculada.
 
 ## Mobile
 

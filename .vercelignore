@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+.git
+.github
+.vercel
+android
+dist
+node_modules
+scratch
+test_wiki_*.py
+prelistas_copa_2026_atualizadas_2025_2026.csv
+*.md

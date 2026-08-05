@@ -1,5 +1,7 @@
 
 import { Team, Player, Fixture, DetailedPosition, TacticalInstructions } from './types';
+import { REAL_BRAZILIAN_PLAYERS } from './realBrazilianRosters';
+import { selectBestLineupForFormation } from './engine/tacticsEngine';
 
 const firstNames = ['Lucas', 'Matheus', 'Gabriel', 'Pedro', 'João', 'Felipe', 'Rafael', 'Daniel', 'Bruno', 'Thiago', 'Marcos', 'André', 'Luiz', 'Gustavo', 'Eduardo', 'Caio', 'Enzo', 'Arthur', 'Diego', 'Victor', 'Ruan', 'Igor', 'Breno', 'Talles', 'Yuri'];
 const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues', 'Ferreira', 'Almeida', 'Pereira', 'Lima', 'Gomes', 'Costa', 'Martins', 'Araújo', 'Barbosa', 'Ramos', 'Jesus', 'Alves', 'Rocha', 'Nascimento', 'Teixeira', 'Moraes'];
@@ -49,6 +51,8 @@ const generatePlayer = (pos: Player['position'], baseRating: number): Player => 
     goals: 0,
     assists: 0,
     potential,
+    dataSource: 'GENERATED',
+    attributesEstimated: true,
     contractRounds: Math.floor(Math.random() * 20) + 15,
     history: [],
     seasonStats: {
@@ -60,8 +64,20 @@ const generatePlayer = (pos: Player['position'], baseRating: number): Player => 
   };
 };
 
-const generateStats = (detPos: DetailedPosition, ovr: number, age: number) => {
-  const r = (base: number) => Math.min(99, Math.max(10, base + Math.floor(Math.random() * 12) - 6));
+const createSeededRandom = (seed: string) => {
+  let state = [...seed].reduce((hash, char) => Math.imul(hash ^ char.charCodeAt(0), 16777619), 2166136261) >>> 0;
+  return () => {
+    state += 0x6D2B79F5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const generateStats = (detPos: DetailedPosition, ovr: number, age: number, seed?: string) => {
+  const random = seed ? createSeededRandom(seed) : Math.random;
+  const r = (base: number) => Math.min(99, Math.max(10, base + Math.floor(random() * 12) - 6));
   
   // Initialize with mid values
   const stats = {
@@ -119,16 +135,43 @@ const DEFAULT_TACTICAL_INSTRUCTIONS: TacticalInstructions = {
   tempo: 'PADRAO',
 };
 
-const generateRoster = (teamRating: number): Player[] => {
+const generateRoster = (teamRating: number, teamId?: string): Player[] => {
   const roster: Player[] = [];
-  ['GOL', 'GOL'].forEach(p => roster.push(generatePlayer(p as any, teamRating)));
-  ['ZAG', 'ZAG', 'ZAG', 'ZAG'].forEach(p => roster.push(generatePlayer(p as any, teamRating)));
-  ['LAT', 'LAT', 'LAT', 'LAT'].forEach(p => roster.push(generatePlayer(p as any, teamRating)));
-  ['VOL', 'VOL', 'VOL', 'VOL'].forEach(p => roster.push(generatePlayer(p as any, teamRating)));
-  ['MEI', 'MEI', 'MEI', 'MEI'].forEach(p => roster.push(generatePlayer(p as any, teamRating)));
-  ['ATA', 'ATA', 'ATA', 'ATA'].forEach(p => roster.push(generatePlayer(p as any, teamRating)));
+  const realSeeds = teamId ? REAL_BRAZILIAN_PLAYERS[teamId] : undefined;
+
+  if (realSeeds && realSeeds.length > 0) {
+    realSeeds.forEach((s, idx) => {
+      const baseVal = Math.pow(s.ovr, 3.2) * 12 * (s.age < 23 ? 1.3 : s.age > 31 ? 0.75 : 1);
+      roster.push({
+        id: `${teamId}-real-${idx + 1}`,
+        name: s.name,
+        position: s.pos,
+        mainPosition: s.mainPos,
+        secondaryPositions: [],
+        preferredFoot: s.foot || 'RIGHT',
+        age: s.age,
+        overall: s.ovr,
+        energy: 100,
+        status: 'fit',
+        yellowCards: 0,
+        redCards: 0,
+        marketValue: s.marketValue || Math.round(baseVal / 1000) * 1000,
+        goals: 0,
+        assists: 0,
+        potential: Math.min(99, s.ovr + (s.age < 22 ? 8 : 2)),
+        dataSource: s.source === 'CBF+Transfermarkt' ? 'CBF_TRANSFERMARKT' : 'CBF_MODEL',
+        attributesEstimated: true,
+        contractRounds: 38,
+        history: [],
+        seasonStats: { yellowCards: 0, redCards: 0, matchesSuspended: 0 },
+        stats: generateStats(s.mainPos, s.ovr, s.age, `${teamId}:${s.name}`)
+      });
+    });
+  }
+
   return roster.sort((a, b) => b.overall - a.overall);
 };
+
 
 const INITIAL_TEAM_SEEDS: Omit<Team, 'instructions'>[] = [
   {
@@ -1359,8 +1402,8 @@ INITIAL_TEAMS.forEach(team => {
     team.roster = roster.sort((a, b) => b.overall - a.overall);
   } else {
     const rating = Math.floor((team.attack + team.defense) / 2);
-    team.roster = generateRoster(rating);
-    team.lineup = team.roster.slice(0, 11).map(p => p.id);
+    team.roster = generateRoster(rating, team.id);
+    team.lineup = selectBestLineupForFormation(team.roster, team.formation);
   }
 });
 

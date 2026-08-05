@@ -1,15 +1,14 @@
 import React from 'react';
-import { Globe, History, Play, Trophy } from 'lucide-react';
+import { History, Play } from 'lucide-react';
 
 interface Props {
   onStart: () => void;
   onContinue: () => void;
-  onWorldCup: () => void;
   hasSave: boolean;
   onBackHome: () => void;
 }
 
-export default function GameHomeScreen({ onStart, onContinue, onWorldCup, hasSave, onBackHome }: Props) {
+export default function GameHomeScreen({ onStart, onContinue, hasSave, onBackHome }: Props) {
   return (
     <div className="flex h-screen w-full flex-col items-center justify-between overflow-hidden bg-[#050505] p-8 text-white relative">
       <div className="absolute top-[-10%] right-[-10%] h-64 w-64 rounded-full bg-[#1FB185]/10 blur-[100px]" />
@@ -55,14 +54,6 @@ export default function GameHomeScreen({ onStart, onContinue, onWorldCup, hasSav
             INICIAR JOGO
           </button>
         )}
-
-        <button
-          onClick={onWorldCup}
-          className="w-full rounded-[24px] bg-[#1FB185] py-5 text-black font-black flex items-center justify-center gap-4 shadow-[0_0_40px_rgba(31,177,133,0.3)] transition-all hover:scale-[1.02] active:scale-95"
-        >
-          <Globe size={18} />
-          <span className="text-[12px] uppercase tracking-[0.14em]">World Cup 2026</span>
-        </button>
 
         {hasSave && (
           <button

@@ -1,346 +1,236 @@
 import React from 'react';
-import { INITIAL_TEAMS } from '../data';
-import { Team } from '../types';
-import DashboardScreen from './DashboardScreen';
-import MarketScreen from './MarketScreen';
-import LeagueScreen from './LeagueScreen';
-import FinanceScreen from './FinanceScreen';
+import { ArrowUpRight, Banknote, CalendarDays, Search, ShieldCheck, Users } from 'lucide-react';
 
-const noop = () => {};
+const standings = [
+  { position: 1, team: 'Bahia', logo: '/logos/landing/bahia.png', points: 24, active: true },
+  { position: 2, team: 'Palmeiras', logo: '/logos/landing/palmeiras.png', points: 22 },
+  { position: 3, team: 'Flamengo', logo: '/logos/landing/flamengo.png', points: 21 },
+  { position: 4, team: 'Botafogo', logo: '/logos/landing/botafogo.png', points: 20 },
+];
 
-const cloneTeam = (id: string): Team => {
-  const found = INITIAL_TEAMS.find((team) => team.id === id);
-  if (!found) {
-    throw new Error(`Missing showcase team: ${id}`);
-  }
-  return JSON.parse(JSON.stringify(found)) as Team;
-};
+const squad = [
+  { name: 'Everton Ribeiro', position: 'MEI', rating: 79 },
+  { name: 'Cauly', position: 'MEI', rating: 77 },
+  { name: 'Jean Lucas', position: 'MC', rating: 76 },
+];
 
-const buildShowcaseTeams = () => {
-  const bahia = cloneTeam('bahia');
-  const santos = cloneTeam('santos');
-  const palmeiras = cloneTeam('palmeiras');
-  const flamengo = cloneTeam('flamengo');
-  const botafogo = cloneTeam('botafogo');
-  const cruzeiro = cloneTeam('cruzeiro');
-  const atleticoMg = cloneTeam('atletico-mg');
-  const corinthians = cloneTeam('corinthians');
-  const gremio = cloneTeam('gremio');
-  const freeAgent = cloneTeam('free_agent');
+function TeamLogo({ src, name, size = 'md' }: { src: string; name: string; size?: 'sm' | 'md' | 'lg' }) {
+  const dimensions = size === 'lg' ? 'h-14 w-14' : size === 'sm' ? 'h-7 w-7' : 'h-9 w-9';
+  return <img src={src} alt={name} className={`${dimensions} shrink-0 object-contain`} decoding="async" />;
+}
 
-  bahia.points = 24;
-  bahia.played = 11;
-  bahia.won = 7;
-  bahia.drawn = 3;
-  bahia.lost = 1;
-  bahia.gf = 18;
-  bahia.ga = 8;
-  bahia.moral = 88;
-  bahia.roster[0].goals = 7;
-  bahia.roster[1].goals = 5;
-
-  palmeiras.points = 22;
-  palmeiras.played = 11;
-  palmeiras.won = 6;
-  palmeiras.drawn = 4;
-  palmeiras.lost = 1;
-  palmeiras.gf = 17;
-  palmeiras.ga = 9;
-
-  flamengo.points = 21;
-  flamengo.played = 11;
-  flamengo.won = 6;
-  flamengo.drawn = 3;
-  flamengo.lost = 2;
-  flamengo.gf = 16;
-  flamengo.ga = 10;
-  flamengo.roster[0].goals = 6;
-
-  botafogo.points = 20;
-  botafogo.played = 11;
-  botafogo.won = 6;
-  botafogo.drawn = 2;
-  botafogo.lost = 3;
-  botafogo.gf = 15;
-  botafogo.ga = 11;
-
-  cruzeiro.points = 18;
-  cruzeiro.played = 11;
-  cruzeiro.won = 5;
-  cruzeiro.drawn = 3;
-  cruzeiro.lost = 3;
-  cruzeiro.gf = 13;
-  cruzeiro.ga = 10;
-
-  atleticoMg.points = 17;
-  atleticoMg.played = 11;
-  atleticoMg.won = 5;
-  atleticoMg.drawn = 2;
-  atleticoMg.lost = 4;
-  atleticoMg.gf = 14;
-  atleticoMg.ga = 12;
-
-  corinthians.points = 16;
-  corinthians.played = 11;
-  corinthians.won = 4;
-  corinthians.drawn = 4;
-  corinthians.lost = 3;
-  corinthians.gf = 11;
-  corinthians.ga = 10;
-
-  gremio.points = 14;
-  gremio.played = 11;
-  gremio.won = 4;
-  gremio.drawn = 2;
-  gremio.lost = 5;
-  gremio.gf = 10;
-  gremio.ga = 13;
-
-  santos.points = 12;
-  santos.played = 11;
-  santos.won = 3;
-  santos.drawn = 3;
-  santos.lost = 5;
-  santos.gf = 9;
-  santos.ga = 14;
-  santos.moral = 71;
-
-  freeAgent.roster = freeAgent.roster.slice(0, 18);
-
-  return [bahia, palmeiras, flamengo, botafogo, cruzeiro, atleticoMg, corinthians, gremio, santos, freeAgent];
-};
-
-const showcaseTeams = buildShowcaseTeams();
-const showcaseUserTeam = showcaseTeams.find((team) => team.id === 'bahia')!;
-const showcaseOpponent = showcaseTeams.find((team) => team.id === 'santos')!;
-
-function ShowcasePhone({
-  children,
-  scale = 0.72,
-  className = '',
-}: {
-  children: React.ReactNode;
-  scale?: number;
-  className?: string;
-}) {
-  const width = Math.round(390 * scale);
-  const height = Math.round(844 * scale);
-
+export function HeroShowcase() {
   return (
-    <div className={`relative ${className}`} style={{ width, height }}>
-      <div
-        className="absolute left-1/2 top-0 overflow-hidden rounded-[48px] bg-[#0A0A0A] p-2.5 shadow-[0_40px_100px_rgba(0,0,0,0.8),0_0_30px_rgba(16,185,129,0.1)] border border-white/5"
-        style={{
-          width: 390,
-          height: 844,
-          transform: `translateX(-50%) scale(${scale})`,
-          transformOrigin: 'top center',
-        }}
-      >
-        <div className="absolute left-1/2 top-0 z-20 h-7 w-32 -translate-x-1/2 rounded-b-3xl bg-[#0A0A0A] border-x border-b border-white/5" />
-        <div className="relative h-full overflow-hidden rounded-[38px] bg-[#050505]">
-          {children}
+    <div
+      aria-label="Prévia do painel do Bola na Rede Manager"
+      className="landing-console mx-auto w-full max-w-[1080px] overflow-hidden border border-white/15 bg-[#111512] shadow-[0_34px_90px_rgba(0,0,0,0.45)]"
+    >
+      <div className="flex h-11 items-center justify-between border-b border-white/10 bg-[#181d19] px-4 sm:px-5">
+        <div className="flex items-center gap-2.5">
+          <img src="/logo.svg" alt="" className="h-6 w-6" />
+          <span className="text-[11px] font-extrabold text-white">Bola na Rede</span>
+          <span className="hidden text-[10px] font-semibold text-white/40 sm:inline">Carreira 2026</span>
+        </div>
+        <div className="flex items-center gap-2 text-[10px] font-bold text-[#8ee9bb]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#3ee58f]" />
+          SAVE LOCAL
+        </div>
+      </div>
+
+      <div className="grid min-h-[370px] grid-cols-1 md:grid-cols-[150px_1fr]">
+        <aside className="hidden border-r border-white/10 bg-[#0c0f0d] p-4 md:block">
+          <div className="mb-6 flex items-center gap-3">
+            <TeamLogo src="/logos/landing/bahia.png" name="Bahia" />
+            <div>
+              <div className="text-[11px] font-extrabold text-white">Bahia</div>
+              <div className="mt-0.5 text-[9px] font-semibold text-white/40">Temporada 2026</div>
+            </div>
+          </div>
+          {['Visão geral', 'Elenco', 'Táticas', 'Mercado', 'Competições'].map((item, index) => (
+            <div
+              key={item}
+              className={`mb-1 flex h-9 items-center px-3 text-[10px] font-bold ${
+                index === 0 ? 'bg-[#1f6d48] text-white' : 'text-white/44'
+              }`}
+            >
+              {item}
+            </div>
+          ))}
+        </aside>
+
+        <div className="bg-[#eef1eb] p-3 sm:p-5">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <div className="text-[9px] font-extrabold uppercase text-[#657067]">Rodada 11 · Série A</div>
+              <div className="mt-1 text-lg font-black text-[#121713]">Central do treinador</div>
+            </div>
+            <div className="hidden text-right sm:block">
+              <div className="text-[9px] font-bold text-[#657067]">Próximo jogo</div>
+              <div className="mt-1 text-[11px] font-black text-[#121713]">Hoje · 20:30</div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="border border-[#d6dbd4] bg-white p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-extrabold uppercase text-[#657067]">Próxima partida</span>
+                <span className="bg-[#e5f4eb] px-2 py-1 text-[9px] font-black text-[#14603d]">CASA</span>
+              </div>
+              <div className="mt-5 flex items-center justify-center gap-6 sm:gap-10">
+                <div className="text-center">
+                  <TeamLogo src="/logos/landing/bahia.png" name="Bahia" size="lg" />
+                  <div className="mt-2 text-[11px] font-black text-[#151a16]">Bahia</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-[9px] font-bold text-[#657067]">BRASILEIRÃO</div>
+                  <div className="my-1 text-xl font-black text-[#151a16]">VS</div>
+                  <div className="text-[9px] font-bold text-[#657067]">Fonte Nova</div>
+                </div>
+                <div className="text-center">
+                  <TeamLogo src="/logos/landing/santos.png" name="Santos" size="lg" />
+                  <div className="mt-2 text-[11px] font-black text-[#151a16]">Santos</div>
+                </div>
+              </div>
+              <div className="mt-5 flex h-10 w-full items-center justify-center gap-2 bg-[#e32935] text-[10px] font-black uppercase text-white">
+                Preparar partida <ArrowUpRight className="h-3.5 w-3.5" />
+              </div>
+            </div>
+
+            <div className="border border-[#d6dbd4] bg-white p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-[9px] font-extrabold uppercase text-[#657067]">Classificação</span>
+                <span className="text-[9px] font-bold text-[#14603d]">Ver tabela</span>
+              </div>
+              {standings.map((row) => (
+                <div
+                  key={row.team}
+                  className={`grid h-10 grid-cols-[20px_28px_1fr_auto] items-center gap-2 border-t border-[#edf0ec] text-[10px] ${
+                    row.active ? 'font-black text-[#14603d]' : 'font-bold text-[#252c27]'
+                  }`}
+                >
+                  <span>{row.position}</span>
+                  <TeamLogo src={row.logo} name={row.team} size="sm" />
+                  <span>{row.team}</span>
+                  <span>{row.points} pts</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-3 gap-2 sm:gap-3">
+            {[
+              ['Moral', '88%', '#14603d'],
+              ['Caixa', 'R$ 1,2 mi', '#2350a3'],
+              ['Confiança', 'Alta', '#b91c2b'],
+            ].map(([label, value, color]) => (
+              <div key={label} className="border border-[#d6dbd4] bg-white px-3 py-2.5">
+                <div className="text-[8px] font-bold text-[#737c74]">{label}</div>
+                <div className="mt-1 text-[11px] font-black" style={{ color }}>{value}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-export function HeroShowcase() {
+const previewPanels = [
+  {
+    icon: Users,
+    label: 'Elenco',
+    title: 'Decida quem joga',
+    description: 'Posição, idade, valor e atributos aparecem sem esconder a informação importante.',
+    content: (
+      <div className="mt-5 border border-[#dce1dc] bg-white">
+        {squad.map((player) => (
+          <div key={player.name} className="grid h-12 grid-cols-[36px_1fr_auto] items-center border-b border-[#edf0ed] px-3 last:border-0">
+            <span className="text-[9px] font-black text-[#1f6d48]">{player.position}</span>
+            <span className="text-[11px] font-extrabold text-[#171c18]">{player.name}</span>
+            <span className="text-[11px] font-black text-[#171c18]">{player.rating}</span>
+          </div>
+        ))}
+      </div>
+    ),
+  },
+  {
+    icon: Search,
+    label: 'Mercado',
+    title: 'Reforce com critério',
+    description: 'Filtre o mercado e compare opções antes de comprometer o orçamento da temporada.',
+    content: (
+      <div className="mt-5 border border-[#dce1dc] bg-white p-3">
+        <div className="flex h-10 items-center gap-2 border border-[#dce1dc] px-3 text-[10px] font-semibold text-[#747d75]">
+          <Search className="h-3.5 w-3.5" /> Buscar jogador ou posição
+        </div>
+        <div className="mt-3 flex items-center justify-between border-t border-[#edf0ed] pt-3">
+          <div>
+            <div className="text-[11px] font-black text-[#171c18]">Atacante · 24 anos</div>
+            <div className="mt-1 text-[9px] font-bold text-[#747d75]">Valor estimado</div>
+          </div>
+          <div className="text-[12px] font-black text-[#1f6d48]">R$ 4,8 mi</div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    icon: Banknote,
+    label: 'Clube',
+    title: 'Sustente o projeto',
+    description: 'Folha, bilheteria e estrutura influenciam até onde a ambição pode chegar.',
+    content: (
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        <div className="border border-[#dce1dc] bg-white p-3">
+          <div className="text-[9px] font-bold text-[#747d75]">Saldo</div>
+          <div className="mt-2 text-[13px] font-black text-[#1f6d48]">R$ 12,4 mi</div>
+        </div>
+        <div className="border border-[#dce1dc] bg-white p-3">
+          <div className="text-[9px] font-bold text-[#747d75]">Folha</div>
+          <div className="mt-2 text-[13px] font-black text-[#b91c2b]">R$ 3,1 mi</div>
+        </div>
+      </div>
+    ),
+  },
+];
+
+export function TriplePhoneShowcase() {
   return (
-    <div aria-hidden="true" inert className="pointer-events-none select-none">
-      <ShowcasePhone scale={0.72}>
-        <DashboardScreen
-          team={showcaseUserTeam}
-          nextOpponent={showcaseOpponent}
-          standings={showcaseTeams.filter((team) => team.division === 1)}
-          round={11}
-          funds={1200000}
-          onboardingComplete={true}
-          isWindowOpen={true}
-          onCompleteOnboarding={noop}
-          onOpenSquad={noop}
-          onOpenMarket={noop}
-          onOpenFinance={noop}
-          onOpenCalendar={noop}
-          onOpenLeague={noop}
-          onOpenStats={noop}
-          onOpenNews={noop}
-          onOpenSettings={noop}
-          onSimulate={noop}
-          onOpenTactics={noop}
-          onOpenProfile={noop}
-          onOpenTraining={noop}
-          onOpenStaff={noop}
-          onOpenInfrastructure={noop}
-          onOpenYouth={noop}
-          news={[
-            {
-              id: 'showcase-news-1',
-              round: 11,
-              title: 'Clima em alta',
-              body: 'A torcida está comprando a campanha.',
-              category: 'MORAL',
-              isRead: false,
-            },
-          ]}
-        />
-      </ShowcasePhone>
+    <div className="grid gap-px overflow-hidden border border-[#d3d9d3] bg-[#d3d9d3] lg:grid-cols-3">
+      {previewPanels.map((panel) => {
+        const Icon = panel.icon;
+        return (
+          <article key={panel.title} className="bg-[#f4f6f2] p-6 sm:p-7">
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-[#1f6d48]">
+              <Icon className="h-4 w-4" /> {panel.label}
+            </div>
+            <h3 className="mt-4 text-xl font-black text-[#121713]">{panel.title}</h3>
+            <p className="mt-2 min-h-[48px] text-[13px] font-medium leading-6 text-[#5f6961]">{panel.description}</p>
+            {panel.content}
+          </article>
+        );
+      })}
     </div>
   );
 }
 
 export function SecondaryShowcase() {
-  return (
-    <section className="mx-auto mt-24 max-w-6xl">
-      <div className="max-w-3xl">
-        <div className="text-[11px] font-black uppercase tracking-[0.24em] text-black/38">Segunda dobra</div>
-        <h2 className="font-editorial mt-4 text-[2.5rem] font-bold leading-[0.92] tracking-[-0.08em] text-[#111111] sm:text-[3.4rem]">
-          O produto aparece como ele é.
-        </h2>
-        <p className="mt-4 max-w-2xl text-[15px] font-medium leading-7 text-black/48">
-          A campanha principal reúne mercado, tabela, caixa e gestão em um único fluxo. A Copa do Mundo 2026 entra
-          como modo paralelo para sessões mais curtas e mais intensas.
-        </p>
-      </div>
-
-      <div className="mt-12 grid gap-10 lg:grid-cols-3">
-        <div>
-          <div className="mb-4">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-black/40">Mercado</div>
-            <div className="mt-1 text-[15px] font-medium leading-6 text-black/50">
-              Explore opções, leia o valor do mercado e ataque a janela quando aparecer a peça certa.
-            </div>
-          </div>
-          <div aria-hidden="true" inert className="pointer-events-none select-none">
-            <ShowcasePhone scale={0.5}>
-              <MarketScreen
-                userTeam={showcaseUserTeam}
-                allTeams={showcaseTeams}
-                funds={1200000}
-                isWindowOpen={true}
-                offers={[]}
-                logs={[]}
-                onBack={noop}
-                onBuy={noop}
-                onLoanPlayer={noop}
-                onSell={noop}
-                onAcceptOffer={noop}
-                onDeclineOffer={noop}
-              />
-            </ShowcasePhone>
-          </div>
-        </div>
-
-        <div>
-          <div className="mb-4">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-black/40">Liga e stats</div>
-            <div className="mt-1 text-[15px] font-medium leading-6 text-black/50">
-              Veja a tabela ganhar forma, acompanhe a corrida pelo topo e sinta o peso de cada rodada.
-            </div>
-          </div>
-          <div aria-hidden="true" inert className="pointer-events-none select-none">
-            <ShowcasePhone scale={0.5}>
-              <LeagueScreen
-                teams={showcaseTeams.filter((team) => team.division === 1)}
-                userTeamId="bahia"
-                onBack={noop}
-              />
-            </ShowcasePhone>
-          </div>
-        </div>
-
-        <div>
-          <div className="mb-4">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-black/40">Finanças</div>
-            <div className="mt-1 text-[15px] font-medium leading-6 text-black/50">
-              Ajuste ticket, busque fôlego no caixa e sustente a campanha sem desmontar o projeto.
-            </div>
-          </div>
-          <div aria-hidden="true" inert className="pointer-events-none select-none">
-            <ShowcasePhone scale={0.5}>
-              <FinanceScreen
-                team={showcaseUserTeam}
-                funds={1200000}
-                ticketPrice={50}
-                onUpdateTicketPrice={noop}
-                onBack={noop}
-                onLoan={noop}
-                onExpandStadium={noop}
-              />
-            </ShowcasePhone>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+  return <TriplePhoneShowcase />;
 }
 
-export function TriplePhoneShowcase() {
+export function ProductFacts() {
+  const facts = [
+    { icon: CalendarDays, text: 'Calendário nacional e continental' },
+    { icon: ShieldCheck, text: 'Save local no navegador' },
+    { icon: Users, text: 'Elencos de julho' },
+  ];
+
   return (
-    <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
-      <div className="flex flex-col items-center lg:items-start">
-        <div className="mb-4 text-center lg:text-left">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#7b6d5d]">Mercado</div>
-          <div className="mt-1 max-w-[220px] text-[14px] font-semibold leading-6 text-[#5f5446]">
-            Leia a janela e ataque quando a peça certa aparecer.
-          </div>
-        </div>
-        <div aria-hidden="true" inert className="pointer-events-none select-none">
-          <ShowcasePhone scale={0.54}>
-            <MarketScreen
-              userTeam={showcaseUserTeam}
-              allTeams={showcaseTeams}
-              funds={1200000}
-              isWindowOpen={true}
-              offers={[]}
-              logs={[]}
-              onBack={noop}
-              onBuy={noop}
-              onLoanPlayer={noop}
-              onSell={noop}
-              onAcceptOffer={noop}
-              onDeclineOffer={noop}
-            />
-          </ShowcasePhone>
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center">
-        <div className="mb-4 text-center">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#7b6d5d]">Liga e stats</div>
-          <div className="mt-1 max-w-[220px] text-[14px] font-semibold leading-6 text-[#5f5446]">
-            Veja a tabela apertar e o peso real de cada rodada.
-          </div>
-        </div>
-        <div aria-hidden="true" inert className="pointer-events-none select-none">
-          <ShowcasePhone scale={0.54}>
-            <LeagueScreen teams={showcaseTeams.filter((team) => team.division === 1)} userTeamId="bahia" onBack={noop} />
-          </ShowcasePhone>
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center lg:items-end">
-        <div className="mb-4 text-center lg:text-left">
-          <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#7b6d5d]">Finanças</div>
-          <div className="mt-1 max-w-[220px] text-[14px] font-semibold leading-6 text-[#5f5446]">
-            Busque fôlego no caixa sem desmontar o projeto.
-          </div>
-        </div>
-        <div aria-hidden="true" inert className="pointer-events-none select-none">
-          <ShowcasePhone scale={0.54}>
-            <FinanceScreen
-              team={showcaseUserTeam}
-              funds={1200000}
-              ticketPrice={50}
-              onUpdateTicketPrice={noop}
-              onBack={noop}
-              onLoan={noop}
-              onExpandStadium={noop}
-            />
-          </ShowcasePhone>
-        </div>
-      </div>
+    <div className="flex flex-wrap gap-x-6 gap-y-3">
+      {facts.map(({ icon: Icon, text }) => (
+        <span key={text} className="flex items-center gap-2 text-[11px] font-bold text-white/58">
+          <Icon className="h-3.5 w-3.5 text-[#3ee58f]" /> {text}
+        </span>
+      ))}
     </div>
   );
 }

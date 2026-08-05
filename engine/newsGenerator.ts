@@ -284,10 +284,10 @@ export function generateRoundNews(input: NewsGeneratorInput): NewsGeneratorOutpu
     });
   }
 
-  // 8) World Cup flavor
+  // 8) Continental flavor
   if (season === 2026) {
-    if (round === 10) newsList.push({ id: Math.random().toString(36), round, title: 'Copa 2026: Olheiros no Estádio', body: 'A comissão técnica da Seleção enviou olheiros para observar destaques do campeonato. Todos querem uma vaga na Copa!', category: 'BOARD', isRead: false });
-    if (round === 18) newsList.push({ id: Math.random().toString(36), round, title: 'Pausa para a Copa Aproxima-se', body: 'O calendário ficará apertado devido ao Mundial nos EUA. Prepare o elenco para a maratona.', category: 'BOARD', isRead: false });
+    if (round === 10) newsList.push({ id: Math.random().toString(36), round, title: 'CONMEBOL: olheiros no estádio', body: 'Clubes sul-americanos observam destaques do campeonato. Uma boa campanha pode render vaga e vitrine continental.', category: 'BOARD', isRead: false });
+    if (round === 18) newsList.push({ id: Math.random().toString(36), round, title: 'Noites continentais no horizonte', body: 'A reta final pode decidir quem entra na Libertadores e quem fica com a Sul-Americana. Cada ponto pesa.', category: 'BOARD', isRead: false });
   }
 
   // 9) Ensure at least 1 news per round

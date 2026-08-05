@@ -5,6 +5,7 @@ import { ArrowLeft, Play, ShieldAlert, Swords, Users, AlertTriangle, ChevronRigh
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { hapticSelection, impactHeavy } from '../haptics';
+import { calculateDynamicTeamStrength } from '../engine/tacticsEngine';
 
 interface Props {
     userTeam: Team;
@@ -18,8 +19,10 @@ interface Props {
 export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatch, onTactics, onSquad }: Props) {
 
     // Calculate Team Power
-    const userPower = (userTeam.attack + userTeam.defense) / 2;
-    const oppPower = (opponent.attack + opponent.defense) / 2;
+    const userStrength = useMemo(() => calculateDynamicTeamStrength(userTeam), [userTeam]);
+    const opponentStrength = useMemo(() => calculateDynamicTeamStrength(opponent), [opponent]);
+    const userPower = (userStrength.att + userStrength.def + userStrength.control) / 3;
+    const oppPower = (opponentStrength.att + opponentStrength.def + opponentStrength.control) / 3;
     const powerDiff = userPower - oppPower;
 
     // Check for issues in the lineup (Injuries/Suspensions)
@@ -45,7 +48,10 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
 
     const canStart = lineupIssues.length === 0;
 
-    const TeamCard = ({ team, isUser }: { team: Team, isUser: boolean }) => (
+    const TeamCard = ({ team, isUser }: { team: Team, isUser: boolean }) => {
+        const strength = isUser ? userStrength : opponentStrength;
+        const power = (strength.att + strength.def + strength.control) / 3;
+        return (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -75,7 +81,7 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
                     <div className="h-1.5 w-16 bg-white/5 rounded-full overflow-hidden border border-white/5">
                         <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(100, (team.attack + team.defense) / 2)}%` }}
+                            animate={{ width: `${Math.min(100, power)}%` }}
                             transition={{ duration: 1, delay: 0.2 }}
                             className={clsx("h-full", isUser ? "bg-primary" : "bg-white/40")}
                         />
@@ -83,7 +89,8 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
                 </div>
             </div>
         </motion.div>
-    );
+        );
+    };
 
     return (
         <div className="flex flex-col h-screen bg-background text-white font-sans overflow-hidden">
@@ -151,8 +158,8 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
                     <div className="space-y-10 relative z-10">
                         {/* Power Attributes */}
                         {[
-                          { label: 'Poder Ofensivo', userVal: userTeam.attack, oppVal: opponent.attack, icon: <Swords size={12} /> },
-                          { label: 'Estabilidade Defensiva', userVal: userTeam.defense, oppVal: opponent.defense, icon: <ShieldAlert size={12} /> }
+                          { label: 'Poder Ofensivo', userVal: Math.round(userStrength.att), oppVal: Math.round(opponentStrength.att), icon: <Swords size={12} /> },
+                          { label: 'Estabilidade Defensiva', userVal: Math.round(userStrength.def), oppVal: Math.round(opponentStrength.def), icon: <ShieldAlert size={12} /> }
                         ].map((stat) => (
                           <div key={stat.label} className="space-y-4">
                               <div className="flex justify-between items-end px-1">
@@ -267,5 +274,4 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
         </div>
     );
 }
-
 

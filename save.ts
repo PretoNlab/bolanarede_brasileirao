@@ -35,9 +35,8 @@ export interface SaveGame {
   trainingIntensity?: string; // TrainingIntensity
   squadTrainingIntensity?: string; // TrainingIntensity (alias)
   youthRoster?: any[]; // Player[]
-  // Copa do Mundo
-  worldCupState?: any; // WorldCupGameState
-  isWorldCupMode?: boolean;
+  continentalState?: any; // ContinentalSeasonState
+  rosterDataVersion?: string;
 }
 
 const KEY_PREFIX = 'bolanarede_save_slot_';

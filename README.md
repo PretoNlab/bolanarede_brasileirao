@@ -4,7 +4,7 @@
 
 # Bola na Rede Manager
 
-Manager de futebol brasileiro com carreira, Série A, Série B, mercado, finanças, staff, base e Copa do Mundo 2026.
+Manager de futebol brasileiro com carreira, Série A, Série B, mercado, finanças, staff, base, Libertadores e Sul-Americana.
 
 ## Rodar Localmente
 

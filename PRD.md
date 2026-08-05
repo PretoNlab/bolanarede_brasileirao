@@ -10,10 +10,10 @@
 
 Bola na Rede Manager é um jogo de gerenciamento de futebol inspirado em managers clássicos, com foco em clubes brasileiros, progressão por temporadas e interface rápida para partidas, mercado, finanças, elenco e evolução estrutural do clube. O produto busca combinar profundidade suficiente para retenção com baixa fricção de entrada.
 
-O jogo hoje já opera em dois modos principais:
+O jogo hoje já opera em duas áreas principais:
 
 - `Carreira de clube`, com Série A e Série B, calendário por rodadas, promoção/rebaixamento, mercado, finanças, staff, treino, infraestrutura, base e notícias.
-- `Copa do Mundo 2026`, como modo separado, com seleção de país, fase de grupos, mata-mata e decisão final.
+- `Competições continentais`, integradas à carreira, com Libertadores, Sul-Americana, fase de grupos, mata-mata e premiação.
 
 ## 2. Problema
 
@@ -41,7 +41,7 @@ Entregar um manager de futebol viciante, acessível e rejogável, no qual o joga
 - disputa temporadas completas;
 - busca título, promoção e longevidade;
 - alterna entre decisões estratégicas e momentos de jogo;
-- pode também jogar campanhas curtas e intensas no modo Copa do Mundo.
+- pode buscar vagas continentais e disputar torneios de maior peso dentro da carreira.
 
 ## 4. Público-Alvo
 
@@ -63,7 +63,7 @@ Entregar um manager de futebol viciante, acessível e rejogável, no qual o joga
 - progressão rápida sem sacrificar estratégia;
 - partidas simuladas com sensação de controle;
 - combinação de gestão esportiva, financeira e estrutural;
-- modo extra de Copa do Mundo para sessões mais curtas e rejogáveis.
+- competições continentais para ampliar objetivos de temporada e rejogabilidade.
 
 ## 6. Visão do Produto
 
@@ -74,14 +74,14 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 - `Acessível`: o jogador deve entender o loop principal em poucos minutos.
 - `Rápido`: cada tela deve levar a uma decisão útil.
 - `Responsivo`: o usuário deve sentir efeito claro após treino, tática, contratação ou jogo.
-- `Rejogável`: times, temporadas e modo Copa precisam sustentar múltiplas campanhas.
+- `Rejogável`: times, temporadas e competições continentais precisam sustentar múltiplas campanhas.
 - `Local`: linguagem, clubes e fantasia de gestão precisam conversar com o público brasileiro.
 
 ## 8. Escopo Atual do MVP
 
 ### 8.1 Fluxo principal
 
-1. Tela inicial com `Novo Jogo`, `Continuar` e `Copa do Mundo`.
+1. Tela inicial com `Novo Jogo` e `Continuar`.
 2. Criação de treinador.
 3. Escolha de clube por divisão.
 4. Entrada no dashboard.
@@ -111,15 +111,15 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 - exportação e importação de save;
 - onboarding inicial.
 
-### 8.3 Modo Copa do Mundo 2026
+### 8.3 Competições continentais
 
-- seleção entre 48 seleções;
-- sorteio de grupos;
+- classificação via desempenho na Série A;
+- Libertadores para os melhores colocados;
+- Sul-Americana para a faixa seguinte;
 - tabela da fase de grupos;
 - chaveamento do mata-mata;
-- simulação de jogos;
-- disputa por pênaltis;
-- tela de campeão mundial.
+- premiação por participação e avanço;
+- visualização de grupos, chaveamento e evolução continental por temporada.
 
 ## 9. Loops de Produto
 
@@ -140,12 +140,12 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 4. Evoluir elenco por idade e desempenho.
 5. Iniciar nova temporada mais forte ou mais pressionado.
 
-### 9.3 Loop curto da Copa do Mundo
+### 9.3 Loop continental
 
-1. Escolher seleção.
-2. Passar pela fase de grupos.
-3. Avançar no mata-mata.
-4. Buscar o título mundial em campanha curta.
+1. Terminar bem a temporada nacional.
+2. Classificar para Libertadores ou Sul-Americana.
+3. Disputar grupos e mata-mata no calendário da carreira.
+4. Buscar premiação, prestígio e título continental.
 
 ## 10. Funcionalidades
 
@@ -257,7 +257,7 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 - os `4 primeiros` da Série B sobem;
 - jogadores envelhecem e podem evoluir ou regredir entre temporadas;
 - moral e estatísticas são reiniciadas na nova temporada;
-- partidas da Copa do Mundo avançam por grupos e mata-mata até a final.
+- competições continentais avançam por grupos e mata-mata até a final.
 
 ## 12. Experiência do Usuário
 
@@ -285,12 +285,16 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 - média de rodadas jogadas por sessão;
 - taxa de retorno para nova temporada;
 - uso por tela: mercado, finanças, treino, staff, base.
+- tempo entre abrir o app e iniciar a primeira partida;
+- tempo entre clicar em `Começar carreira` e iniciar a primeira partida;
+- abandono entre início de carreira, escolha de clube, dashboard, pré-jogo e partida;
+- abandono durante carregamentos e transições de tela críticas.
 
 ### Retenção
 
 - D1, D7 e D30;
 - número médio de saves carregados por usuário;
-- frequência de uso do modo Copa do Mundo.
+- frequência de uso da tela e dos jogos continentais.
 
 ### Engajamento
 
@@ -375,4 +379,3 @@ Bola na Rede Manager deve ocupar o espaço entre:
 Em uma frase:
 
 > Um manager de futebol brasileiro, rápido e viciante, onde cada rodada entrega decisão, consequência e progressão.
-

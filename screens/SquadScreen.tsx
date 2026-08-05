@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { TeamLogo } from '../components/TeamLogo';
 import { Header } from '../components/Header';
 import { Team, Player, TransferLog } from '../types';
-import { PencilLine, Zap, AlertCircle, Target, Trophy, X, ShieldAlert, User, Activity, FileText, ChevronRight, Sparkles, TrendingUp } from 'lucide-react';
+import { PencilLine, Zap, AlertCircle, Target, Trophy, X, ShieldAlert, User, Activity, FileText, ChevronRight, Sparkles, TrendingUp, BadgeCheck, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 
@@ -23,12 +23,14 @@ const POS_COLORS = {
    'ATA': 'text-rose-400 bg-rose-400/10 border-rose-400/20 shadow-rose-400/10',
 };
 
-type PositionFilter = 'ALL' | 'GOL' | 'DEF' | 'MID' | 'ATT';
+type PositionFilter = 'ALL' | 'GOL' | 'DEF' | 'MID' | 'ATT' | 'PENDING';
 
 export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }: Props) {
    const [filter, setFilter] = useState<PositionFilter>('ALL');
    const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
    const [modalTab, setModalTab] = useState<'STATS' | 'BIO'>('STATS');
+   const verifiedPlayers = team.roster.filter(player => player.dataSource === 'CBF_TRANSFERMARKT').length;
+   const modeledPlayers = team.roster.filter(player => player.dataSource === 'CBF_MODEL').length;
 
    const filteredPlayers = team.roster.filter(p => {
       if (filter === 'ALL') return true;
@@ -36,6 +38,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
       if (filter === 'DEF') return ['ZAG', 'LAT'].includes(p.position);
       if (filter === 'MID') return ['VOL', 'MEI'].includes(p.position);
       if (filter === 'ATT') return p.position === 'ATA';
+      if (filter === 'PENDING') return p.dataSource === 'CBF_MODEL';
       return true;
    });
 
@@ -59,7 +62,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
 
          {/* Cinematic Tab Navigation */}
          <div className="px-6 py-6 overflow-x-auto no-scrollbar flex items-center gap-2 bg-background/80 backdrop-blur-3xl sticky top-0 z-30 border-b border-white/5">
-            {(['ALL', 'GOL', 'DEF', 'MID', 'ATT'] as PositionFilter[]).map((tab) => (
+            {(['ALL', 'GOL', 'DEF', 'MID', 'ATT', 'PENDING'] as PositionFilter[]).map((tab) => (
                <button 
                   key={tab} 
                   onClick={() => setFilter(tab)} 
@@ -70,9 +73,24 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                       : "bg-white/[0.02] text-white/30 border border-white/5 hover:bg-white/[0.05]"
                   )}
                >
-                  {tab === 'ALL' ? 'Geral' : tab}
+                  {tab === 'ALL' ? 'Geral' : tab === 'PENDING' ? 'Revisar' : tab}
                </button>
             ))}
+         </div>
+
+         <div className="mx-6 mt-5 flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+               <Database size={17} className="shrink-0 text-emerald-400" />
+               <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/75">Auditoria do elenco</p>
+                  <p className="mt-1 text-[11px] text-white/45">{verifiedPlayers} com posição e idade verificadas</p>
+               </div>
+            </div>
+            {modeledPlayers > 0 && (
+               <span className="shrink-0 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-amber-300">
+                  {modeledPlayers} pendentes
+               </span>
+            )}
          </div>
 
          <div className="flex-1 overflow-y-auto px-6 pb-32 pt-6 space-y-5 no-scrollbar">
@@ -82,7 +100,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   onClick={() => { setSelectedPlayer(player); setModalTab('STATS'); }}
-                  className="ui-card-premium p-8 flex items-center justify-between group cursor-pointer transition-all duration-500 hover:bg-white/[0.06] border-white/5 relative overflow-hidden"
+                  className="ui-card-premium p-5 sm:p-8 flex items-center justify-between group cursor-pointer transition-all duration-500 hover:bg-white/[0.06] border-white/5 relative overflow-hidden"
                >
                   {player.isSuspended && (
                      <div className="absolute top-0 right-0 px-5 py-2 bg-rose-500/20 text-rose-400 text-[9px] font-black uppercase rounded-bl-[1.5rem] flex items-center gap-2 border-l border-b border-rose-500/20 backdrop-blur-md">
@@ -90,23 +108,26 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                      </div>
                   )}
 
-                  <div className="flex items-center gap-6 relative z-10 w-full">
+                  <div className="flex items-center gap-4 sm:gap-6 relative z-10 w-full">
                      <div className={clsx(
-                        "w-16 h-16 rounded-[1.75rem] flex items-center justify-center border-2 font-black text-sm shadow-2xl transition-all duration-500 group-hover:scale-110 italic bg-zinc-900 shrink-0", 
+                        "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-[1.75rem] flex items-center justify-center border-2 font-black text-xs sm:text-sm shadow-2xl transition-all duration-500 group-hover:scale-110 italic bg-zinc-900 shrink-0",
                         POS_COLORS[player.position as keyof typeof POS_COLORS]
                      )}>
                         {player.position}
                      </div>
                      <div className="flex flex-col flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-1">
-                            <span className="text-xl font-black text-white italic tracking-tighter truncate group-hover:text-emerald-400 transition-colors uppercase">{player.name}</span>
+                            <span className="text-base sm:text-xl font-black text-white italic tracking-tighter truncate group-hover:text-emerald-400 transition-colors uppercase">{player.name}</span>
                             {player.energy < 50 && <Activity size={14} className="text-rose-500 animate-pulse" />}
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             <div className="bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
                                 <span className="text-[10px] font-black text-emerald-400 italic">OVR {player.overall}</span>
                             </div>
                             <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{player.age} anos</span>
+                            {player.dataSource === 'CBF_TRANSFERMARKT' && (
+                               <BadgeCheck size={13} className="text-emerald-400" aria-label="Dados verificados" />
+                            )}
                         </div>
                      </div>
 
@@ -129,7 +150,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                                     <span className="text-[10px] font-black">{player.assists}</span>
                                 </div>
                             )}
-                            <ChevronRight size={16} className="text-white/10 group-hover:text-emerald-500 transition-all group-hover:translate-x-1" />
+                            <ChevronRight size={16} className="hidden sm:block text-white/10 group-hover:text-emerald-500 transition-all group-hover:translate-x-1" />
                         </div>
                      </div>
                   </div>
@@ -194,6 +215,18 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                            <div className="bg-white/5 border border-white/5 px-5 py-2.5 rounded-2xl backdrop-blur-xl">
                                 <span className="text-[11px] font-black text-white/40 uppercase italic tracking-widest leading-none">POT {selectedPlayer.potential}</span>
                            </div>
+                        </div>
+                        <div className="flex max-w-md items-start gap-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-left">
+                           {selectedPlayer.dataSource === 'CBF_TRANSFERMARKT' ? (
+                              <BadgeCheck size={18} className="mt-0.5 shrink-0 text-emerald-400" />
+                           ) : (
+                              <AlertCircle size={18} className="mt-0.5 shrink-0 text-amber-300" />
+                           )}
+                           <p className="text-[11px] leading-5 text-white/55">
+                              {selectedPlayer.dataSource === 'CBF_TRANSFERMARKT'
+                                 ? 'Clube, posição e idade vêm de fontes públicas; o valor é usado quando disponível. Overall e atributos são avaliações de gameplay.'
+                                 : 'Clube e nome vêm da CBF. Posição, idade, overall e atributos ainda são estimativas de gameplay.'}
+                           </p>
                         </div>
                      </div>
                   </div>
