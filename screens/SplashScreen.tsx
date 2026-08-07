@@ -160,7 +160,7 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
 
               {/* Title */}
               <h1 className="mt-6 text-4xl font-black italic tracking-tight leading-[0.95] text-white sm:text-6xl lg:text-7xl">
-                O Manager de Futebol do <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-400 bg-clip-text text-transparent">Brasil ao Mundo</span>.
+                Bola Na <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-400 bg-clip-text text-transparent">Rede Manager</span>.
               </h1>
 
               {/* Subtitle */}
