@@ -155,12 +155,12 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-emerald-400 shadow-inner">
                 <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                <span>Elencos Reais de Julho 2026 • Libertadores & Sul-Americana</span>
+                <span>Elencos Reais 2026 • Brasileirão &amp; CONMEBOL</span>
               </div>
 
               {/* Title */}
               <h1 className="mt-6 text-4xl font-black italic tracking-tight leading-[0.95] text-white sm:text-6xl lg:text-7xl">
-                O Manager de Futebol do <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-400 bg-clip-text text-transparent">Brasil</span>.
+                O Manager de Futebol do <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-400 bg-clip-text text-transparent">Brasil ao Mundo</span>.
               </h1>
 
               {/* Subtitle */}
