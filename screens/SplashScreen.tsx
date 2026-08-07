@@ -93,8 +93,15 @@ const navItems = [
 ];
 
 export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleNavClick = (target: string) => {
+    if (target === 'novidades') {
+      if (typeof window !== 'undefined') {
+        window.history.pushState({}, '', '/novidades');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }
+    } else {
+      scrollTo(target);
+    }
   };
 
   return (
@@ -116,7 +123,7 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
             {navItems.map((item) => (
               <button
                 key={item.label}
-                onClick={() => scrollTo(item.target)}
+                onClick={() => handleNavClick(item.target)}
                 className="text-xs font-bold text-slate-400 transition-colors hover:text-white"
               >
                 {item.label}

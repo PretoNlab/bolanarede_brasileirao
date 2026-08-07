@@ -5,12 +5,14 @@ import { markPerformance } from './performanceMetrics';
 
 const LandingPage = lazy(() => import('./screens/SplashScreen'));
 const PlayApp = lazy(() => import('./PlayApp'));
+const NewsRoadmapPage = lazy(() => import('./screens/NewsRoadmapScreen'));
 
-type RoutePath = '/' | '/play';
+type RoutePath = '/' | '/play' | '/novidades';
 type PlayIntent = 'career' | 'continue' | null;
 
 function normalizePath(pathname: string): RoutePath {
   if (pathname === '/play') return '/play';
+  if (pathname === '/novidades') return '/novidades';
   return '/';
 }
 
@@ -189,6 +191,20 @@ export default function App() {
               className="w-full h-full"
             >
               <LandingPage {...landingProps} />
+            </motion.div>
+          ) : routePath === '/novidades' ? (
+            <motion.div
+              key="novidades"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full h-full"
+            >
+              <NewsRoadmapPage
+                onBackHome={() => navigateTo('/')}
+                onStart={() => navigateTo('/play', 'career')}
+              />
             </motion.div>
           ) : (
             <motion.div
