@@ -72,6 +72,7 @@ export interface Player {
   };
   individualFocus?: string;
   trainingProgress?: number;
+  positionAdaptation?: Record<string, number>; // 0 to 100 adaptation progress per position
 }
 
 // ========== TÁTICA AVANÇADA ==========
@@ -158,6 +159,8 @@ export interface Team {
   description?: string;
   financeStatus?: string;
   seasonExpectation?: string;
+  cohesion?: number; // 0 to 100 team cohesion score
+  lastLineupHash?: string; // Fingerprint of previous round lineup
 }
 
 export interface MatchResult {

@@ -1,7 +1,7 @@
 import { Team, Player, MatchResult, MatchEvent, StaffMember, PlayerHistoryEvent, TrainingFocus, TrainingIntensity, Infrastructure } from '../types';
 import { PlayerSeasonStats } from '../save';
 import { clamp, DEFAULT_TICKET_PRICE } from './gameState';
-import { calculateDynamicTeamStrength, selectGoalParticipants } from './tacticsEngine';
+import { calculateDynamicTeamStrength, selectGoalParticipants, FORMATIONS_SLOTS } from './tacticsEngine';
 
 export interface MatchProcessorInput {
   teams: Team[];
@@ -406,11 +406,26 @@ export function processMatchResults(input: MatchProcessorInput): MatchProcessorO
         }
       }
 
+      // Position Adaptation Progression
+      const isStarter = team.lineup && team.lineup.slice(0, 11).includes(p.id);
+      const newAdaptation = { ...(p.positionAdaptation || {}) };
+
+      if (isStarter) {
+        const slots = FORMATIONS_SLOTS[team.formation];
+        const slotIdx = team.lineup.indexOf(p.id);
+        const slot = slots ? slots[slotIdx] : null;
+        if (slot && slot.position !== p.mainPosition) {
+          const currentProg = newAdaptation[slot.position] || 0;
+          newAdaptation[slot.position] = Math.min(100, currentProg + 8);
+        }
+      }
+
       return {
         ...p,
         energy: newEnergy,
         overall: newOverall,
         trainingProgress,
+        positionAdaptation: newAdaptation,
         goals: p.goals + g,
         assists: p.assists + a,
         yellowCards: newYellows,
@@ -429,6 +444,25 @@ export function processMatchResults(input: MatchProcessorInput): MatchProcessorO
       };
     });
 
+    // Team Cohesion Progression
+    const currentLineupIds = (team.lineup || []).slice(0, 11);
+    const currentLineupHash = [...currentLineupIds].sort().join(',');
+    const prevLineupHash = team.lastLineupHash;
+
+    let newCohesion = team.cohesion ?? 75;
+    if (prevLineupHash) {
+      const prevSet = new Set(prevLineupHash.split(','));
+      const maintainedCount = currentLineupIds.filter(id => prevSet.has(id)).length;
+
+      if (maintainedCount >= 9) {
+        newCohesion = Math.min(100, newCohesion + 3);
+      } else if (maintainedCount <= 5) {
+        newCohesion = Math.max(40, newCohesion - 4);
+      } else {
+        newCohesion = Math.min(100, Math.max(40, newCohesion + 1));
+      }
+    }
+
     return {
       ...team,
       played: team.played + 1,
@@ -439,6 +473,8 @@ export function processMatchResults(input: MatchProcessorInput): MatchProcessorO
       ga: team.ga + goalsAgainst,
       points: newPoints,
       moral: newMoral,
+      cohesion: newCohesion,
+      lastLineupHash: currentLineupHash,
       roster: newRoster
     };
   });
