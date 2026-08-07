@@ -106,7 +106,7 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
               <img src="/logo.svg" alt="BNR" className="h-9 w-9 relative z-10" />
             </div>
             <span className="text-base font-black italic tracking-tight">
-              BNR <span className="font-light text-emerald-400">MANAGER</span>
+              BOLA NA REDE <span className="font-light text-emerald-400">MANAGER</span>
             </span>
           </button>
 
