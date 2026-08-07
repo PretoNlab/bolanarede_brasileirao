@@ -13,7 +13,8 @@ import {
   Users,
   Zap,
   Sparkles,
-  Flame
+  Flame,
+  Globe
 } from 'lucide-react';
 import { HeroShowcase, ProductFacts, TriplePhoneShowcase } from './LandingShowcases';
 
@@ -86,6 +87,7 @@ const navItems = [
   { label: 'Visão Geral', target: 'inicio' },
   { label: 'Clubes', target: 'clubes' },
   { label: 'Recursos', target: 'recursos' },
+  { label: 'Novidades', target: 'novidades' },
   { label: 'Como Funciona', target: 'jornada' },
   { label: 'Dúvidas', target: 'duvidas' },
 ];
@@ -287,6 +289,96 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
                   <p className="mt-2 text-xs text-slate-400 leading-relaxed">{step.text}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Novidades & Expansão Global */}
+        <section id="novidades" className="py-20 border-b border-white/10 relative overflow-hidden bg-slate-950/60">
+          <div className="pointer-events-none absolute right-0 top-1/2 h-[400px] w-[500px] -translate-y-1/2 rounded-full bg-emerald-500/10 blur-[130px]" />
+          
+          <div className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-black uppercase tracking-widest text-emerald-400">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Roadmap de Lançamentos</span>
+                </div>
+                <h2 className="text-3xl font-black italic tracking-tight text-white sm:text-4xl mt-3">
+                  Novidades &amp; Expansão Global.
+                </h2>
+                <p className="mt-2 text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
+                  O Bola na Rede Manager está evoluindo do futebol brasileiro para uma experiência internacional completa.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {/* Card 1: Identidade BNR */}
+              <div className="rounded-3xl border border-emerald-500/20 bg-gradient-to-b from-white/10 to-white/5 p-6 backdrop-blur-xl relative overflow-hidden group hover:border-emerald-500/40 transition-all">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mb-5">
+                  <Globe className="h-6 w-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Estratégia de Marca</span>
+                <h3 className="mt-1 text-lg font-black text-white">BNR Manager: Do Brasil ao Mundo</h3>
+                <p className="mt-3 text-xs text-slate-300 leading-relaxed">
+                  Preserva as raízes do futebol brasileiro enquanto ganha escala para ligas sul-americanas e europeias.
+                </p>
+                <ul className="mt-4 space-y-2 text-xs text-slate-400">
+                  <li className="flex items-center gap-2">
+                    <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                    <span>Nomenclatura internacional e leve</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                    <span>Sem burocracia ou cadastros demorados</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Card 2: Novas Ligas Europeias */}
+              <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-b from-white/10 to-white/5 p-6 backdrop-blur-xl relative overflow-hidden group hover:border-amber-500/40 transition-all">
+                <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center mb-5">
+                  <Trophy className="h-6 w-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-amber-400">Em Breve</span>
+                <h3 className="mt-1 text-lg font-black text-white">Novas Ligas Europeias</h3>
+                <p className="mt-3 text-xs text-slate-300 leading-relaxed">
+                  Dispute campeonatos na Inglaterra, Espanha, Itália, Alemanha e França no mesmo save.
+                </p>
+                <div className="mt-4 pt-4 border-t border-white/10 space-y-2 text-[11px]">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">Liga Inglesa &amp; Espanhola</span>
+                    <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Em Desenvolvimento</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">Liga dos Campeões Europeus</span>
+                    <span className="font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Fase de Testes</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Nomenclatura Segura & Torneios */}
+              <div className="rounded-3xl border border-teal-500/20 bg-gradient-to-b from-white/10 to-white/5 p-6 backdrop-blur-xl relative overflow-hidden group hover:border-teal-500/40 transition-all">
+                <div className="h-12 w-12 rounded-2xl bg-teal-500/10 text-teal-400 border border-teal-500/30 flex items-center justify-center mb-5">
+                  <Shield className="h-6 w-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-teal-400">Segurança &amp; Marca</span>
+                <h3 className="mt-1 text-lg font-black text-white">Torneios &amp; Nomenclatura Única</h3>
+                <p className="mt-3 text-xs text-slate-300 leading-relaxed">
+                  Competições com marcas consagradas nos games e 100% protegidas contra direitos autorais.
+                </p>
+                <div className="mt-4 space-y-2 text-xs">
+                  <div className="rounded-xl bg-white/5 p-2.5 flex justify-between items-center text-[11px] border border-white/5">
+                    <span className="font-medium text-slate-300">Liga dos Campeões Europeus</span>
+                    <span className="text-xs">🏆</span>
+                  </div>
+                  <div className="rounded-xl bg-white/5 p-2.5 flex justify-between items-center text-[11px] border border-white/5">
+                    <span className="font-medium text-slate-300">Liga Europa &amp; Superliga</span>
+                    <span className="text-xs">⭐</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
