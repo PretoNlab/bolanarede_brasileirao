@@ -2,7 +2,7 @@
 {
   "short_name": "Bola na Rede",
   "name": "Bola na Rede Manager",
-  "description": "Football manager brasileiro com carreira, mercado, finanças, Libertadores e Sul-Americana.",
+  "description": "Manager de futebol brasileiro com carreira, mercado, finanças, Libertadores e Sul-Americana.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
