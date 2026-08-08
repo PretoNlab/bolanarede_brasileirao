@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { INITIAL_TEAMS } from '../data';
 import { processSeasonTransition } from './seasonManager';
 import { Team } from '../types';
+import { initializeContinentalTournaments } from './continentalEngine';
 
 function withStandings(teams: Team[]): Team[] {
   // Give every team a distinct points total so relegation/promotion order is deterministic.
@@ -99,5 +100,24 @@ describe('processSeasonTransition', () => {
       .sort((a, b) => b.points - a.points)[0];
 
     expect(result.historyEntry.championId).toBe(divisionOneLeader.id);
+  });
+
+  it('records both continental champions in the season history', () => {
+    const continentalState = initializeContinentalTournaments(seededTeams, null);
+    continentalState.libertadores.winnerId = 'flamengo';
+    continentalState.libertadores.currentPhase = 'FINISHED';
+    continentalState.sudamericana.winnerId = 'atletico-mg';
+    continentalState.sudamericana.currentPhase = 'FINISHED';
+
+    const result = processSeasonTransition({
+      teams: seededTeams,
+      userTeamId: null,
+      season: 2026,
+      hiredStaff: [],
+      continentalState,
+    });
+
+    expect(result.historyEntry.libertadoresChampion).toEqual({ teamId: 'flamengo', teamName: 'Flamengo' });
+    expect(result.historyEntry.sudamericanaChampion).toEqual({ teamId: 'atletico-mg', teamName: 'Atlético-MG' });
   });
 });

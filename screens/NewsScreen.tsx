@@ -34,7 +34,7 @@ export default function NewsScreen({ news, onBack, onRead, onChoice }: Props) {
   const latestRound = news[0]?.round;
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background text-white font-sans w-full relative">
+    <div className="relative flex h-dvh max-h-dvh w-full flex-col overflow-hidden bg-background font-sans text-white">
       <Header 
         title="Bastidores"
         subtitle="Centro de Decisões"
@@ -42,7 +42,7 @@ export default function NewsScreen({ news, onBack, onRead, onChoice }: Props) {
         rightAction={<div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-xl border border-primary/20 text-primary font-bold text-xs uppercase tracking-wider">Rod. {latestRound ?? '--'}</div>}
       />
 
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 no-scrollbar pb-32 max-w-4xl mx-auto w-full">
+      <main className="mx-auto min-h-0 w-full max-w-4xl flex-1 touch-pan-y space-y-6 overflow-y-auto overscroll-contain p-4 pb-32 sm:p-6 no-scrollbar">
         
         {/* Status Hub Card */}
         <section className="ui-card-premium p-8 relative overflow-hidden group shadow-2xl">

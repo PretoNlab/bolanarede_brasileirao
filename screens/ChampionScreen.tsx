@@ -29,7 +29,7 @@ export default function ChampionScreen({ champion, userTeam, onNewSeason, onQuit
             isUserChampion ? "from-yellow-500/20 via-background to-background" : "from-blue-500/20 via-background to-background"
          )}></div>
 
-         <main className="relative z-10 flex-1 flex flex-col items-center p-6 text-center overflow-y-auto no-scrollbar">
+         <main className="relative z-10 min-h-0 flex-1 touch-pan-y flex flex-col items-center overflow-y-auto overscroll-contain p-6 text-center no-scrollbar">
             <div className="my-8 animate-bounce">
                <Trophy size={80} className={isUserChampion ? "text-yellow-400" : "text-secondary"} />
             </div>

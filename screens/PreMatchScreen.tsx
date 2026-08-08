@@ -57,7 +57,7 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className={clsx(
-            "flex flex-col items-center p-3 sm:p-6 rounded-2xl sm:rounded-[2.5rem] border-2 flex-1 max-w-[160px] sm:max-w-[180px] relative overflow-hidden group shrink-0",
+            "flex flex-col items-center p-3 sm:p-6 rounded-2xl sm:rounded-[2.5rem] border-2 flex-1 max-w-[160px] sm:max-w-[180px] lg:max-w-none relative overflow-hidden group shrink-0",
             isUser ? "bg-primary/5 border-primary/20" : "bg-white/5 border-white/10"
           )}
         >
@@ -72,7 +72,9 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
             
             <div className="relative z-10 text-center w-full">
                 <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-white/50 mb-0.5">CLUBE</h3>
-                <h4 className="text-xs sm:text-base font-black uppercase italic tracking-tight text-white leading-tight mb-3 truncate max-w-full px-1">{team.name}</h4>
+                <h4 className="min-h-[2rem] px-1 text-xs sm:text-base font-black uppercase italic tracking-tight text-white leading-tight mb-3 overflow-hidden break-words">
+                    {team.shortName || team.name}
+                </h4>
                 
                 <div className="flex flex-col items-center gap-1">
                     <div className="flex items-center gap-1.5">
@@ -119,86 +121,87 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
                 </div>
             </header>
 
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col items-center gap-6 sm:gap-8 pb-60 no-scrollbar relative z-10 max-w-4xl mx-auto w-full">
+            <main className="relative z-10 mx-auto min-h-0 w-full max-w-6xl flex-1 touch-pan-y flex flex-col items-center gap-6 overflow-y-auto overscroll-contain p-4 pb-60 sm:gap-8 sm:p-6 no-scrollbar">
 
-                {/* Matchup Visualizer */}
-                <div className="w-full relative flex flex-row items-center justify-between sm:justify-center gap-2 sm:gap-6 ui-card-premium p-3 sm:p-6">
-                    <TeamCard team={userTeam} isUser={true} />
-                    
-                    <div className="flex flex-col items-center gap-1.5 sm:gap-3 py-1 sm:py-4 z-10 shrink-0">
-                        <div className="relative">
-                            <span className="text-3xl sm:text-5xl font-black italic text-white/20 tracking-tighter select-none">VS</span>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                               <Swords size={20} className="text-primary opacity-70" />
+                <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
+                    {/* Matchup Visualizer */}
+                    <div className="w-full relative flex flex-row items-stretch justify-between sm:justify-center gap-2 sm:gap-6 ui-card-premium p-3 sm:p-6">
+                        <TeamCard team={userTeam} isUser={true} />
+
+                        <div className="flex flex-col items-center justify-center gap-1.5 sm:gap-3 py-1 sm:py-4 z-10 shrink-0">
+                            <div className="relative">
+                                <span className="text-3xl sm:text-5xl font-black italic text-white/20 tracking-tighter select-none">VS</span>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                   <Swords size={20} className="text-primary opacity-70" />
+                                </div>
                             </div>
+                            <motion.div
+                              initial={{ scale: 0.8, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              className={clsx(
+                                "px-2.5 sm:px-4 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider border backdrop-blur-xl transition-all shadow-xl italic text-center",
+                                powerDiff > 5 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/10" :
+                                powerDiff < -5 ? "bg-amber-500/10 text-amber-300 border-amber-500/20 shadow-amber-500/10" :
+                                "bg-white/5 text-slate-300 border-white/10"
+                              )}
+                            >
+                                {powerDiff > 5 ? "Favorito" : powerDiff < -5 ? "Desafio" : "Equilíbrio"}
+                            </motion.div>
                         </div>
-                        <motion.div 
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className={clsx(
-                            "px-2.5 sm:px-4 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider border backdrop-blur-xl transition-all shadow-xl italic text-center",
-                            powerDiff > 5 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/10" : 
-                            powerDiff < -5 ? "bg-amber-500/10 text-amber-300 border-amber-500/20 shadow-amber-500/10" : 
-                            "bg-white/5 text-slate-300 border-white/10"
-                          )}
-                        >
-                            {powerDiff > 5 ? "Favorito" : powerDiff < -5 ? "Desafio" : "Equilíbrio"}
-                        </motion.div>
+
+                        <TeamCard team={opponent} isUser={false} />
                     </div>
 
-                    <TeamCard team={opponent} isUser={false} />
+                    {/* Stats Comparison Chart */}
+                    <section className="ui-card-premium w-full p-6 sm:p-8 relative group overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                            <Zap size={120} className="text-white" />
+                        </div>
+
+                        <h3 className="ui-label-caps text-center mb-8 text-slate-300">Análise de Potencial</h3>
+
+                        <div className="space-y-8 relative z-10">
+                            {[
+                              { label: 'Poder Ofensivo', userVal: Math.round(userStrength.att), oppVal: Math.round(opponentStrength.att), icon: <Swords size={14} /> },
+                              { label: 'Estabilidade Defensiva', userVal: Math.round(userStrength.def), oppVal: Math.round(opponentStrength.def), icon: <ShieldAlert size={14} /> }
+                            ].map((stat) => (
+                              <div key={stat.label} className="space-y-3">
+                                  <div className="flex justify-between items-end px-1 gap-4">
+                                      <div className="flex flex-col">
+                                         <span className="text-xl sm:text-2xl font-black italic tabular-nums text-primary leading-none">{stat.userVal}</span>
+                                         <span className="text-[11px] font-bold uppercase text-primary/70 tracking-wider">Casa</span>
+                                      </div>
+                                      <div className="flex flex-col items-center gap-1 pb-1 min-w-0 text-center">
+                                          <div className="text-white/40">{stat.icon}</div>
+                                          <span className="text-xs font-extrabold uppercase tracking-wider text-slate-300 italic leading-tight">{stat.label}</span>
+                                      </div>
+                                      <div className="flex flex-col items-end">
+                                         <span className="text-xl sm:text-2xl font-black italic tabular-nums text-white leading-none">{stat.oppVal}</span>
+                                         <span className="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Fora</span>
+                                      </div>
+                                  </div>
+                                  <div className="flex gap-2 h-3 items-center">
+                                      <div className="flex-1 bg-white/5 rounded-l-2xl overflow-hidden flex justify-end group-hover:bg-white/10 transition-colors">
+                                          <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${(stat.userVal / 100) * 100}%` }}
+                                            className="h-full bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
+                                          />
+                                      </div>
+                                      <div className="w-[2px] h-4 bg-white/20 rounded-full" />
+                                      <div className="flex-1 bg-white/5 rounded-r-2xl overflow-hidden flex justify-start group-hover:bg-white/10 transition-colors">
+                                          <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${(stat.oppVal / 100) * 100}%` }}
+                                            className="h-full bg-white/40"
+                                          />
+                                      </div>
+                                  </div>
+                              </div>
+                            ))}
+                        </div>
+                    </section>
                 </div>
-
-                {/* Stats Comparison Chart */}
-                <section className="ui-card-premium w-full p-6 sm:p-8 relative group overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                        <Zap size={120} className="text-white" />
-                    </div>
-                    
-                    <h3 className="ui-label-caps text-center mb-8 text-slate-300">Análise de Potencial</h3>
-
-                    <div className="space-y-8 relative z-10">
-                        {/* Power Attributes */}
-                        {[
-                          { label: 'Poder Ofensivo', userVal: Math.round(userStrength.att), oppVal: Math.round(opponentStrength.att), icon: <Swords size={14} /> },
-                          { label: 'Estabilidade Defensiva', userVal: Math.round(userStrength.def), oppVal: Math.round(opponentStrength.def), icon: <ShieldAlert size={14} /> }
-                        ].map((stat) => (
-                          <div key={stat.label} className="space-y-3">
-                              <div className="flex justify-between items-end px-1">
-                                  <div className="flex flex-col">
-                                     <span className="text-xl sm:text-2xl font-black italic tabular-nums text-primary leading-none">{stat.userVal}</span>
-                                     <span className="text-[11px] font-bold uppercase text-primary/70 tracking-wider">Casa</span>
-                                  </div>
-                                  <div className="flex flex-col items-center gap-1 pb-1">
-                                      <div className="text-white/40">{stat.icon}</div>
-                                      <span className="text-xs font-extrabold uppercase tracking-wider text-slate-300 italic">{stat.label}</span>
-                                  </div>
-                                  <div className="flex flex-col items-end">
-                                     <span className="text-xl sm:text-2xl font-black italic tabular-nums text-white leading-none">{stat.oppVal}</span>
-                                     <span className="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Fora</span>
-                                  </div>
-                              </div>
-                              <div className="flex gap-2 h-3 items-center">
-                                  <div className="flex-1 bg-white/5 rounded-l-2xl overflow-hidden flex justify-end group-hover:bg-white/10 transition-colors">
-                                      <motion.div 
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${(stat.userVal / 100) * 100}%` }}
-                                        className="h-full bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" 
-                                      />
-                                  </div>
-                                  <div className="w-[2px] h-4 bg-white/20 rounded-full" />
-                                  <div className="flex-1 bg-white/5 rounded-r-2xl overflow-hidden flex justify-start group-hover:bg-white/10 transition-colors">
-                                      <motion.div 
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${(stat.oppVal / 100) * 100}%` }}
-                                        className="h-full bg-white/40" 
-                                      />
-                                  </div>
-                              </div>
-                          </div>
-                        ))}
-                    </div>
-                </section>
 
                 {/* Pre-flight Warnings */}
                 <AnimatePresence>
@@ -309,4 +312,3 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
         </div>
     );
 }
-

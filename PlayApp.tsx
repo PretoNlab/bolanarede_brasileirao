@@ -12,14 +12,15 @@ import {
   trackPerformanceEvent
 } from './performanceMetrics';
 import GameHomeScreen from './screens/GameHomeScreen';
-import CoachSetupScreen from './screens/CoachSetupScreen';
-import TeamSelectionScreen from './screens/TeamSelectionScreen';
-import DashboardScreen from './screens/DashboardScreen';
-import SquadScreen from './screens/SquadScreen';
-import TacticsScreen from './screens/TacticsScreen';
-import MatchScreen from './screens/MatchScreen';
-import PreMatchScreen from './screens/PreMatchScreen';
-import CalendarScreen from './screens/CalendarScreen';
+
+const CoachSetupScreen = lazy(() => import('./screens/CoachSetupScreen'));
+const TeamSelectionScreen = lazy(() => import('./screens/TeamSelectionScreen'));
+const DashboardScreen = lazy(() => import('./screens/DashboardScreen'));
+const SquadScreen = lazy(() => import('./screens/SquadScreen'));
+const TacticsScreen = lazy(() => import('./screens/TacticsScreen'));
+const MatchScreen = lazy(() => import('./screens/MatchScreen'));
+const PreMatchScreen = lazy(() => import('./screens/PreMatchScreen'));
+const CalendarScreen = lazy(() => import('./screens/CalendarScreen'));
 import OnboardingModal from './components/OnboardingModal';
 import { Toaster, toast } from 'react-hot-toast';
 import { SaveGame, PlayerSeasonStats, readSlot, writeSlot, deleteSlot as deleteLocalSlot, downloadJson, readFileAsJson, SaveSlotId, getLatestLocalSave, hasAnyLocalSave, isValidSaveGame } from './save';
@@ -172,7 +173,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
       trainingIntensity,
       squadTrainingIntensity: trainingIntensity,
       youthRoster,
-      continentalState: continentalState ?? initializeContinentalTournaments(teams, userTeamId),
+      continentalState: continentalState ?? initializeContinentalTournaments(teams, userTeamId, [], season),
       rosterDataVersion: ROSTER_DATA_VERSION,
     };
   }, [
@@ -222,7 +223,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     setYouthRoster(save.youthRoster ?? []);
     setContinentalState(
       (save.continentalState as ContinentalSeasonState | undefined) ??
-        initializeContinentalTournaments(loadedTeams, save.userTeamId ?? null)
+        initializeContinentalTournaments(loadedTeams, save.userTeamId ?? null, [], save.season)
     );
 
     // MIGRATION: Ensure Free Agents team exists for old saves
@@ -972,13 +973,22 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     // Finalizar
     const wageCost = (userTeam?.roster.length || 0) * 1500;
     let finalFunds = funds + roundRevenue - wageCost;
-    const activeContinentalState = continentalState ?? initializeContinentalTournaments(newTeams, userTeamId);
+    const activeContinentalState = continentalState ?? initializeContinentalTournaments(newTeams, userTeamId, [], season);
     const continentalAdvance = advanceContinentalMatchday(activeContinentalState, newTeams, userTeamId);
 
     if (continentalAdvance.prize > 0) {
       finalFunds += continentalAdvance.prize;
       toast.success(`Cota continental recebida: ${formatCurrency(continentalAdvance.prize)}`, { icon: '🏆' });
     }
+
+    if (continentalAdvance.userEliminated) {
+      toast.error('Seu clube foi eliminado da competição continental.');
+    }
+
+    continentalAdvance.champions.forEach(champion => {
+      const competition = champion.tournament === 'LIBERTADORES' ? 'Libertadores' : 'Sul-Americana';
+      toast.success(`${champion.teamName} é campeão da ${competition}!`, { icon: '🏆', duration: 6000 });
+    });
 
     setFunds(finalFunds);
     setTeams(newTeams);
@@ -1055,7 +1065,8 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
       teams,
       userTeamId,
       season,
-      hiredStaff
+      hiredStaff,
+      continentalState,
     });
 
     setPastSeasons(prev => [...prev, transition.historyEntry]);
@@ -1375,7 +1386,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                   markPerformance('team_selected');
                   setUserTeamId(id);
                   setFixtures(generateSchedule(teams));
-                  setContinentalState(initializeContinentalTournaments(teams, id));
+                  setContinentalState(initializeContinentalTournaments(teams, id, [], season));
                   generateRoundNews(1);
                   markPerformance('dashboard_reached');
                   setCurrentScreen('DASHBOARD');
@@ -1418,7 +1429,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 onOpenInfrastructure={() => setCurrentScreen('INFRASTRUCTURE' as any)}
                 onOpenYouth={() => setCurrentScreen('YOUTH' as any)}
                 onOpenContinental={() => {
-                  setContinentalState(prev => prev ?? initializeContinentalTournaments(teams, userTeamId));
+                  setContinentalState(prev => prev ?? initializeContinentalTournaments(teams, userTeamId, [], season));
                   setCurrentScreen('CONTINENTAL');
                 }}
                 onBackHome={handleBackToMain}
@@ -1650,7 +1661,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
           {currentScreen === 'CONTINENTAL' && (
             <PageWrapper id="continental">
               <ContinentalScreen
-                continentalState={continentalState ?? initializeContinentalTournaments(teams, userTeamId)}
+                continentalState={continentalState ?? initializeContinentalTournaments(teams, userTeamId, [], season)}
                 teams={teams}
                 userTeamId={userTeamId}
                 onBackToDashboard={() => setCurrentScreen('DASHBOARD')}

@@ -193,7 +193,7 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
   );
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background text-white/90 selection:bg-primary/30 w-full relative">
+    <div className="relative flex h-dvh max-h-dvh w-full flex-col overflow-hidden bg-background text-white/90 selection:bg-primary/30">
       <Header 
         title="Tática & Estratégia" 
         subtitle={team.name}
@@ -212,7 +212,7 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
         }
       />
 
-      <main className="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden max-w-6xl mx-auto w-full pb-16 md:pb-0">
+      <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 touch-pan-y flex flex-col overflow-y-auto overscroll-contain pb-16 md:flex-row md:overflow-hidden md:pb-0">
         {/* Lado Esquerdo: Campo (Pitch) */}
         <div className="relative flex items-center justify-center p-4 bg-[radial-gradient(circle_at_center,rgba(31,177,133,0.05),transparent_70%)] md:flex-1 min-h-[380px] sm:min-h-[460px]">
            <div className="relative aspect-[3/4] w-full max-w-[440px] select-none">
@@ -271,12 +271,12 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
         </div>
 
         {renderControlPanel(
-          "hidden md:flex md:w-[420px] bg-white/[0.02] border-l border-white/10 backdrop-blur-3xl overflow-y-auto no-scrollbar pb-safe flex-col gap-6 p-6"
+          "hidden min-h-0 touch-pan-y md:flex md:w-[420px] bg-white/[0.02] border-l border-white/10 backdrop-blur-3xl overflow-y-auto overscroll-contain no-scrollbar pb-safe flex-col gap-6 p-6"
         )}
       </main>
 
       {renderControlPanel(
-        "md:hidden border-t border-white/10 bg-[#020617]/95 backdrop-blur-3xl px-4 pt-4 pb-safe max-h-[50vh] overflow-y-auto no-scrollbar flex flex-col gap-4"
+        "md:hidden touch-pan-y border-t border-white/10 bg-[#020617]/95 backdrop-blur-3xl px-4 pt-4 pb-safe max-h-[50dvh] overflow-y-auto overscroll-contain no-scrollbar flex flex-col gap-4"
       )}
 
       {selectedSlotIndex !== null && (
@@ -291,4 +291,3 @@ export default function TacticsScreen({ team, onBack, onSave }: Props) {
     </div>
   );
 }
-

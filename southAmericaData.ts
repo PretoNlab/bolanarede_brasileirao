@@ -1,4 +1,6 @@
 import { Team, Player, DetailedPosition } from './types';
+import { selectBestLineupForFormation } from './engine/tacticsEngine';
+import { createSouthAmericanRoster } from './southAmericanRosterFactory';
 
 const generateStats = (detPos: DetailedPosition, ovr: number) => {
   const r = (base: number) => Math.min(99, Math.max(10, Math.round(base)));
@@ -896,3 +898,10 @@ export const SOUTH_AMERICAN_FOREIGN_CLUBS: Omit<Team, 'instructions'>[] = [
     division: 1, stadiumCapacity: 35000, stadiumName: 'Pueblo Nuevo', socioCount: 20000
   }
 ];
+
+SOUTH_AMERICAN_FOREIGN_CLUBS.forEach(team => {
+  const importedRoster = createSouthAmericanRoster(team.id, Math.round((team.attack + team.defense) / 2));
+  if (importedRoster.length === 0) return;
+  team.roster = importedRoster;
+  team.lineup = selectBestLineupForFormation(importedRoster, team.formation);
+});

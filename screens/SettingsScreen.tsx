@@ -41,7 +41,7 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
    };
 
    return (
-      <div className="flex flex-col h-dvh bg-background text-white">
+      <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-background text-white">
          <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-white/5">
             <div className="flex items-center justify-between p-4 h-16">
                <button onClick={onBack} className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface transition-colors">
@@ -52,7 +52,7 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
             </div>
          </header>
 
-         <main className="p-4 space-y-6 overflow-y-auto pb-safe no-scrollbar">
+         <main className="min-h-0 flex-1 touch-pan-y space-y-6 overflow-y-auto overscroll-contain p-4 pb-safe no-scrollbar">
 
             {/* SEÇÃO TEMA VISUAL */}
             <section className="space-y-3">

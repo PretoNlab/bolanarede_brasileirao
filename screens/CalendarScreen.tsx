@@ -33,7 +33,7 @@ export default function CalendarScreen({ history, currentRound, onBack }: Props)
         <div className="w-10"></div>
       </header>
 
-      <main className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-8">
+      <main className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain no-scrollbar p-6 space-y-8">
          
          {/* Upcoming Round */}
          <div className="bg-surface-container/50 rounded-[2rem] border border-white/5 p-8 relative overflow-hidden group">

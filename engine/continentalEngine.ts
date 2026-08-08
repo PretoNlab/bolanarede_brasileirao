@@ -1,5 +1,6 @@
-import { Team, Fixture, ContinentalGroup, ContinentalMatch, ContinentalTournamentState, ContinentalSeasonState, ContinentalTournamentType } from '../types';
+import { Team, Fixture, ContinentalGroup, ContinentalMatch, ContinentalTournamentState, ContinentalSeasonState, ContinentalTournamentType, ContinentalPhase } from '../types';
 import { SOUTH_AMERICAN_FOREIGN_CLUBS } from '../southAmericaData';
+import { CONTINENTAL_2026_EXTRA_CLUBS, CONTINENTAL_2026_GROUPS } from '../continental2026Data';
 
 const GROUP_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
@@ -8,6 +9,7 @@ const PRIZE_MONEY = {
   ROUND_OF_16: 1250000,
   QUARTER: 1700000,
   SEMI: 2300000,
+  FINAL: 4000000,
   RUNNER_UP: 7000000,
   WINNER: 23000000,
 };
@@ -41,7 +43,7 @@ function getBaseTeamId(id: string) {
 
 function findContinentalTeam(teamId: string, allTeams: Team[]) {
   const foreignTeams = getForeignTeams();
-  const allKnownTeams = [...allTeams, ...foreignTeams];
+  const allKnownTeams = [...allTeams, ...foreignTeams, ...CONTINENTAL_2026_EXTRA_CLUBS];
   return allKnownTeams.find(t => t.id === teamId) || allKnownTeams.find(t => t.id === getBaseTeamId(teamId));
 }
 
@@ -62,9 +64,14 @@ function simulateContinentalGoals(team: Team | undefined, opponent: Team | undef
 export function initializeContinentalTournaments(
   allTeams: Team[],
   userTeamId: string | null,
-  rankedSerieATeamIds: string[] = []
+  rankedSerieATeamIds: string[] = [],
+  season = 2026
 ): ContinentalSeasonState {
   const foreignTeams = getForeignTeams();
+
+  if (season === 2026) {
+    return initializeOfficial2026Tournaments(allTeams, foreignTeams, userTeamId);
+  }
 
   const serieATeams = allTeams.filter(t => t.division === 1);
   const rankIndex = new Map(rankedSerieATeamIds.map((id, index) => [id, index]));
@@ -121,9 +128,48 @@ export function initializeContinentalTournaments(
   };
 }
 
-function createTournament(type: ContinentalTournamentType, name: string, pool: Team[]): ContinentalTournamentState {
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  const qualifiedTeamIds = shuffled.map(t => t.id);
+function initializeOfficial2026Tournaments(
+  allTeams: Team[],
+  foreignTeams: Team[],
+  userTeamId: string | null
+): ContinentalSeasonState {
+  const knownTeams = [...allTeams, ...foreignTeams, ...CONTINENTAL_2026_EXTRA_CLUBS];
+  const knownById = new Map(knownTeams.map(team => [team.id, team]));
+
+  const createOfficialTournament = (type: ContinentalTournamentType, name: string) => {
+    const groupIds = CONTINENTAL_2026_GROUPS[type];
+    const missingIds = groupIds.flat().filter(id => !knownById.has(id));
+    if (missingIds.length > 0) {
+      throw new Error(`Clubes continentais 2026 ausentes: ${missingIds.join(', ')}`);
+    }
+
+    return createTournament(type, name, groupIds.flat().map(id => knownById.get(id)!), true);
+  };
+
+  const libertadores = createOfficialTournament('LIBERTADORES', 'CONMEBOL Libertadores 2026');
+  const sudamericana = createOfficialTournament('SUDAMERICANA', 'CONMEBOL Sul-Americana 2026');
+  let userQualification: ContinentalSeasonState['userQualification'];
+
+  for (const tournament of [libertadores, sudamericana]) {
+    const group = tournament.groups.find(item => item.teamIds.includes(userTeamId || ''));
+    if (group) {
+      userQualification = { tournament: tournament.type, groupName: group.name };
+      break;
+    }
+  }
+
+  return { libertadores, sudamericana, userQualification };
+}
+
+function createTournament(
+  type: ContinentalTournamentType,
+  name: string,
+  pool: Team[],
+  preserveOrder = false
+): ContinentalTournamentState {
+  const qualifiedTeamIds = preserveOrder
+    ? pool.map(team => team.id)
+    : [...pool].sort(() => Math.random() - 0.5).map(team => team.id);
 
   const groups: ContinentalGroup[] = GROUP_NAMES.map((gName, idx) => ({
     name: gName,
@@ -234,13 +280,124 @@ export function generateKnockoutBracket(tournament: ContinentalTournamentState):
   return matches;
 }
 
-function advanceTournamentMatchday(
+function generateSudamericanaPlayoffs(
+  sudamericana: ContinentalTournamentState,
+  libertadores: ContinentalTournamentState
+): ContinentalMatch[] {
+  const sudRunnersUp = sudamericana.groups.map(group =>
+    calculateContinentalGroupStandings(group, sudamericana.groupFixtures)[1]?.teamId
+  );
+  const libThirdPlaces = libertadores.groups.map(group =>
+    calculateContinentalGroupStandings(group, libertadores.groupFixtures)[2]?.teamId
+  );
+
+  return sudRunnersUp.map((team1Id, index) => ({
+    id: `playoff-${index + 1}`,
+    phase: 'PLAYOFF' as const,
+    matchNumber: index + 1,
+    team1Id: team1Id || null,
+    team2Id: libThirdPlaces[7 - index] || null,
+    playedLeg1: false,
+    playedLeg2: false,
+  }));
+}
+
+function createKnockoutRound(
+  tournament: ContinentalTournamentState,
+  phase: ContinentalMatch['phase'],
+  teamIds: string[]
+): ContinentalMatch[] {
+  const prefix = `${tournament.type.toLowerCase()}-${phase.toLowerCase()}`;
+  const matches: ContinentalMatch[] = [];
+
+  for (let index = 0; index < teamIds.length; index += 2) {
+    matches.push({
+      id: `${prefix}-${index / 2 + 1}`,
+      phase,
+      matchNumber: index / 2 + 1,
+      team1Id: teamIds[index] || null,
+      team2Id: teamIds[index + 1] || null,
+      playedLeg1: false,
+      playedLeg2: false,
+    });
+  }
+
+  return matches;
+}
+
+function simulatePenaltyShootout() {
+  let score1 = 3 + Math.floor(Math.random() * 3);
+  let score2 = 3 + Math.floor(Math.random() * 3);
+  while (score1 === score2) {
+    if (Math.random() >= 0.5) score1++;
+    else score2++;
+  }
+  return [score1, score2] as const;
+}
+
+function resolveMatchWinner(match: ContinentalMatch, singleLeg: boolean) {
+  const aggregate1 = (match.score1Leg1 ?? 0) + (singleLeg ? 0 : match.score1Leg2 ?? 0);
+  const aggregate2 = (match.score2Leg1 ?? 0) + (singleLeg ? 0 : match.score2Leg2 ?? 0);
+
+  if (aggregate1 > aggregate2) return { ...match, winnerId: match.team1Id || undefined };
+  if (aggregate2 > aggregate1) return { ...match, winnerId: match.team2Id || undefined };
+
+  const [penalties1, penalties2] = simulatePenaltyShootout();
+  return {
+    ...match,
+    penalties1,
+    penalties2,
+    winnerId: penalties1 > penalties2 ? match.team1Id || undefined : match.team2Id || undefined,
+  };
+}
+
+function simulateKnockoutLeg(
+  match: ContinentalMatch,
+  allTeams: Team[],
+  leg: 1 | 2,
+  singleLeg = false
+): ContinentalMatch {
+  if (!match.team1Id || !match.team2Id) return match;
+
+  const team1 = findContinentalTeam(match.team1Id, allTeams);
+  const team2 = findContinentalTeam(match.team2Id, allTeams);
+
+  if (leg === 1) {
+    const simulated = {
+      ...match,
+      score1Leg1: simulateContinentalGoals(team1, team2, !singleLeg),
+      score2Leg1: simulateContinentalGoals(team2, team1, false),
+      playedLeg1: true,
+      playedLeg2: singleLeg,
+    };
+    return singleLeg ? resolveMatchWinner(simulated, true) : simulated;
+  }
+
+  return resolveMatchWinner({
+    ...match,
+    score1Leg2: simulateContinentalGoals(team1, team2, false),
+    score2Leg2: simulateContinentalGoals(team2, team1, true),
+    playedLeg2: true,
+  }, false);
+}
+
+function getAdvancePrize(phase: ContinentalMatch['phase'], won: boolean) {
+  if (phase === 'FINAL') return won ? PRIZE_MONEY.WINNER : PRIZE_MONEY.RUNNER_UP;
+  if (!won) return 0;
+  if (phase === 'PLAYOFF') return PRIZE_MONEY.ROUND_OF_16;
+  if (phase === 'ROUND_OF_16') return PRIZE_MONEY.QUARTER;
+  if (phase === 'QUARTER') return PRIZE_MONEY.SEMI;
+  if (phase === 'SEMI') return PRIZE_MONEY.FINAL;
+  return 0;
+}
+
+function advanceGroupMatchday(
   tournament: ContinentalTournamentState,
   allTeams: Team[],
   userTeamId: string | null
-) {
+): { tournament: ContinentalTournamentState; prize: number; userPlayed: boolean; userEliminated: boolean; champion?: string } {
   if (tournament.currentPhase !== 'GROUPS' || tournament.currentMatchday > 6) {
-    return { tournament, prize: 0, userPlayed: false };
+    return { tournament, prize: 0, userPlayed: false, userEliminated: false, champion: undefined as string | undefined };
   }
 
   let userPlayed = false;
@@ -271,12 +428,121 @@ function advanceTournamentMatchday(
     ...tournament,
     groupFixtures,
     currentMatchday: nextMatchday,
-    currentPhase: groupsFinished ? 'ROUND_OF_16' : tournament.currentPhase,
-    bracket: groupsFinished ? generateKnockoutBracket({ ...tournament, groupFixtures }) : tournament.bracket
+    currentPhase: groupsFinished
+      ? (tournament.type === 'SUDAMERICANA' ? ('PLAYOFF' as ContinentalPhase) : ('ROUND_OF_16' as ContinentalPhase))
+      : tournament.currentPhase,
+    bracket: groupsFinished && tournament.type === 'LIBERTADORES'
+      ? generateKnockoutBracket({ ...tournament, groupFixtures })
+      : tournament.bracket
   };
 
   const prize = userPlayed && currentMatchday === 1 ? PRIZE_MONEY.GROUP : 0;
-  return { tournament: updatedTournament, prize, userPlayed };
+  let userEliminated = false;
+  if (groupsFinished && userTeamId) {
+    const userGroup = updatedTournament.groups.find(group => group.teamIds.includes(userTeamId));
+    if (userGroup) {
+      const position = calculateContinentalGroupStandings(userGroup, groupFixtures)
+        .findIndex(standing => standing.teamId === userTeamId);
+      userEliminated = tournament.type === 'LIBERTADORES' ? position >= 3 : position >= 2;
+    }
+  }
+
+  return { tournament: updatedTournament, prize, userPlayed, userEliminated, champion: undefined as string | undefined };
+}
+
+function advanceKnockoutStage(
+  tournament: ContinentalTournamentState,
+  allTeams: Team[],
+  userTeamId: string | null
+): { tournament: ContinentalTournamentState; prize: number; userPlayed: boolean; userEliminated: boolean; champion?: string } {
+  if (tournament.currentPhase === 'GROUPS' || tournament.currentPhase === 'FINISHED' || tournament.bracket.length === 0) {
+    return { tournament, prize: 0, userPlayed: false, userEliminated: false, champion: undefined as string | undefined };
+  }
+
+  const phase = tournament.currentPhase;
+  const singleLeg = phase === 'FINAL';
+  const playingFirstLeg = tournament.bracket.some(match => !match.playedLeg1);
+  const playingSecondLeg = !singleLeg && !playingFirstLeg && tournament.bracket.some(match => !match.playedLeg2);
+  const userPlayed = Boolean(userTeamId && tournament.bracket.some(
+    match => match.team1Id === userTeamId || match.team2Id === userTeamId
+  ));
+
+  if (!playingFirstLeg && !playingSecondLeg) {
+    return { tournament, prize: 0, userPlayed: false, userEliminated: false, champion: undefined as string | undefined };
+  }
+
+  const bracket = tournament.bracket.map(match => {
+    if (playingFirstLeg && !match.playedLeg1) return simulateKnockoutLeg(match, allTeams, 1, singleLeg);
+    if (playingSecondLeg && !match.playedLeg2) return simulateKnockoutLeg(match, allTeams, 2);
+    return match;
+  });
+  const stageFinished = bracket.every(match => match.winnerId);
+
+  if (!stageFinished) {
+    return {
+      tournament: { ...tournament, bracket },
+      prize: 0,
+      userPlayed,
+      userEliminated: false,
+      champion: undefined as string | undefined,
+    };
+  }
+
+  const winners = bracket.map(match => match.winnerId).filter((id): id is string => Boolean(id));
+  const userWon = Boolean(userTeamId && winners.includes(userTeamId));
+  const userEliminated = userPlayed && !userWon;
+  const prize = userPlayed ? getAdvancePrize(phase, userWon) : 0;
+
+  if (phase === 'FINAL') {
+    return {
+      tournament: {
+        ...tournament,
+        bracket,
+        currentPhase: 'FINISHED' as const,
+        winnerId: winners[0],
+      },
+      prize,
+      userPlayed,
+      userEliminated,
+      champion: winners[0],
+    };
+  }
+
+  if (phase === 'PLAYOFF') {
+    const groupWinners = tournament.groups.map(group =>
+      calculateContinentalGroupStandings(group, tournament.groupFixtures)[0]?.teamId
+    ).filter((id): id is string => Boolean(id));
+    const roundOf16Teams = groupWinners.flatMap((groupWinner, index) => [groupWinner, winners[7 - index]]);
+    return {
+      tournament: {
+        ...tournament,
+        bracket: createKnockoutRound(tournament, 'ROUND_OF_16', roundOf16Teams),
+        currentPhase: 'ROUND_OF_16' as const,
+      },
+      prize,
+      userPlayed,
+      userEliminated,
+      champion: undefined as string | undefined,
+    };
+  }
+
+  const nextPhase: ContinentalPhase = phase === 'ROUND_OF_16'
+    ? 'QUARTER'
+    : phase === 'QUARTER'
+      ? 'SEMI'
+      : 'FINAL';
+
+  return {
+    tournament: {
+      ...tournament,
+      bracket: createKnockoutRound(tournament, nextPhase, winners),
+      currentPhase: nextPhase,
+    },
+    prize,
+    userPlayed,
+    userEliminated,
+    champion: undefined as string | undefined,
+  };
 }
 
 export function advanceContinentalMatchday(
@@ -284,18 +550,52 @@ export function advanceContinentalMatchday(
   allTeams: Team[],
   userTeamId: string | null
 ) {
-  const lib = advanceTournamentMatchday(state.libertadores, allTeams, userTeamId);
-  const sud = advanceTournamentMatchday(state.sudamericana, allTeams, userTeamId);
+  const lib = state.libertadores.currentPhase === 'GROUPS'
+    ? advanceGroupMatchday(state.libertadores, allTeams, userTeamId)
+    : advanceKnockoutStage(state.libertadores, allTeams, userTeamId);
+  const sud = state.sudamericana.currentPhase === 'GROUPS'
+    ? advanceGroupMatchday(state.sudamericana, allTeams, userTeamId)
+    : advanceKnockoutStage(state.sudamericana, allTeams, userTeamId);
+  const sudamericana: ContinentalTournamentState = sud.tournament.currentPhase === 'PLAYOFF' && sud.tournament.bracket.length === 0
+    ? {
+        ...sud.tournament,
+        bracket: generateSudamericanaPlayoffs(sud.tournament, lib.tournament),
+      }
+    : sud.tournament;
   const userTournament = state.userQualification?.tournament;
   const userAdvance = userTournament === 'LIBERTADORES' ? lib : userTournament === 'SUDAMERICANA' ? sud : null;
+  const transferredToSudamericana = Boolean(
+    userTeamId && sudamericana.bracket.some(
+      match => match.team1Id === userTeamId || match.team2Id === userTeamId
+    )
+  );
+  const userQualification = userAdvance?.userEliminated
+    ? undefined
+    : transferredToSudamericana && userTournament === 'LIBERTADORES'
+      ? { tournament: 'SUDAMERICANA' as const }
+      : state.userQualification;
 
   return {
     state: {
       ...state,
       libertadores: lib.tournament,
-      sudamericana: sud.tournament
+      sudamericana,
+      userQualification,
     },
     prize: userAdvance?.prize ?? 0,
-    userPlayed: userAdvance?.userPlayed ?? false
+    userPlayed: userAdvance?.userPlayed ?? false,
+    userEliminated: userAdvance?.userEliminated ?? false,
+    champions: [
+      lib.champion ? {
+        teamId: lib.champion,
+        teamName: findContinentalTeam(lib.champion, allTeams)?.name || lib.champion,
+        tournament: 'LIBERTADORES' as const,
+      } : null,
+      sud.champion ? {
+        teamId: sud.champion,
+        teamName: findContinentalTeam(sud.champion, allTeams)?.name || sud.champion,
+        tournament: 'SUDAMERICANA' as const,
+      } : null,
+    ].filter((champion): champion is NonNullable<typeof champion> => Boolean(champion)),
   };
 }

@@ -104,7 +104,7 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
   ] as const;
 
   return (
-    <div className="flex flex-col h-dvh bg-background text-white font-sans">
+    <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-background font-sans text-white">
 
       {/* HEADER */}
       <header className="px-5 pt-12 pb-4 bg-background z-10">
@@ -154,7 +154,7 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
       </header>
 
       {/* TEAM LIST */}
-      <main className="flex-1 overflow-y-auto px-5 pb-24 scroll-smooth no-scrollbar space-y-4">
+      <main className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-5 pb-24 scroll-smooth no-scrollbar space-y-4">
         <div className="flex items-center justify-between px-1">
           <div>
             <h2 className="text-[16px] font-black tracking-tight text-white">Opções para assumir agora</h2>
@@ -281,7 +281,7 @@ export default function TeamSelectionScreen({ teams, onSelect, onBack }: Props) 
             </div>
 
             {/* Modal Content - Scrollable */}
-            <div className="px-8 pb-32 overflow-y-auto no-scrollbar">
+            <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-8 pb-32 no-scrollbar">
               <p className="text-sm text-gray-400 leading-relaxed mb-8">
                 {selectedTeam.description || `O ${selectedTeam.name} é uma das forças do futebol brasileiro, buscando glórias na temporada 2026 com um elenco competitivo.`}
               </p>

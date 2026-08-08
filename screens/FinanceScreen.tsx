@@ -76,7 +76,7 @@ export default function FinanceScreen({
     : `Ampliação indisponível no momento: faltam ${formatMoney(stadiumUpgradeCost - funds)} para executar a obra.`;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background font-sans text-white w-full relative">
+    <div className="relative flex h-dvh max-h-dvh w-full flex-col overflow-hidden bg-background font-sans text-white">
       <Header 
         title="Controle do Clube"
         subtitle="Finanças"
@@ -85,7 +85,7 @@ export default function FinanceScreen({
         rightAction={<div className="px-3 py-1.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400 font-bold text-xs tabular-nums">{formatMoney(funds)}</div>}
       />
 
-      <main className="flex-1 space-y-6 overflow-y-auto p-4 sm:p-6 pb-28 no-scrollbar max-w-4xl mx-auto w-full">
+      <main className="mx-auto min-h-0 w-full max-w-4xl flex-1 touch-pan-y space-y-6 overflow-y-auto overscroll-contain p-4 pb-28 sm:p-6 no-scrollbar">
         {/* Finance Pulse Card */}
         <section className="ui-card-premium p-8 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
@@ -322,4 +322,3 @@ export default function FinanceScreen({
     </div>
   );
 }
-

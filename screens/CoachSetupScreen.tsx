@@ -93,7 +93,7 @@ export default function CoachSetupScreen({ onComplete, onBack }: Props) {
                 </div>
             </div>
 
-            <main className="flex-1 overflow-y-auto px-6 pt-4 pb-32 no-scrollbar relative">
+            <main className="relative min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-6 pt-4 pb-32 no-scrollbar">
                 <AnimatePresence mode="wait">
                     {/* STEP 0: INTRO */}
                     {step === 0 && (

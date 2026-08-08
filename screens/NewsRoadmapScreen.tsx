@@ -8,7 +8,7 @@ interface Props {
 
 export default function NewsRoadmapScreen({ onBackHome, onStart }: Props) {
   return (
-    <div className="min-h-dvh w-full overflow-y-auto overflow-x-hidden bg-[#020617] text-white font-sans selection:bg-emerald-500/30">
+    <div className="h-dvh max-h-dvh w-full touch-pan-y overflow-y-auto overflow-x-hidden overscroll-contain bg-[#020617] text-white font-sans selection:bg-emerald-500/30">
       {/* Sticky Header */}
       <header className="sticky top-0 z-50 h-16 border-b border-white/10 bg-[#020617]/85 backdrop-blur-xl">
         <div className="mx-auto flex h-full w-full max-w-[1240px] items-center justify-between px-4 sm:px-6 lg:px-8">

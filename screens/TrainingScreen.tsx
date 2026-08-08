@@ -65,7 +65,7 @@ export default function TrainingScreen({
         }
       />
 
-      <main className="flex-1 overflow-y-auto p-6 space-y-10 no-scrollbar pb-32">
+      <main className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain p-6 space-y-10 no-scrollbar pb-32">
         
         {/* Potencial de Evolução */}
         <section className="ui-card-premium p-10 relative overflow-hidden group border-emerald-500/10 bg-emerald-500/[0.02]">
@@ -194,5 +194,4 @@ export default function TrainingScreen({
     </div>
   );
 }
-
 

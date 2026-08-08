@@ -460,7 +460,7 @@ function makePlayerSeed(athlete, index, teamRating, tmPlayer) {
   const ovr = overallFromMarketValue(marketValue, age, mainPos, teamRating, index);
 
   return {
-    name: athlete.Atleta_apelido || athlete.atleta_nome,
+    name: tmPlayer?.name || athlete.Atleta_apelido || athlete.atleta_nome,
     pos,
     mainPos,
     ovr,
@@ -470,7 +470,7 @@ function makePlayerSeed(athlete, index, teamRating, tmPlayer) {
   };
 }
 
-function renderRosterFile(rosters, sourceUrls) {
+function renderRosterFile(rosters, sourceUrls, generatedAt) {
   const body = Object.entries(rosters)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([teamId, players]) => {
@@ -496,7 +496,7 @@ export type RealBrazilianPlayerSeed = {
   foot?: 'LEFT' | 'RIGHT' | 'BOTH';
 };
 
-export const ROSTER_DATA_VERSION = 'cbf-tm-2026-08-04-v3';
+export const ROSTER_DATA_VERSION = ${JSON.stringify(`cbf-tm-${generatedAt.slice(0, 10)}-v5`)};
 
 // Generated from public CBF 2026 competition pages and Transfermarkt 2026 squad pages.
 // Source URLs:
@@ -543,7 +543,7 @@ for (const team of teams) {
   const athletes = extractJsonArray(html, '"atletas":');
   const currentClubName = normalize(team.popularName);
   const filtered = athletes.filter(athlete => normalize(athlete.clube_nome_popular) === currentClubName);
-  const selected = (filtered.length >= 16 ? filtered : athletes).slice(0, 26);
+  const selected = filtered.length >= 16 ? filtered : athletes;
 
   const teamRating = team.appId.includes('flamengo') || team.appId.includes('palmeiras') ? 86 : 78;
   const usedTmPlayerIds = new Set();
@@ -553,14 +553,15 @@ for (const team of teams) {
   });
 }
 
+const generatedAt = new Date().toISOString();
 mkdirSync(path.join(process.cwd(), 'scratch'), { recursive: true });
 writeFileSync(
   path.join(process.cwd(), 'scratch', 'cbf-roster-import.json'),
-  JSON.stringify({ generatedAt: new Date().toISOString(), teams, rosters }, null, 2)
+  JSON.stringify({ generatedAt, teams, rosters }, null, 2)
 );
 writeFileSync(
   path.join(process.cwd(), 'realBrazilianRosters.ts'),
-  renderRosterFile(rosters, sourceUrls)
+  renderRosterFile(rosters, sourceUrls, generatedAt)
 );
 
 console.log(`Imported ${Object.keys(rosters).length} rosters from CBF.`);

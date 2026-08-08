@@ -29,8 +29,8 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
    const [filter, setFilter] = useState<PositionFilter>('ALL');
    const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
    const [modalTab, setModalTab] = useState<'STATS' | 'BIO'>('STATS');
-   const verifiedPlayers = team.roster.filter(player => player.dataSource === 'CBF_TRANSFERMARKT').length;
-   const modeledPlayers = team.roster.filter(player => player.dataSource === 'CBF_MODEL').length;
+   const verifiedPlayers = team.roster.filter(player => ['CBF_TRANSFERMARKT', 'ESPN_MODEL'].includes(player.dataSource || '')).length;
+   const modeledPlayers = team.roster.filter(player => ['CBF_MODEL', 'GENERATED'].includes(player.dataSource || '')).length;
 
    const filteredPlayers = team.roster.filter(p => {
       if (filter === 'ALL') return true;
@@ -38,7 +38,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
       if (filter === 'DEF') return ['ZAG', 'LAT'].includes(p.position);
       if (filter === 'MID') return ['VOL', 'MEI'].includes(p.position);
       if (filter === 'ATT') return p.position === 'ATA';
-      if (filter === 'PENDING') return p.dataSource === 'CBF_MODEL';
+      if (filter === 'PENDING') return ['CBF_MODEL', 'GENERATED'].includes(p.dataSource || '');
       return true;
    });
 
@@ -47,7 +47,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
    };
 
    return (
-      <div className="flex flex-col min-h-dvh bg-background text-white selection:bg-primary/30 w-full relative">
+      <div className="relative flex h-dvh max-h-dvh w-full flex-col overflow-hidden bg-background text-white selection:bg-primary/30">
          <Header 
             title="Escritório Técnico"
             subtitle="Gestão Integrada do Elenco"
@@ -60,7 +60,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
             }
          />
 
-         <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col">
+         <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden">
            {/* Cinematic Tab Navigation */}
            <div className="px-4 sm:px-6 py-4 overflow-x-auto no-scrollbar flex items-center gap-2 bg-background/80 backdrop-blur-3xl sticky top-0 z-30 border-b border-white/5">
               {(['ALL', 'GOL', 'DEF', 'MID', 'ATT', 'PENDING'] as PositionFilter[]).map((tab) => (
@@ -94,7 +94,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
             )}
          </div>
 
-         <div className="flex-1 overflow-y-auto px-6 pb-32 pt-6 space-y-5 no-scrollbar">
+         <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-6 pb-32 pt-6 space-y-5 no-scrollbar">
             {filteredPlayers.map((player) => (
                <motion.div
                   key={player.id}
@@ -126,7 +126,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                                 <span className="text-[10px] font-black text-emerald-400 italic">OVR {player.overall}</span>
                             </div>
                             <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{player.age} anos</span>
-                            {player.dataSource === 'CBF_TRANSFERMARKT' && (
+                            {['CBF_TRANSFERMARKT', 'ESPN_MODEL'].includes(player.dataSource || '') && (
                                <BadgeCheck size={13} className="text-emerald-400" aria-label="Dados verificados" />
                             )}
                         </div>
@@ -179,7 +179,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                   <div className="w-14"></div>
                </motion.header>
 
-               <main className="flex-1 overflow-y-auto p-10 space-y-12 no-scrollbar pb-32">
+               <main className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain p-10 space-y-12 no-scrollbar pb-32">
                   <div className="flex flex-col lg:flex-row items-center lg:items-start gap-12 relative">
                      <div className="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/5 blur-[120px] pointer-events-none rounded-full" />
                      
@@ -218,7 +218,7 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                            </div>
                         </div>
                         <div className="flex max-w-md items-start gap-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-left">
-                           {selectedPlayer.dataSource === 'CBF_TRANSFERMARKT' ? (
+                           {['CBF_TRANSFERMARKT', 'ESPN_MODEL'].includes(selectedPlayer.dataSource || '') ? (
                               <BadgeCheck size={18} className="mt-0.5 shrink-0 text-emerald-400" />
                            ) : (
                               <AlertCircle size={18} className="mt-0.5 shrink-0 text-amber-300" />
@@ -226,7 +226,9 @@ export default function SquadScreen({ team, onBack, onRenew, transferLogs = [] }
                            <p className="text-[11px] leading-5 text-white/55">
                               {selectedPlayer.dataSource === 'CBF_TRANSFERMARKT'
                                  ? 'Clube, posição e idade vêm de fontes públicas; o valor é usado quando disponível. Overall e atributos são avaliações de gameplay.'
-                                 : 'Clube e nome vêm da CBF. Posição, idade, overall e atributos ainda são estimativas de gameplay.'}
+                                 : selectedPlayer.dataSource === 'ESPN_MODEL'
+                                   ? 'Clube, nome, idade e posição geral vêm do elenco público de agosto de 2026. Posição detalhada, overall, valor e atributos são estimativas de gameplay.'
+                                   : 'Clube e nome vêm da CBF. Posição, idade, overall e atributos ainda são estimativas de gameplay.'}
                            </p>
                         </div>
                      </div>

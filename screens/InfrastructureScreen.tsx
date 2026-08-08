@@ -94,7 +94,7 @@ export default function InfrastructureScreen({ infrastructure, funds, onUpgrade,
         }
       />
 
-      <main className="flex-1 overflow-y-auto p-6 space-y-10 no-scrollbar pb-32">
+      <main className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain p-6 space-y-10 no-scrollbar pb-32">
         
         {/* Orçamento Header */}
         <section className="ui-card-premium p-10 relative overflow-hidden group border-white/5 bg-white/[0.02]">

@@ -54,7 +54,7 @@ export default function StaffScreen({ hiredStaff, staffMarket, funds, onHire, on
         }
       />
 
-      <main className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar pb-40">
+      <main className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain p-6 space-y-8 no-scrollbar pb-40">
         
         {/* Advanced Navigation Tabs */}
         <div className="flex p-1.5 bg-zinc-900 border border-white/5 rounded-[2rem] shadow-2xl backdrop-blur-3xl sticky top-0 z-20">

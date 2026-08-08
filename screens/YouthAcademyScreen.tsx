@@ -49,7 +49,7 @@ export default function YouthAcademyScreen({ userTeam, roster, funds, infrastruc
         }
       />
 
-      <main className="flex-1 overflow-y-auto p-6 space-y-10 no-scrollbar pb-32">
+      <main className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain p-6 space-y-10 no-scrollbar pb-32">
         
         {/* Advanced Academy Status Card */}
         <section className="ui-card-premium p-10 relative overflow-hidden group shadow-2xl border-white/5 bg-white/[0.01]">
@@ -139,7 +139,7 @@ export default function YouthAcademyScreen({ userTeam, roster, funds, infrastruc
       {/* Player Details Modal */}
       <AnimatePresence>
         {selectedPlayer && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl">
+          <div className="fixed inset-0 z-[100] flex touch-pan-y items-center justify-center overflow-y-auto overscroll-contain bg-black/95 p-4 backdrop-blur-3xl sm:p-6">
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
@@ -152,7 +152,7 @@ export default function YouthAcademyScreen({ userTeam, roster, funds, infrastruc
               initial={{ scale: 0.9, y: 50, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.9, y: 50, opacity: 0 }}
-              className="w-full max-w-xl ui-card-premium border-white/10 p-12 relative z-10 shadow-[0_60px_120px_rgba(0,0,0,1)] overflow-hidden"
+              className="relative z-10 max-h-[95dvh] w-full max-w-xl touch-pan-y overflow-y-auto overscroll-contain ui-card-premium border-white/10 p-6 shadow-[0_60px_120px_rgba(0,0,0,1)] sm:p-12 no-scrollbar"
             >
               <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
               

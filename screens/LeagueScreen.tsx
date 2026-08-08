@@ -33,7 +33,7 @@ export default function LeagueScreen({ teams, userTeamId, onBack }: Props) {
   }, [teams, div]);
 
   return (
-    <div className="flex flex-col h-dvh bg-background text-white/90 selection:bg-primary/30">
+    <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-background text-white/90 selection:bg-primary/30">
       <Header 
         title={div === 1 ? 'Série A' : 'Série B'} 
         subtitle="Competição Nacional"
@@ -74,7 +74,7 @@ export default function LeagueScreen({ teams, userTeamId, onBack }: Props) {
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto no-scrollbar pb-safe px-6">
+      <main className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain no-scrollbar pb-safe px-6">
         {tab === 'LOCAL' ? (
           <div className="ui-card-premium p-0 overflow-hidden mb-12 shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
             <div className="overflow-x-auto selection:bg-primary/20">

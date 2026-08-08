@@ -16,7 +16,7 @@ export default function OnboardingModal({
 }: OnboardingModalProps) {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/95 p-4 sm:p-5 backdrop-blur-2xl animate-in fade-in duration-300">
-      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-[32px] border border-white/10 bg-surface p-6 sm:p-7 shadow-2xl">
+      <div className="max-h-[90dvh] w-full max-w-md touch-pan-y overflow-y-auto overscroll-contain no-scrollbar rounded-[32px] border border-white/10 bg-surface p-6 sm:p-7 shadow-2xl">
         <div className="flex items-center justify-between">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
             <Shirt size={28} />

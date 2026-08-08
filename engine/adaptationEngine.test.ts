@@ -57,7 +57,7 @@ describe('Adaptation & Cohesion Engine', () => {
       lineup: Array.from({ length: 11 }, (_, i) => `p${i + 1}`),
       formation: '4-4-2',
       style: 'Equilibrado',
-      instructions: { pressing: 'BALANÇADA', passing: 'MISTO', tempo: 'NORMAL' },
+      instructions: { pressing: 'MEDIA', passing: 'MISTO', tempo: 'PADRAO' },
       played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, points: 0, moral: 80, division: 1, stadiumCapacity: 30000,
       cohesion: 50
     };

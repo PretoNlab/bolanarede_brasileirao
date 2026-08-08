@@ -560,7 +560,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
             </div>
          </header>
 
-         <main className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
+         <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col space-y-4 overflow-hidden p-4 sm:space-y-6 sm:p-6">
             
             {/* CRITICAL PULSE CARD (STANDARDIZED) */}
             <section className={clsx(
@@ -576,7 +576,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                )} />
 
                <div className="flex justify-between items-center mb-4 relative z-10">
-                  <span className="ui-label-caps text-[9px]">Status em Tempo Real</span>
+                  <span className="ui-label-caps text-[10px]">Status em Tempo Real</span>
                   <div className="flex gap-1.5">
                      {[0, 1, 2].map(i => (
                         <div key={i} className={clsx(
@@ -588,7 +588,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                   </div>
                </div>
                <h3 className="text-xl font-black italic tracking-tighter uppercase mb-2 relative z-10">{matchPulse.title}</h3>
-               <p className="text-[12px] text-secondary font-medium leading-relaxed opacity-80 relative z-10">{matchPulse.copy}</p>
+               <p className="text-sm text-secondary font-medium leading-relaxed opacity-80 relative z-10">{matchPulse.copy}</p>
             </section>
 
 
@@ -598,12 +598,13 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                <button
                   onClick={() => { hapticSelection(); setActiveTab('round'); }}
                   className={clsx(
-                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-2 shrink-0 relative",
+                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-2 shrink-0 relative",
                      activeTab === 'round' ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/10" : "text-white/40 hover:text-white/70"
                   )}
                >
                   <Globe size={14} className="shrink-0" />
-                  <span>Jogos da Rodada (Simultâneos)</span>
+                  <span className="sm:hidden">Rodada</span>
+                  <span className="hidden sm:inline">Jogos da Rodada</span>
                   {liveRoundMatches.length > 0 && (
                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                   )}
@@ -611,7 +612,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                <button
                   onClick={() => { hapticSelection(); setActiveTab('feed'); }}
                   className={clsx(
-                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-2 shrink-0",
+                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-2 shrink-0",
                      activeTab === 'feed' ? "bg-white/10 text-white border border-white/10 shadow-lg" : "text-white/40 hover:text-white/70"
                   )}
                >
@@ -621,7 +622,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                <button
                   onClick={() => { hapticSelection(); setActiveTab('stats'); }}
                   className={clsx(
-                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-2 shrink-0",
+                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-2 shrink-0",
                      activeTab === 'stats' ? "bg-white/10 text-white border border-white/10 shadow-lg" : "text-white/40 hover:text-white/70"
                   )}
                >
@@ -634,7 +635,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
             {activeTab === 'feed' && (
                <div 
                   ref={feedRef}
-                  className="flex-1 ui-card-premium p-6 overflow-y-auto no-scrollbar space-y-5 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)] flex flex-col items-center"
+                  className="min-h-0 flex-1 touch-pan-y ui-card-premium p-6 overflow-y-auto overscroll-contain no-scrollbar space-y-5 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)] flex flex-col items-center"
                >
                   {feed.length === 0 && (
                      <div className="h-full flex flex-col items-center justify-center opacity-10 gap-6">
@@ -685,7 +686,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
 
             {/* TAB 2: MATCH STATS */}
             {activeTab === 'stats' && (
-               <div className="flex-1 ui-card-premium p-6 overflow-y-auto no-scrollbar space-y-6 border-white/5 bg-white/[0.01]">
+               <div className="min-h-0 flex-1 touch-pan-y ui-card-premium p-6 overflow-y-auto overscroll-contain no-scrollbar space-y-6 border-white/5 bg-white/[0.01]">
                   <h4 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-3">Estatísticas da Partida</h4>
                   
                   {/* Posse de Bola */}
@@ -716,19 +717,19 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
 
             {/* TAB 3: JOGOS DA RODADA AO VIVO */}
             {activeTab === 'round' && (
-               <div className="flex-1 ui-card-premium p-4 overflow-y-auto no-scrollbar space-y-4 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)]">
+               <div className="min-h-0 flex-1 touch-pan-y ui-card-premium p-4 overflow-y-auto overscroll-contain no-scrollbar space-y-4 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)]">
                   {liveRoundMatches.length === 0 ? (
                      <div className="h-full flex flex-col items-center justify-center opacity-30 gap-4 py-12">
                         <Globe size={48} className="animate-pulse" />
                         <span className="ui-label-caps text-xs tracking-[0.3em]">Nenhum outro jogo nesta rodada</span>
                      </div>
                   ) : (
-                     <div className="grid grid-cols-1 gap-4">
+                     <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                         {liveRoundMatches.map((m) => (
-                           <div key={m.fixtureId} className="p-4 sm:p-5 bg-[#0f172a]/60 border border-white/10 rounded-3xl flex items-center justify-between gap-2 sm:gap-4 shadow-xl hover:border-emerald-500/30 transition-all">
+                           <div key={m.fixtureId} className="p-4 sm:p-5 bg-[#0f172a]/60 border border-white/10 rounded-3xl flex items-center justify-between gap-2 sm:gap-4 shadow-xl hover:border-emerald-500/30 transition-all min-w-0">
                               
                               {/* Left Column: Stadium & Crowd */}
-                              <div className="flex flex-col text-[10px] text-white/50 space-y-0.5 shrink-0 max-w-[95px] sm:max-w-[140px] hidden xs:flex">
+                              <div className="hidden flex-col text-[10px] text-white/50 space-y-0.5 shrink-0 max-w-[140px] lg:flex">
                                  <span className="font-semibold text-white/70 truncate">Estádio: {m.stadiumName}</span>
                                  <span className="text-[9px] opacity-70">👥 {((m.homeTeam.stadiumCapacity || 25000) * 0.82).toLocaleString('pt-BR')} pessoas</span>
                               </div>
@@ -783,29 +784,30 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
          </main>
 
          {/* MATCH ACTION BAR (PHASE 3: MODERNA) */}
-         <footer className="p-6 bg-slate-950/80 backdrop-blur-3xl border-t border-white/5 pb-12 relative z-40">
+         <footer className="relative z-40 border-t border-white/5 bg-slate-950/80 p-4 pb-8 backdrop-blur-3xl sm:p-6 sm:pb-10">
+            <div className="mx-auto w-full max-w-7xl">
             {/* Action Grid */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="mb-4 grid grid-cols-2 gap-4 sm:mb-6">
                <motion.button 
                   whileTap={{ scale: 0.95 }}
                   onClick={() => { hapticSelection(); setIsPaused(true); setShowTacticsModal(true); }} 
-                  className="flex flex-col items-center justify-center gap-2 py-5 bg-white/[0.03] rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all group"
+                  className="flex flex-col items-center justify-center gap-2 rounded-3xl border border-white/10 bg-white/[0.03] py-4 transition-all hover:bg-white/[0.08] sm:py-5 lg:flex-row lg:py-5 group"
                >
                   <div className="h-10 w-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                      <Target size={18} />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Estratégia</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">Estratégia</span>
                </motion.button>
 
                <motion.button 
                   whileTap={{ scale: 0.95 }}
                   onClick={() => { hapticSelection(); setIsPaused(true); setShowSubModal(true); }} 
-                  className="flex flex-col items-center justify-center gap-2 py-5 bg-white/[0.03] rounded-3xl border border-white/10 hover:bg-white/[0.08] transition-all group"
+                  className="flex flex-col items-center justify-center gap-2 rounded-3xl border border-white/10 bg-white/[0.03] py-4 transition-all hover:bg-white/[0.08] sm:py-5 lg:flex-row lg:py-5 group"
                >
                   <div className="h-10 w-10 bg-emerald-400/10 rounded-2xl flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
                      <ArrowRightLeft size={18} />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Substituir</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.18em] opacity-70">Substituir</span>
                </motion.button>
             </div>
 
@@ -815,7 +817,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                whileTap={{ scale: 0.97 }}
                onClick={handleResumeMatch}
                className={clsx(
-                  "w-full h-18 rounded-[2.25rem] flex items-center justify-center gap-4 shadow-2xl transition-all relative overflow-hidden group",
+                  "w-full min-h-[64px] rounded-[2rem] flex items-center justify-center gap-4 shadow-2xl transition-all relative overflow-hidden group",
                   isPaused ? "bg-white text-black" : "bg-white/5 text-white border border-white/10"
                )}
             >
@@ -828,12 +830,13 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                   {isPaused ? <Play size={18} fill="currentColor" /> : <Pause size={18} fill="currentColor" />}
                </div>
                
-               <span className="text-[11px] font-black uppercase tracking-[0.4em] italic">
+               <span className="text-[11px] font-black uppercase tracking-[0.22em] italic sm:tracking-[0.3em]">
                   {gameState === 'HT' ? 'Iniciar 2º Tempo' : 
                    gameState === 'ET_INT' ? 'Iniciar Prorrogação' : 
                    isPaused ? 'Retomar Combate' : 'Pausar Simulação'}
                </span>
             </motion.button>
+            </div>
          </footer>
 
          {/* PENALTY SHOOTOUT OVERLAY (CINEMATIC) */}
@@ -842,7 +845,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-8"
+                  className="fixed inset-0 z-[150] flex touch-pan-y items-center justify-center overflow-y-auto overscroll-contain bg-black/95 p-6 backdrop-blur-3xl sm:p-8"
                >
                   <div className="w-full max-w-sm flex flex-col items-center gap-12">
                      <div className="flex flex-col items-center gap-4">
@@ -917,7 +920,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-4xl flex items-center justify-center p-8 overflow-y-auto"
+                  className="fixed inset-0 z-[300] flex touch-pan-y items-center justify-center overflow-y-auto overscroll-contain bg-black/95 p-6 backdrop-blur-4xl sm:p-8"
                >
                   <motion.div 
                      initial={{ scale: 0.9, y: 30 }}
@@ -1033,7 +1036,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6"
+                  className="fixed inset-0 z-[200] flex touch-pan-y items-center justify-center overflow-y-auto overscroll-contain bg-black/95 p-6 backdrop-blur-3xl"
                >
                   <motion.div 
                      initial={{ scale: 0.95, y: 20 }}
@@ -1053,7 +1056,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                         </button>
                      </div>
                      
-                     <div className="space-y-10 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 px-1">
+                     <div className="max-h-[60dvh] touch-pan-y space-y-10 overflow-y-auto overscroll-contain px-1 pr-1 no-scrollbar">
                         <section className="space-y-4">
                            <span className="ui-label-caps text-[9px] opacity-40">Mentalidade</span>
                            <div className="grid grid-cols-2 gap-3">
@@ -1163,7 +1166,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6"
+                  className="fixed inset-0 z-[200] flex touch-pan-y items-center justify-center overflow-y-auto overscroll-contain bg-black/95 p-6 backdrop-blur-3xl"
                >
                   <motion.div 
                      initial={{ scale: 0.95, y: 20 }}
@@ -1183,7 +1186,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                         </button>
                      </div>
 
-                     <div className="space-y-8 max-h-[60vh] overflow-y-auto no-scrollbar px-1">
+                     <div className="max-h-[60dvh] touch-pan-y space-y-8 overflow-y-auto overscroll-contain px-1 no-scrollbar">
                         {!selectedSubOut ? (
                            <section className="space-y-4">
                               <span className="ui-label-caps text-[9px] opacity-40">Quem sai da partida?</span>

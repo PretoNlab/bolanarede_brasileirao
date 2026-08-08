@@ -26,7 +26,7 @@ export default function PlayerSelectorDrawer({ players, targetPosition, currentL
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       
       {/* Content */}
-      <div className="relative w-full max-w-2xl mx-auto bg-surface border-t border-white/10 rounded-t-[32px] sm:rounded-t-[40px] max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300 shadow-2xl">
+      <div className="relative mx-auto flex max-h-[85dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[32px] border-t border-white/10 bg-surface shadow-2xl animate-in slide-in-from-bottom duration-300 sm:rounded-t-[40px]">
         <div className="p-5 sm:p-6 flex items-center justify-between border-b border-white/5">
           <div className="flex flex-col">
             <h3 className="text-lg sm:text-xl font-black italic tracking-tight uppercase">Escolher Atleta</h3>
@@ -37,7 +37,7 @@ export default function PlayerSelectorDrawer({ players, targetPosition, currentL
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-3">
+        <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain no-scrollbar p-4 sm:p-6 space-y-3">
           {sortedPlayers.map((player) => {
             const fitRoll = calculatePlayerFitForPosition(player, targetPosition);
             const fit = fitRoll.multiplier;

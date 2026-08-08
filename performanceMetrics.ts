@@ -71,6 +71,15 @@ export function trackPerformanceEvent(
   writeJson(EVENTS_KEY, [event, ...events].slice(0, MAX_EVENTS));
 
   window.dispatchEvent(new CustomEvent('bnr:performance-event', { detail: event }));
+
+  const win = window as unknown as { gtag?: (...args: unknown[]) => void };
+  if (typeof win.gtag === 'function') {
+    try {
+      win.gtag('event', name, data);
+    } catch {
+      // Ignore analytics failures
+    }
+  }
 }
 
 export function markPerformance(name: PerformanceEventName) {

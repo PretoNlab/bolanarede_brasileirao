@@ -93,6 +93,18 @@ const navItems = [
 ];
 
 export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
+  const scrollToSection = (target: string) => {
+    if (typeof window === 'undefined') return;
+    if (target === 'inicio') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const el = document.getElementById(target);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   const handleNavClick = (target: string) => {
     if (target === 'novidades') {
       if (typeof window !== 'undefined') {
@@ -100,16 +112,16 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
         window.dispatchEvent(new PopStateEvent('popstate'));
       }
     } else {
-      scrollTo(target);
+      scrollToSection(target);
     }
   };
 
   return (
-    <div className="h-dvh w-full overflow-y-auto overflow-x-hidden bg-[#020617] text-white no-scrollbar font-sans selection:bg-emerald-500/30">
+    <div className="h-dvh w-full touch-pan-y overflow-y-auto overflow-x-hidden overscroll-contain bg-[#020617] text-white no-scrollbar font-sans selection:bg-emerald-500/30">
       {/* Sticky Header */}
       <header className="sticky top-0 z-50 h-16 border-b border-white/10 bg-[#020617]/85 backdrop-blur-xl">
         <div className="mx-auto flex h-full w-full max-w-[1240px] items-center justify-between px-4 sm:px-6 lg:px-8">
-          <button onClick={() => scrollTo('inicio')} className="flex items-center gap-3 group" title="Voltar ao início">
+          <button onClick={() => handleNavClick('inicio')} className="flex items-center gap-3 group" title="Voltar ao início">
             <div className="relative">
               <div className="absolute inset-0 bg-emerald-500 blur-md opacity-40 group-hover:opacity-80 transition-opacity" />
               <img src="/logo.svg" alt="BNR" className="h-9 w-9 relative z-10" />

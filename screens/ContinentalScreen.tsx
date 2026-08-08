@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Shield, Trophy } from 'lucide-react';
 import { Team, ContinentalSeasonState, ContinentalTournamentType } from '../types';
 import { SOUTH_AMERICAN_FOREIGN_CLUBS } from '../southAmericaData';
+import { CONTINENTAL_2026_EXTRA_CLUBS } from '../continental2026Data';
 import { calculateContinentalGroupStandings } from '../engine/continentalEngine';
+import TeamLogo from '../components/TeamLogo';
 
 interface ContinentalScreenProps {
   continentalState: ContinentalSeasonState;
@@ -12,197 +14,266 @@ interface ContinentalScreenProps {
   onBackToDashboard: () => void;
 }
 
+type ContinentalTab = 'GROUPS' | 'BRACKET' | 'PRIZES';
+
+const TABS: Array<{ id: ContinentalTab; label: string }> = [
+  { id: 'GROUPS', label: 'Grupos' },
+  { id: 'BRACKET', label: 'Mata-mata' },
+  { id: 'PRIZES', label: 'Premiação' },
+];
+
+const PHASE_LABELS = {
+  GROUPS: 'Fase de grupos',
+  PLAYOFF: 'Playoff para as oitavas',
+  ROUND_OF_16: 'Oitavas de final',
+  QUARTER: 'Quartas de final',
+  SEMI: 'Semifinais',
+  FINAL: 'Final',
+  FINISHED: 'Campeão continental',
+} as const;
+
 export default function ContinentalScreen({
   continentalState,
   teams,
   userTeamId,
-  onBackToDashboard
+  onBackToDashboard,
 }: ContinentalScreenProps) {
   const [selectedTournament, setSelectedTournament] = useState<ContinentalTournamentType>('LIBERTADORES');
-  const [activeTab, setActiveTab] = useState<'GROUPS' | 'BRACKET' | 'PRIZES'>('GROUPS');
+  const [activeTab, setActiveTab] = useState<ContinentalTab>('GROUPS');
 
-  const tournament = selectedTournament === 'LIBERTADORES' 
-    ? continentalState.libertadores 
+  const tournament = selectedTournament === 'LIBERTADORES'
+    ? continentalState.libertadores
     : continentalState.sudamericana;
-
-  const allKnownTeams = [...teams, ...SOUTH_AMERICAN_FOREIGN_CLUBS];
-  const getTeam = (id: string) => {
-    const exactMatch = allKnownTeams.find(t => t.id === id);
+  const isLibertadores = selectedTournament === 'LIBERTADORES';
+  const allKnownTeams = [...teams, ...SOUTH_AMERICAN_FOREIGN_CLUBS, ...CONTINENTAL_2026_EXTRA_CLUBS];
+  const getTeam = (id: string | null) => {
+    if (!id) return null;
+    const exactMatch = allKnownTeams.find(team => team.id === id);
     if (exactMatch) return exactMatch;
-
     const baseId = id.replace(/-(lib|sud)-\d+$/, '');
-    return allKnownTeams.find(t => t.id === baseId) || { name: 'Time Desconhecido', shortName: 'TIM' };
+    return allKnownTeams.find(team => team.id === baseId) || null;
   };
 
-  const userQual = continentalState.userQualification;
-  const isUserInCurrent = userQual?.tournament === selectedTournament;
+  const userQualification = continentalState.userQualification;
+  const isUserInCurrent = userQualification?.tournament === selectedTournament && tournament.currentPhase !== 'FINISHED';
+  const championTeam = getTeam(tournament.winnerId || null);
 
   return (
-    <div className="flex flex-col min-h-dvh w-full bg-[#020617] text-white p-4 pb-24 md:p-8 pt-safe">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-white/10 pb-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-widest">
-            <Trophy className="w-4 h-4" /> Torneios Continentais CONMEBOL
+    <div className="flex h-dvh max-h-dvh w-full flex-col overflow-hidden bg-[#020617] text-white pt-safe">
+      <div className="mx-auto min-h-0 w-full max-w-7xl flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pt-6 no-scrollbar">
+        <header className="border-b border-white/10 pb-5 lg:flex lg:items-end lg:justify-between lg:gap-8">
+          <div className="flex items-start gap-3 lg:flex-1">
+            <button
+              type="button"
+              onClick={onBackToDashboard}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10"
+              aria-label="Voltar para o painel"
+              title="Voltar para o painel"
+            >
+              <ArrowLeft size={20} />
+            </button>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase text-emerald-400">
+                <Trophy size={15} />
+                CONMEBOL 2026
+              </div>
+              <h1 className="mt-1 text-2xl font-black leading-tight sm:text-4xl">{tournament.name}</h1>
+              <p className="mt-1 text-sm text-slate-400">Grupos oficiais da temporada e campanha do seu clube.</p>
+            </div>
           </div>
-          <h1 className="text-2xl md:text-4xl font-black italic tracking-tight mt-1">
-            {tournament.name}
-          </h1>
-        </div>
 
-        {/* Tournament Switcher */}
-        <div className="flex items-center bg-white/5 p-1 rounded-2xl border border-white/10">
-          <button
-            onClick={() => setSelectedTournament('LIBERTADORES')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              selectedTournament === 'LIBERTADORES'
-                ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-black shadow-lg shadow-amber-500/20'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            🏆 Copa Libertadores
-          </button>
-          <button
-            onClick={() => setSelectedTournament('SUDAMERICANA')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              selectedTournament === 'SUDAMERICANA'
-                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            🛡️ Copa Sul-Americana
-          </button>
-        </div>
-      </div>
-
-      {/* Qualification Badge */}
-      {isUserInCurrent && (
-        <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-          <div className="text-xs">
-            <span className="font-bold text-emerald-400">Seu clube está nesta competição!</span>
-            <p className="text-gray-300">Classificado para o Grupo {userQual?.groupName}</p>
+          <div className="mt-5 grid grid-cols-2 gap-1 rounded-lg border border-white/10 bg-white/5 p-1 sm:ml-auto sm:max-w-md lg:mt-0 lg:w-full">
+            <button
+              type="button"
+              onClick={() => setSelectedTournament('LIBERTADORES')}
+              className={`flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-xs font-bold transition-colors ${
+                isLibertadores ? 'bg-amber-400 text-slate-950' : 'text-slate-300 hover:bg-white/5'
+              }`}
+            >
+              <Trophy size={16} />
+              Libertadores
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedTournament('SUDAMERICANA')}
+              className={`flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-xs font-bold transition-colors ${
+                !isLibertadores ? 'bg-sky-500 text-white' : 'text-slate-300 hover:bg-white/5'
+              }`}
+            >
+              <Shield size={16} />
+              Sul-Americana
+            </button>
           </div>
-        </div>
-      )}
+        </header>
 
-      {/* Tabs */}
-      <div className="flex border-b border-white/10 mb-6 gap-6">
-        <button
-          onClick={() => setActiveTab('GROUPS')}
-          className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${
-            activeTab === 'GROUPS' ? 'border-emerald-400 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'
-          }`}
-        >
-          Fase de Grupos
-        </button>
-        <button
-          onClick={() => setActiveTab('BRACKET')}
-          className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${
-            activeTab === 'BRACKET' ? 'border-emerald-400 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'
-          }`}
-        >
-          Mata-Mata (Bracket)
-        </button>
-        <button
-          onClick={() => setActiveTab('PRIZES')}
-          className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${
-            activeTab === 'PRIZES' ? 'border-emerald-400 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'
-          }`}
-        >
-          Premiações
-        </button>
-      </div>
+        {isUserInCurrent && (
+          <div className="mt-5 flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
+            <CheckCircle2 className="shrink-0 text-emerald-400" size={20} />
+            <div className="min-w-0 text-sm">
+              <strong className="text-emerald-300">Seu clube está nesta competição</strong>
+              <p className="text-slate-300">Grupo {userQualification?.groupName}</p>
+            </div>
+          </div>
+        )}
 
-      {/* Tab 1: Groups */}
-      {activeTab === 'GROUPS' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {tournament.groups.map(group => {
-            const standings = calculateContinentalGroupStandings(group, tournament.groupFixtures);
-            return (
-              <div key={group.name} className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
-                <div className="text-xs font-black uppercase text-amber-400 tracking-wider mb-3">
-                  Grupo {group.name}
-                </div>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-6 text-[10px] font-bold text-gray-400 border-b border-white/10 pb-1">
-                    <span className="col-span-3">Clube</span>
+        <nav className="mt-6 grid grid-cols-3 border-b border-white/10" aria-label="Secoes da competicao">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`min-h-12 border-b-2 px-2 text-xs font-bold transition-colors sm:text-sm ${
+                activeTab === tab.id
+                  ? 'border-emerald-400 text-emerald-300'
+                  : 'border-transparent text-slate-400 hover:text-white'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        {activeTab === 'GROUPS' && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+          >
+            {tournament.groups.map(group => {
+              const standings = calculateContinentalGroupStandings(group, tournament.groupFixtures);
+              return (
+                <section key={group.name} className="rounded-lg border border-white/10 bg-white/[0.045] p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-sm font-black text-white">Grupo {group.name}</h2>
+                    <span className="text-xs font-semibold text-slate-500">{tournament.currentMatchday > 6 ? 'Finalizado' : `Rodada ${tournament.currentMatchday}/6`}</span>
+                  </div>
+
+                  <div className="grid grid-cols-[minmax(0,1fr)_32px_32px_36px] border-b border-white/10 pb-2 text-[11px] font-semibold text-slate-500">
+                    <span>Clube</span>
                     <span className="text-center">J</span>
                     <span className="text-center">SG</span>
                     <span className="text-right">Pts</span>
                   </div>
-                  {standings.map((st, idx) => {
-                    const tm = getTeam(st.teamId);
-                    const isUser = st.teamId === userTeamId;
-                    return (
-                      <div
-                        key={st.teamId}
-                        className={`grid grid-cols-6 text-xs p-1.5 rounded-xl items-center ${
-                          isUser ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold' : idx < 2 ? 'bg-white/5' : ''
-                        }`}
-                      >
-                        <div className="col-span-3 truncate flex items-center gap-1.5">
-                          <span className={`text-[10px] w-4 text-center ${idx < 2 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
-                            {idx + 1}
-                          </span>
-                          <span className="truncate">{tm.name}</span>
+
+                  <div className="mt-1 divide-y divide-white/5">
+                    {standings.map((standing, index) => {
+                      const team = getTeam(standing.teamId);
+                      const isUser = standing.teamId === userTeamId;
+                      const isDirect = isLibertadores ? index < 2 : index === 0;
+                      const isPlayoff = !isLibertadores && index === 1;
+
+                      return (
+                        <div
+                          key={standing.teamId}
+                          className={`grid min-h-12 grid-cols-[minmax(0,1fr)_32px_32px_36px] items-center rounded-md px-1 text-xs ${
+                            isUser ? 'bg-emerald-500/15 text-emerald-200' : ''
+                          }`}
+                        >
+                          <div className="flex min-w-0 items-center gap-2 pr-2">
+                            <span className={`w-3 shrink-0 text-center text-[11px] font-bold ${
+                              isDirect ? 'text-emerald-400' : isPlayoff ? 'text-amber-400' : 'text-slate-600'
+                            }`}>{index + 1}</span>
+                            {team && <TeamLogo team={team} size="sm" className="h-7 w-7 shrink-0" />}
+                            <span className="min-w-0 truncate font-semibold" title={team?.name || standing.teamId}>
+                              {team?.name || standing.teamId}
+                            </span>
+                          </div>
+                          <span className="text-center text-slate-300">{standing.played}</span>
+                          <span className="text-center text-slate-300">{standing.gd > 0 ? `+${standing.gd}` : standing.gd}</span>
+                          <span className="text-right font-black text-amber-300">{standing.points}</span>
                         </div>
-                        <span className="text-center text-gray-300">{st.played}</span>
-                        <span className="text-center text-gray-300">{st.gd > 0 ? `+${st.gd}` : st.gd}</span>
-                        <span className="text-right font-black text-amber-400">{st.points}</span>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
+          </motion.div>
+        )}
+
+        {activeTab === 'BRACKET' && (
+          <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6">
+            {tournament.currentPhase === 'FINISHED' && championTeam && (
+              <div className="mb-6 flex items-center gap-4 rounded-lg border border-amber-400/30 bg-amber-400/10 p-5">
+                <TeamLogo team={championTeam} size="lg" />
+                <div className="min-w-0">
+                  <div className="text-xs font-bold uppercase text-amber-300">Campeão continental</div>
+                  <div className="mt-1 truncate text-xl font-black sm:text-2xl">{championTeam.name}</div>
                 </div>
+                <Trophy className="ml-auto shrink-0 text-amber-300" size={32} />
               </div>
-            );
-          })}
-        </div>
-      )}
+            )}
 
-      {/* Tab 2: Bracket */}
-      {activeTab === 'BRACKET' && (
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl text-center">
-          <Trophy className="w-12 h-12 text-amber-400 mx-auto mb-3 animate-pulse" />
-          <h2 className="text-lg font-bold">Fase Mata-Mata (Oitavas de Final até a Decisão)</h2>
-          <p className="text-xs text-gray-400 mt-1 max-w-md mx-auto">
-            Os 2 melhores colocados de cada grupo avançam para o chaveamento em jogos de ida e volta, culminando na grande Final Única!
-          </p>
-          <div className="mt-6 p-4 rounded-xl bg-white/5 text-xs text-emerald-400 font-mono">
-            Chaveamento sendo gerado após a conclusão da 6ª Rodada da Fase de Grupos.
-          </div>
-        </div>
-      )}
+            <div className="mb-5 max-w-2xl">
+              <h2 className="text-xl font-black">{PHASE_LABELS[tournament.currentPhase]}</h2>
+              <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                {tournament.currentPhase === 'PLAYOFF'
+                  ? 'Os vice-líderes enfrentam os terceiros colocados da Libertadores em jogos de ida e volta.'
+                  : tournament.currentPhase === 'FINAL' || tournament.currentPhase === 'FINISHED'
+                    ? 'A decisão é disputada em partida única, com pênaltis em caso de empate.'
+                    : 'Os confrontos são disputados em ida e volta. O placar agregado define quem avança.'}
+              </p>
+            </div>
 
-      {/* Tab 3: Prizes */}
-      {activeTab === 'PRIZES' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <div className="text-xs text-gray-400 font-bold uppercase">Fase de Grupos</div>
-            <div className="text-xl font-black text-emerald-400 mt-1">$ 3.000.000</div>
-            <p className="text-[11px] text-gray-400 mt-1">Cota fixa para todos os participantes.</p>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <div className="text-xs text-gray-400 font-bold uppercase">Oitavas & Quartas</div>
-            <div className="text-xl font-black text-emerald-400 mt-1">+ $ 1.250.000 a $ 1.700.000</div>
-            <p className="text-[11px] text-gray-400 mt-1">Bônus cumulativo por avanço de fase.</p>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 border-amber-500/30">
-            <div className="text-xs text-amber-400 font-bold uppercase">Grande Campeão</div>
-            <div className="text-xl font-black text-amber-400 mt-1">$ 23.000.000</div>
-            <p className="text-[11px] text-gray-400 mt-1">Premiação máxima para o vencedor do título continental.</p>
-          </div>
-        </div>
-      )}
+            {tournament.bracket.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {tournament.bracket.map(match => {
+                  const team1 = getTeam(match.team1Id);
+                  const team2 = getTeam(match.team2Id);
+                  const total1 = (match.score1Leg1 ?? 0) + (match.score1Leg2 ?? 0);
+                  const total2 = (match.score2Leg1 ?? 0) + (match.score2Leg2 ?? 0);
+                  const hasScore = match.playedLeg1;
+                  return (
+                    <article key={match.id} className="rounded-lg border border-white/10 bg-white/[0.045] p-4">
+                      <div className="mb-3 text-[11px] font-bold uppercase text-slate-500">Confronto {match.matchNumber}</div>
+                      <div className="space-y-2 text-sm font-semibold">
+                        <div className={`flex min-w-0 items-center gap-2 rounded-md p-1.5 ${match.winnerId === match.team1Id ? 'bg-emerald-500/10 text-emerald-200' : ''}`}>
+                          {team1 && <TeamLogo team={team1} size="sm" />}
+                          <span className="truncate">{team1?.name || 'A definir'}</span>
+                          <span className="ml-auto font-black tabular-nums">{hasScore ? total1 : '-'}</span>
+                        </div>
+                        <div className={`flex min-w-0 items-center gap-2 rounded-md p-1.5 ${match.winnerId === match.team2Id ? 'bg-emerald-500/10 text-emerald-200' : ''}`}>
+                          {team2 && <TeamLogo team={team2} size="sm" />}
+                          <span className="truncate">{team2?.name || 'A definir'}</span>
+                          <span className="ml-auto font-black tabular-nums">{hasScore ? total2 : '-'}</span>
+                        </div>
+                      </div>
+                      {hasScore && (
+                        <div className="mt-3 border-t border-white/10 pt-2 text-[11px] text-slate-500">
+                          Ida {match.score1Leg1}-{match.score2Leg1}
+                          {match.playedLeg2 && match.phase !== 'FINAL' && ` · Volta ${match.score1Leg2}-${match.score2Leg2}`}
+                          {match.penalties1 !== undefined && ` · Pênaltis ${match.penalties1}-${match.penalties2}`}
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-white/15 bg-white/[0.025] px-5 py-12 text-center">
+                <Trophy className="mx-auto text-amber-400" size={36} />
+                <p className="mt-3 text-sm font-semibold text-slate-200">Confrontos definidos após a sexta rodada</p>
+              </div>
+            )}
+          </motion.section>
+        )}
 
-      {/* Back Button */}
-      <div className="mt-8">
-        <button
-          onClick={onBackToDashboard}
-          className="px-6 py-3 rounded-full bg-white text-black text-xs font-black uppercase tracking-wider hover:bg-emerald-400 transition-all"
-        >
-          Voltar para o Dashboard
-        </button>
+        {activeTab === 'PRIZES' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 grid gap-4 md:grid-cols-3">
+            {[
+              ['Fase de grupos', 'US$ 3.000.000', 'Cota fixa de participação.'],
+              ['Oitavas e quartas', 'US$ 1,25 mi a 1,7 mi', 'Bônus cumulativo por avanço.'],
+              ['Campeão', 'US$ 23.000.000', 'Premiação máxima do título.'],
+            ].map(([label, value, detail], index) => (
+              <section key={label} className={`rounded-lg border bg-white/[0.045] p-5 ${index === 2 ? 'border-amber-400/30' : 'border-white/10'}`}>
+                <div className="text-xs font-bold uppercase text-slate-400">{label}</div>
+                <div className={`mt-2 text-2xl font-black ${index === 2 ? 'text-amber-300' : 'text-emerald-300'}`}>{value}</div>
+                <p className="mt-1 text-sm text-slate-400">{detail}</p>
+              </section>
+            ))}
+          </motion.div>
+        )}
       </div>
     </div>
   );

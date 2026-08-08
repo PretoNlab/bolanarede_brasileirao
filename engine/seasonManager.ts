@@ -1,12 +1,15 @@
 import { Team, Player, SeasonHistory, PlayerHistoryEvent, StaffMember, ContinentalSeasonState } from '../types';
 import { generateSchedule } from '../data';
 import { initializeContinentalTournaments } from './continentalEngine';
+import { SOUTH_AMERICAN_FOREIGN_CLUBS } from '../southAmericaData';
+import { CONTINENTAL_2026_EXTRA_CLUBS } from '../continental2026Data';
 
 export interface SeasonTransitionInput {
   teams: Team[];
   userTeamId: string | null;
   season: number;
   hiredStaff: StaffMember[];
+  continentalState?: ContinentalSeasonState | null;
 }
 
 export interface SeasonTransitionOutput {
@@ -17,7 +20,7 @@ export interface SeasonTransitionOutput {
 }
 
 export function processSeasonTransition(input: SeasonTransitionInput): SeasonTransitionOutput {
-  const { teams, userTeamId, season, hiredStaff } = input;
+  const { teams, userTeamId, season, hiredStaff, continentalState: completedContinentalState } = input;
 
   // Calculate final standings
   const standingsA = [...teams].filter(t => t.division === 1).sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga));
@@ -47,6 +50,15 @@ export function processSeasonTransition(input: SeasonTransitionInput): SeasonTra
   const userPosB = standingsB.findIndex(t => t.id === userTeamId);
   const finalPos = userPos !== -1 ? userPos + 1 : (userPosB !== -1 ? userPosB + 1 : 0);
 
+  const continentalTeams = [...teams, ...SOUTH_AMERICAN_FOREIGN_CLUBS, ...CONTINENTAL_2026_EXTRA_CLUBS];
+  const getContinentalChampion = (teamId?: string) => {
+    if (!teamId) return undefined;
+    return {
+      teamId,
+      teamName: continentalTeams.find(team => team.id === teamId)?.name || teamId,
+    };
+  };
+
   const historyEntry: SeasonHistory = {
     year: season,
     championId: champion.id,
@@ -55,7 +67,9 @@ export function processSeasonTransition(input: SeasonTransitionInput): SeasonTra
     runnerUpName: runnerUp.name,
     userFinishPosition: finalPos,
     userDivision: userTeam?.division || 1,
-    topScorer
+    topScorer,
+    libertadoresChampion: getContinentalChampion(completedContinentalState?.libertadores.winnerId),
+    sudamericanaChampion: getContinentalChampion(completedContinentalState?.sudamericana.winnerId),
   };
 
   const coachBonus = hiredStaff.find(s => s.type === 'COACH')?.bonus || 0;
@@ -123,7 +137,8 @@ export function processSeasonTransition(input: SeasonTransitionInput): SeasonTra
   const continentalState = initializeContinentalTournaments(
     updatedTeams,
     userTeamId,
-    standingsA.map(team => team.id)
+    standingsA.map(team => team.id),
+    season + 1
   );
 
   return {

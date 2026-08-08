@@ -47,13 +47,13 @@ export default function CoachProfileScreen({ coach, userTeam, onBack, onUpdateCo
     };
 
     return (
-        <div className="flex flex-col h-dvh bg-background text-white">
+        <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-background text-white">
             <header className="p-4 flex items-center gap-4 border-b border-white/5 bg-surface/50 backdrop-blur-md sticky top-0 z-10">
                 <button onClick={onBack} className="p-2 bg-white/5 rounded-full"><ArrowLeft size={20} /></button>
                 <h1 className="font-bold text-lg">Meu Perfil</h1>
             </header>
 
-            <main className="p-4 space-y-6 overflow-y-auto pb-safe">
+            <main className="min-h-0 flex-1 touch-pan-y space-y-6 overflow-y-auto overscroll-contain p-4 pb-safe">
 
                 {/* Profile Card */}
                 <div className="bg-gradient-to-br from-primary to-primary-hover p-6 rounded-3xl shadow-2xl relative overflow-hidden">

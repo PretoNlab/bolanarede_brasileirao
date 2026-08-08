@@ -32,7 +32,7 @@ export interface Player {
   isForSale?: boolean;
   isListedForLoan?: boolean;
   valueTrend?: 'up' | 'down' | 'stable';
-  dataSource?: 'CBF_TRANSFERMARKT' | 'CBF_MODEL' | 'GENERATED';
+  dataSource?: 'CBF_TRANSFERMARKT' | 'CBF_MODEL' | 'ESPN_MODEL' | 'GENERATED';
   attributesEstimated?: boolean;
 
   // New Fields
@@ -292,7 +292,7 @@ export interface SeasonHistory {
 
 export type ContinentalTournamentType = 'LIBERTADORES' | 'SUDAMERICANA';
 
-export type ContinentalPhase = 'GROUPS' | 'ROUND_OF_16' | 'QUARTER' | 'SEMI' | 'FINAL' | 'FINISHED';
+export type ContinentalPhase = 'GROUPS' | 'PLAYOFF' | 'ROUND_OF_16' | 'QUARTER' | 'SEMI' | 'FINAL' | 'FINISHED';
 
 export interface ContinentalGroup {
   name: string;
