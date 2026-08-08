@@ -26,12 +26,19 @@ interface Props {
 
 export default function StatsScreen({ teams, season, round, playerStats, onBack }: Props) {
   const [tab, setTab] = useState<'SCORERS' | 'ASSISTS' | 'TEAMS'>('SCORERS');
+  const [competitionFilter, setCompetitionFilter] = useState<'ALL' | 'SERIE_A' | 'SERIE_B'>('ALL');
+
+  const filteredTeams = useMemo(() => {
+    if (competitionFilter === 'SERIE_A') return teams.filter(t => t.division === 1);
+    if (competitionFilter === 'SERIE_B') return teams.filter(t => t.division === 2);
+    return teams;
+  }, [teams, competitionFilter]);
 
   const scorers = useMemo(() => {
     const list: Row[] = [];
     Object.entries(playerStats).forEach(([pid, stats]) => {
       if (stats.goals > 0) {
-        for (const t of teams) {
+        for (const t of filteredTeams) {
           const p = t.roster.find(x => x.id === pid);
           if (p) {
             list.push({
@@ -48,13 +55,13 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
       }
     });
     return list.sort((a, b) => b.value - a.value).slice(0, 50);
-  }, [playerStats, teams]);
+  }, [playerStats, filteredTeams]);
 
   const assisters = useMemo(() => {
     const list: Row[] = [];
     Object.entries(playerStats).forEach(([pid, stats]) => {
       if (stats.assists > 0) {
-        for (const t of teams) {
+        for (const t of filteredTeams) {
           const p = t.roster.find(x => x.id === pid);
           if (p) {
             list.push({
@@ -71,11 +78,11 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
       }
     });
     return list.sort((a, b) => b.value - a.value).slice(0, 50);
-  }, [playerStats, teams]);
+  }, [playerStats, filteredTeams]);
 
   const teamTable = useMemo(() => {
-    return [...teams].sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga));
-  }, [teams]);
+    return [...filteredTeams].sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga));
+  }, [filteredTeams]);
 
   return (
     <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-background text-white/90 selection:bg-primary/30">
@@ -86,7 +93,7 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
         rightAction={<div className="p-3 bg-white/5 rounded-2xl border border-white/5"><BarChart3 size={18} className="text-primary" /></div>}
       />
 
-      <div className="px-6 mb-6">
+      <div className="px-6 mb-3">
         <div className="flex p-1.5 bg-white/5 rounded-[2rem] border border-white/5 backdrop-blur-3xl shadow-xl">
           {[
             { id: 'SCORERS', label: 'Gols', icon: <Target size={14} /> },
@@ -106,6 +113,26 @@ export default function StatsScreen({ teams, season, round, playerStats, onBack 
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Competition Filter Pills */}
+      <div className="px-6 mb-4 flex items-center justify-center gap-2">
+        {[
+          { id: 'ALL', label: 'Todas Ligas' },
+          { id: 'SERIE_A', label: '🇧🇷 Série A' },
+          { id: 'SERIE_B', label: '🛡️ Série B' }
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setCompetitionFilter(item.id as any)}
+            className={clsx(
+              "px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border",
+              competitionFilter === item.id ? "bg-white text-slate-950 border-white shadow-md" : "bg-white/5 border-white/10 text-slate-400 hover:text-white"
+            )}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
       <main className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain no-scrollbar pb-safe px-6">
