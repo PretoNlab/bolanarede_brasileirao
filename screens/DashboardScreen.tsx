@@ -7,7 +7,7 @@ import { Team, NewsItem, TransferOffer } from '../types';
 import { 
   Play, Users, ArrowLeftRight, Wallet, LayoutDashboard, Trophy, Settings, 
   Newspaper, Target, MessageSquare, Heart, BarChart3, ShieldAlert, 
-  CalendarDays, ChevronRight, Building2, Zap, Home
+  CalendarDays, ChevronRight, Building2, Zap, Home, Shield, Calendar, ArrowRight
 } from 'lucide-react';
 import { impactLight, impactMedium, hapticSelection } from '../haptics';
 import clsx from 'clsx';
