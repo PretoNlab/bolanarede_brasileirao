@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Team, SeasonHistory } from '../types';
 import { Trophy, RotateCcw, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import clsx from 'clsx';
+import { LeadCaptureModal } from '../components/LeadCaptureModal';
 
 interface Props {
    champion: Team;
@@ -14,6 +15,18 @@ interface Props {
 }
 
 export default function ChampionScreen({ champion, userTeam, onNewSeason, onQuit, teams, pastSeasons }: Props) {
+   const [showLeadModal, setShowLeadModal] = useState(false);
+   const [hasDeclinedLead, setHasDeclinedLead] = useState(false);
+
+   const handleNextSeasonClick = () => {
+      const storedEmail = typeof localStorage !== 'undefined' ? localStorage.getItem('bolanarede_user_email') : null;
+      if (!storedEmail && !hasDeclinedLead) {
+         setShowLeadModal(true);
+      } else {
+         onNewSeason();
+      }
+   };
+
    const isUserChampion = champion.id === userTeam.id;
 
    const standingsA = [...teams].filter(t => t.division === 1).sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga));
@@ -105,7 +118,7 @@ export default function ChampionScreen({ champion, userTeam, onNewSeason, onQuit
 
             <div className="flex flex-col w-full max-w-xs gap-3 pb-12">
                <button
-                  onClick={onNewSeason}
+                  onClick={handleNextSeasonClick}
                   className="w-full py-5 bg-primary hover:bg-primary/90 text-white font-black rounded-2xl shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all"
                >
                   <RotateCcw size={20} />
@@ -119,6 +132,17 @@ export default function ChampionScreen({ champion, userTeam, onNewSeason, onQuit
                </button>
             </div>
          </main>
+
+         <LeadCaptureModal
+            isOpen={showLeadModal}
+            onClose={() => {
+               setShowLeadModal(false);
+               setHasDeclinedLead(true);
+               onNewSeason();
+            }}
+            title="Sua Primeira Temporada Concluída!"
+            subtitle="Gostaria de receber novidades por e-mail quando a Expansão Europeia (Champions League) e novas ligas forem lançadas?"
+         />
       </div>
    );
 }
