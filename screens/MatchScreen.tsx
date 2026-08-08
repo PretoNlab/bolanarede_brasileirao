@@ -188,21 +188,21 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
             };
          });
 
-         if (goalToastText) {
+         if (goalToastText && speed < 100) {
             toast.custom((t) => (
                <div
                   className={clsx(
-                     "flex items-center gap-3 px-5 py-3.5 bg-slate-950/95 border border-emerald-500/40 rounded-2xl shadow-2xl text-white backdrop-blur-2xl transition-all duration-300",
-                     t.visible ? "animate-in fade-in slide-in-from-top-4" : "animate-out fade-out slide-out-to-top-4"
+                     "flex items-center gap-2.5 px-4 py-2 bg-slate-950/95 border border-emerald-500/40 rounded-full shadow-2xl text-white backdrop-blur-2xl transition-all duration-300 pointer-events-none",
+                     t.visible ? "animate-in fade-in slide-in-from-top-2" : "animate-out fade-out slide-out-to-top-2"
                   )}
                >
-                  <span className="text-xl">⚽</span>
-                  <div className="flex flex-col">
-                     <span className="ui-label-caps text-[9px] text-emerald-400 font-black tracking-widest">Gol em Outro Estádio</span>
-                     <span className="text-[12px] font-bold text-white tracking-tight">{goalToastText}</span>
+                  <span className="text-sm">⚽</span>
+                  <div className="flex items-center gap-2">
+                     <span className="ui-label-caps text-[9px] text-emerald-400 font-black tracking-widest">Gol:</span>
+                     <span className="text-[11px] font-bold text-white tracking-tight">{goalToastText}</span>
                   </div>
                </div>
-            ), { duration: 3500 });
+            ), { id: 'round-goal-toast', duration: 2000, position: 'top-center' });
          }
 
          return updated;
@@ -594,38 +594,38 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
 
 
             {/* VIEW SELECTION TABS */}
-            <div className="flex items-center gap-2 p-1.5 bg-white/[0.03] border border-white/5 rounded-2xl shrink-0">
+            <div className="flex items-center gap-1.5 p-1 bg-white/[0.03] border border-white/5 rounded-2xl shrink-0">
                <button
                   onClick={() => { hapticSelection(); setActiveTab('feed'); }}
                   className={clsx(
-                     "flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5",
+                     "flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 min-w-0",
                      activeTab === 'feed' ? "bg-white/10 text-white border border-white/10 shadow-lg" : "text-white/40 hover:text-white/70"
                   )}
                >
-                  <MessageSquare size={13} />
-                  <span>Narração</span>
+                  <MessageSquare size={13} className="shrink-0" />
+                  <span className="truncate">Feed</span>
                </button>
                <button
                   onClick={() => { hapticSelection(); setActiveTab('stats'); }}
                   className={clsx(
-                     "flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5",
+                     "flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 min-w-0",
                      activeTab === 'stats' ? "bg-white/10 text-white border border-white/10 shadow-lg" : "text-white/40 hover:text-white/70"
                   )}
                >
-                  <BarChart3 size={13} />
-                  <span>Estatísticas</span>
+                  <BarChart3 size={13} className="shrink-0" />
+                  <span className="truncate">Stats</span>
                </button>
                <button
                   onClick={() => { hapticSelection(); setActiveTab('round'); }}
                   className={clsx(
-                     "flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 relative",
+                     "flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 min-w-0 relative",
                      activeTab === 'round' ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/10" : "text-white/40 hover:text-white/70"
                   )}
                >
-                  <Globe size={13} />
-                  <span>Jogos da Rodada</span>
+                  <Globe size={13} className="shrink-0" />
+                  <span className="truncate">Rodada</span>
                   {liveRoundMatches.length > 0 && (
-                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                   )}
                </button>
             </div>
