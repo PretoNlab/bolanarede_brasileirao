@@ -594,38 +594,38 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
 
 
             {/* VIEW SELECTION TABS */}
-            <div className="flex items-center gap-1.5 p-1 bg-white/[0.03] border border-white/5 rounded-2xl shrink-0">
+            <div className="flex items-center gap-2 p-1.5 bg-white/[0.03] border border-white/5 rounded-2xl shrink-0 overflow-x-auto no-scrollbar">
                <button
                   onClick={() => { hapticSelection(); setActiveTab('feed'); }}
                   className={clsx(
-                     "flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 min-w-0",
+                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-2 shrink-0",
                      activeTab === 'feed' ? "bg-white/10 text-white border border-white/10 shadow-lg" : "text-white/40 hover:text-white/70"
                   )}
                >
-                  <MessageSquare size={13} className="shrink-0" />
-                  <span className="truncate">Feed</span>
+                  <MessageSquare size={14} className="shrink-0" />
+                  <span>Narração</span>
                </button>
                <button
                   onClick={() => { hapticSelection(); setActiveTab('stats'); }}
                   className={clsx(
-                     "flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 min-w-0",
+                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-2 shrink-0",
                      activeTab === 'stats' ? "bg-white/10 text-white border border-white/10 shadow-lg" : "text-white/40 hover:text-white/70"
                   )}
                >
-                  <BarChart3 size={13} className="shrink-0" />
-                  <span className="truncate">Stats</span>
+                  <BarChart3 size={14} className="shrink-0" />
+                  <span>Estatísticas</span>
                </button>
                <button
                   onClick={() => { hapticSelection(); setActiveTab('round'); }}
                   className={clsx(
-                     "flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 min-w-0 relative",
+                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-2 shrink-0 relative",
                      activeTab === 'round' ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/10" : "text-white/40 hover:text-white/70"
                   )}
                >
-                  <Globe size={13} className="shrink-0" />
-                  <span className="truncate">Rodada</span>
+                  <Globe size={14} className="shrink-0" />
+                  <span>Jogos da Rodada (Simultâneos)</span>
                   {liveRoundMatches.length > 0 && (
-                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                     <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                   )}
                </button>
             </div>
@@ -716,63 +716,63 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
 
             {/* TAB 3: JOGOS DA RODADA AO VIVO */}
             {activeTab === 'round' && (
-               <div className="flex-1 ui-card-premium p-4 overflow-y-auto no-scrollbar space-y-3 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)]">
-                  <div className="flex items-center justify-between px-2 pb-2 border-b border-white/5">
-                     <div className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-                        <span className="ui-label-caps text-[10px] text-white">Rodada {round} Simultânea</span>
-                     </div>
-                     <span className="text-[10px] font-bold text-secondary opacity-70">{liveRoundMatches.length} Partidas Ao Vivo</span>
-                  </div>
-
+               <div className="flex-1 ui-card-premium p-4 overflow-y-auto no-scrollbar space-y-4 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)]">
                   {liveRoundMatches.length === 0 ? (
                      <div className="h-full flex flex-col items-center justify-center opacity-30 gap-4 py-12">
                         <Globe size={48} className="animate-pulse" />
                         <span className="ui-label-caps text-xs tracking-[0.3em]">Nenhum outro jogo nesta rodada</span>
                      </div>
                   ) : (
-                     <div className="grid grid-cols-1 gap-3">
+                     <div className="grid grid-cols-1 gap-4">
                         {liveRoundMatches.map((m) => (
-                           <div key={m.fixtureId} className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col gap-3 hover:bg-white/[0.06] transition-all">
-                              <div className="flex items-center justify-between text-[9.5px] text-secondary border-b border-white/5 pb-2">
-                                 <span className="truncate font-semibold max-w-[180px]">📍 {m.stadiumName}</span>
-                                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20 text-[9px] flex items-center gap-1.5">
+                           <div key={m.fixtureId} className="p-4 sm:p-5 bg-[#0f172a]/60 border border-white/10 rounded-3xl flex items-center justify-between gap-2 sm:gap-4 shadow-xl hover:border-emerald-500/30 transition-all">
+                              
+                              {/* Left Column: Stadium & Crowd */}
+                              <div className="flex flex-col text-[10px] text-white/50 space-y-0.5 shrink-0 max-w-[95px] sm:max-w-[140px] hidden xs:flex">
+                                 <span className="font-semibold text-white/70 truncate">Estádio: {m.stadiumName}</span>
+                                 <span className="text-[9px] opacity-70">👥 {((m.homeTeam.stadiumCapacity || 25000) * 0.82).toLocaleString('pt-BR')} pessoas</span>
+                              </div>
+
+                              {/* Center Left: Home Team */}
+                              <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+                                 <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-tight text-white truncate text-right">{m.homeTeam.shortName || m.homeTeam.name}</span>
+                                 <TeamLogo team={m.homeTeam} size="sm" />
+                              </div>
+
+                              {/* Center Score & LIVE Badge Pill */}
+                              <div className="flex flex-col items-center justify-center shrink-0 px-1 sm:px-3">
+                                 <div className="px-3.5 py-1.5 bg-emerald-500 text-slate-950 font-black text-base sm:text-xl rounded-2xl flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)] tracking-wider">
+                                    {m.homeScore} <span className="text-slate-950/40 font-black mx-1">x</span> {m.awayScore}
+                                 </div>
+                                 <div className="mt-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-black text-[8px] tracking-widest uppercase border border-emerald-500/30 flex items-center gap-1">
                                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                    {minute}' AO VIVO
-                                 </span>
-                              </div>
-
-                              <div className="flex items-center justify-between gap-2 py-1">
-                                 {/* Home Team */}
-                                 <div className="flex items-center gap-2.5 flex-1 justify-end min-w-0">
-                                    <span className="text-[12px] font-black uppercase text-white truncate text-right">{m.homeTeam.shortName || m.homeTeam.name}</span>
-                                    <TeamLogo team={m.homeTeam} size="xs" />
-                                 </div>
-
-                                 {/* Score */}
-                                 <div className="px-4 py-1.5 bg-black/60 rounded-xl border border-white/10 text-[15px] font-black italic tracking-wider text-emerald-400 shrink-0 shadow-inner">
-                                    {m.homeScore} <span className="text-white/30 font-normal px-0.5">x</span> {m.awayScore}
-                                 </div>
-
-                                 {/* Away Team */}
-                                 <div className="flex items-center gap-2.5 flex-1 justify-start min-w-0">
-                                    <TeamLogo team={m.awayTeam} size="xs" />
-                                    <span className="text-[12px] font-black uppercase text-white truncate text-left">{m.awayTeam.shortName || m.awayTeam.name}</span>
+                                    LIVE
                                  </div>
                               </div>
 
-                              {/* Events timeline */}
-                              {m.events.length > 0 && (
-                                 <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-white/5 text-[9.5px]">
-                                    {m.events.map((ev, idx) => (
-                                       <span key={idx} className="bg-white/5 px-2 py-0.5 rounded-lg border border-white/5 flex items-center gap-1 text-white/80">
+                              {/* Center Right: Away Team */}
+                              <div className="flex items-center gap-2 flex-1 justify-start min-w-0">
+                                 <TeamLogo team={m.awayTeam} size="sm" />
+                                 <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-tight text-white truncate text-left">{m.awayTeam.shortName || m.awayTeam.name}</span>
+                              </div>
+
+                              {/* Right Column: Goalscorers & Cards */}
+                              <div className="flex flex-col items-end justify-center shrink-0 min-w-[35px] text-[10px]">
+                                 {m.events.length === 0 ? (
+                                    <div className="flex items-center gap-1 opacity-20">
+                                       <span>⚽</span>
+                                       <span>🟨</span>
+                                    </div>
+                                 ) : (
+                                    m.events.slice(-2).map((ev, idx) => (
+                                       <div key={idx} className="flex items-center gap-1 text-[9px] text-white/80 bg-white/5 px-2 py-0.5 rounded-md border border-white/5 my-0.5">
                                           <span>{ev.type === 'goal' ? '⚽' : '🟨'}</span>
                                           <span className="font-bold text-emerald-400">{ev.minute}'</span>
-                                          <span className="opacity-75 truncate max-w-[80px]">{ev.playerName || (ev.teamId === m.homeTeam.id ? m.homeTeam.shortName : m.awayTeam.shortName)}</span>
-                                       </span>
-                                    ))}
-                                 </div>
-                              )}
+                                          <span className="truncate max-w-[60px] hidden sm:inline">{ev.playerName || (ev.teamId === m.homeTeam.id ? m.homeTeam.shortName : m.awayTeam.shortName)}</span>
+                                       </div>
+                                    ))
+                                 )}
+                              </div>
                            </div>
                         ))}
                      </div>
