@@ -188,23 +188,6 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
             };
          });
 
-         if (goalToastText && speed < 100) {
-            toast.custom((t) => (
-               <div
-                  className={clsx(
-                     "flex items-center gap-2.5 px-4 py-2 bg-slate-950/95 border border-emerald-500/40 rounded-full shadow-2xl text-white backdrop-blur-2xl transition-all duration-300 pointer-events-none",
-                     t.visible ? "animate-in fade-in slide-in-from-top-2" : "animate-out fade-out slide-out-to-top-2"
-                  )}
-               >
-                  <span className="text-sm">⚽</span>
-                  <div className="flex items-center gap-2">
-                     <span className="ui-label-caps text-[9px] text-emerald-400 font-black tracking-widest">Gol:</span>
-                     <span className="text-[11px] font-bold text-white tracking-tight">{goalToastText}</span>
-                  </div>
-               </div>
-            ), { id: 'round-goal-toast', duration: 2000, position: 'top-center' });
-         }
-
          return updated;
       });
    };
