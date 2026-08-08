@@ -14,9 +14,10 @@ interface Props {
     onStartMatch: () => void;
     onTactics: () => void;
     onSquad: () => void;
+    onAutoFixLineup?: () => void;
 }
 
-export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatch, onTactics, onSquad }: Props) {
+export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatch, onTactics, onSquad, onAutoFixLineup }: Props) {
 
     // Calculate Team Power
     const userStrength = useMemo(() => calculateDynamicTeamStrength(userTeam), [userTeam]);
@@ -212,17 +213,38 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
                         <div className="absolute right-0 top-0 p-4 opacity-5 pointer-events-none">
                             <AlertTriangle size={64} className="text-rose-500" />
                         </div>
-                        <div className="flex items-center gap-3 mb-3 text-rose-400">
-                            <div className="w-8 h-8 rounded-xl bg-rose-500/10 flex items-center justify-center">
-                               <AlertTriangle size={16} />
+                        <div className="flex items-center justify-between mb-3 gap-2">
+                            <div className="flex items-center gap-3 text-rose-400">
+                                <div className="w-8 h-8 rounded-xl bg-rose-500/10 flex items-center justify-center">
+                                   <AlertTriangle size={16} />
+                                </div>
+                                <h4 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider italic">Restrições de Partida</h4>
                             </div>
-                            <h4 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider italic">Restrições de Partida</h4>
+                            {onAutoFixLineup && (
+                                <button
+                                    onClick={() => { impactHeavy(); onAutoFixLineup(); }}
+                                    className="px-3.5 py-1.5 bg-emerald-500 text-slate-950 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg flex items-center gap-1.5 hover:bg-emerald-400 transition-all border border-emerald-400 shrink-0"
+                                >
+                                    <Zap size={14} className="fill-current" />
+                                    <span>Auto-Corrigir</span>
+                                </button>
+                            )}
                         </div>
                         <div className="grid grid-cols-1 gap-2">
                             {lineupIssues.map((issue, idx) => (
-                                <div key={idx} className="flex items-center gap-3 bg-rose-500/10 p-3 rounded-xl border border-rose-500/15 group">
-                                    <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                                    <span className="text-xs sm:text-sm font-medium text-rose-200 italic">{issue}</span>
+                                <div key={idx} className="flex items-center justify-between gap-3 bg-rose-500/10 p-3 rounded-xl border border-rose-500/15 group">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                                        <span className="text-xs sm:text-sm font-medium text-rose-200 italic">{issue}</span>
+                                    </div>
+                                    {onAutoFixLineup && (
+                                        <button
+                                            onClick={() => { impactHeavy(); onAutoFixLineup(); }}
+                                            className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 hover:text-emerald-300 underline"
+                                        >
+                                            Substituir
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -250,28 +272,38 @@ export default function PreMatchScreen({ userTeam, opponent, onBack, onStartMatc
                       </button>
                   </div>
 
-                  <button
-                      onClick={() => { impactHeavy(); onStartMatch(); }}
-                      disabled={!canStart}
-                      className={clsx(
-                          "relative w-full h-16 sm:h-20 rounded-2xl sm:rounded-[1.75rem] flex items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm font-black uppercase tracking-widest transition-all active:scale-[0.98] overflow-hidden group/init min-h-[56px]",
-                          canStart 
-                            ? "bg-primary text-white shadow-[0_20px_50px_rgba(var(--primary-rgb),0.3)]" 
-                            : "bg-white/5 text-white/30 border border-white/10 cursor-not-allowed"
-                      )}
-                  >
-                      {canStart && (
-                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/init:translate-x-full transition-transform duration-1000" />
-                      )}
-                      {canStart ? (
-                        <>
-                          <Play size={22} fill="currentColor" className="group-hover/init:scale-110 transition-transform" /> 
-                          <span className="italic">Entrar em Campo</span>
-                        </>
-                      ) : (
-                        <span className="opacity-70 italic">Pendências de Escalação</span>
-                      )}
-                  </button>
+                  {!canStart && onAutoFixLineup ? (
+                      <button
+                          onClick={() => { impactHeavy(); onAutoFixLineup(); }}
+                          className="relative w-full h-16 sm:h-20 rounded-2xl sm:rounded-[1.75rem] flex items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm font-black uppercase tracking-widest transition-all active:scale-[0.98] overflow-hidden bg-emerald-500 text-slate-950 shadow-[0_15px_40px_rgba(16,185,129,0.4)] border border-emerald-400 min-h-[56px] hover:bg-emerald-400"
+                      >
+                          <Zap size={22} fill="currentColor" className="animate-bounce" /> 
+                          <span className="italic">⚡ Resolver Escalação em 1 Clique</span>
+                      </button>
+                  ) : (
+                      <button
+                          onClick={() => { impactHeavy(); onStartMatch(); }}
+                          disabled={!canStart}
+                          className={clsx(
+                              "relative w-full h-16 sm:h-20 rounded-2xl sm:rounded-[1.75rem] flex items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm font-black uppercase tracking-widest transition-all active:scale-[0.98] overflow-hidden group/init min-h-[56px]",
+                              canStart 
+                                ? "bg-primary text-white shadow-[0_20px_50px_rgba(var(--primary-rgb),0.3)]" 
+                                : "bg-white/5 text-white/30 border border-white/10 cursor-not-allowed"
+                          )}
+                      >
+                          {canStart && (
+                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/init:translate-x-full transition-transform duration-1000" />
+                          )}
+                          {canStart ? (
+                            <>
+                              <Play size={22} fill="currentColor" className="group-hover/init:scale-110 transition-transform" /> 
+                              <span className="italic">Entrar em Campo</span>
+                            </>
+                          ) : (
+                            <span className="opacity-70 italic">Pendências de Escalação</span>
+                          )}
+                      </button>
+                  )}
                 </div>
             </footer>
         </div>

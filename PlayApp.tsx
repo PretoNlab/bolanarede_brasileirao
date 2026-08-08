@@ -1190,6 +1190,32 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
     setCurrentScreen(lastScreen);
   };
 
+  const handleAutoFixLineup = useCallback(() => {
+    if (!userTeam) return;
+
+    // Filter out injured or suspended players from current lineup
+    let updatedLineup = userTeam.lineup.filter(id => {
+      const player = userTeam.roster.find(p => p.id === id);
+      return player && player.status !== 'injured' && !player.isSuspended;
+    });
+
+    // Available bench players (healthy, not suspended, not in lineup)
+    const availableBench = userTeam.roster
+      .filter(p => p.status !== 'injured' && !p.isSuspended && !updatedLineup.includes(p.id))
+      .sort((a, b) => b.overall - a.overall);
+
+    // Fill missing slots up to 11 starters
+    while (updatedLineup.length < 11 && availableBench.length > 0) {
+      const nextPlayer = availableBench.shift();
+      if (nextPlayer) {
+        updatedLineup.push(nextPlayer.id);
+      }
+    }
+
+    setTeams(prev => prev.map(t => t.id === userTeam.id ? { ...t, lineup: updatedLineup } : t));
+    toast.success('Escalação corrigida com sucesso!', { icon: '⚡' });
+  }, [userTeam]);
+
   // ========== CARREIRA HANDLERS ==========
 
   const handleStartCareer = useCallback(() => {
@@ -1408,6 +1434,7 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 onBack={() => setCurrentScreen('DASHBOARD')}
                 onTactics={() => { setLastScreen('PRE_MATCH'); setCurrentScreen('TACTICS'); }}
                 onSquad={() => { setLastScreen('PRE_MATCH'); setCurrentScreen('SQUAD'); }}
+                onAutoFixLineup={handleAutoFixLineup}
                 onStartMatch={() => {
                   markFirstMatchStarted();
                   setCurrentScreen('MATCH');
