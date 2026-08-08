@@ -299,14 +299,92 @@ export default function DashboardScreen({
           </motion.div>
         </section>
 
-        {/* Primary Management Grid */}
-        <section className="space-y-4 px-1">
-           <h3 className="ui-label-caps text-slate-300">Departamentos</h3>
-           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-              {primaryActions.map((action) => (
+        {/* Tactical Quick Command */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <motion.div 
+            whileHover={{ y: -2 }}
+            className="ui-card-premium p-6 border-white/10 flex flex-col justify-between"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-2">
+                <Shield size={18} className="text-primary" />
+                <span className="ui-label-caps text-secondary">Identidade Tática</span>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/20">
+                {team.formation}
+              </span>
+            </div>
+
+            <div className="space-y-1 mb-6">
+              <div className="text-xl font-black italic tracking-tight text-white uppercase">{team.style}</div>
+              <div className="text-xs text-slate-400">Postura definida para o próximo duelo</div>
+            </div>
+
+            <button
+              onClick={() => { impactLight(); onOpenTactics(); }}
+              className="w-full py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold uppercase tracking-wider border border-white/5 transition-all flex items-center justify-center gap-2"
+            >
+              <Zap size={14} className="text-amber-400" />
+              <span>Ajustar Tática</span>
+            </button>
+          </motion.div>
+
+          {/* Next Match Context */}
+          <motion.div 
+            whileHover={{ y: -2 }}
+            className="ui-card-premium p-6 border-white/10 flex flex-col justify-between"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-2">
+                <Calendar size={18} className="text-primary" />
+                <span className="ui-label-caps text-secondary">Próximo Desafio</span>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Rodada {round}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <TeamLogo team={team} size="md" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-slate-400">MANDANTE</span>
+                  <span className="text-base font-black text-white">{team.shortName || team.name}</span>
+                </div>
+              </div>
+
+              <span className="text-xs font-black text-slate-500 italic">VS</span>
+
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col items-end">
+                  <span className="text-xs font-bold text-slate-400">VISITANTE</span>
+                  <span className="text-base font-black text-white">{nextOpponent.shortName || nextOpponent.name}</span>
+                </div>
+                <TeamLogo team={nextOpponent} size="md" />
+              </div>
+            </div>
+
+            <button
+              onClick={() => { impactLight(); onOpenCalendar(); }}
+              className="w-full py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold uppercase tracking-wider border border-white/5 transition-all flex items-center justify-center gap-2"
+            >
+              <span>Ver Calendário</span>
+            </button>
+          </motion.div>
+        </section>
+
+        {/* Quick Management Hub */}
+        <section className="space-y-3">
+           <div className="flex justify-between items-center px-1">
+              <span className="ui-label-caps text-secondary">Ações de Gestão</span>
+           </div>
+
+           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              {quickActions.map((action) => (
                 <motion.button
                   key={action.label}
-                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => { impactLight(); action.onClick(); }}
                   className="ui-card-premium p-5 text-left hover:bg-white/[0.08] transition-all group border-white/10 min-h-[110px] flex flex-col justify-between"
                 >
@@ -321,33 +399,14 @@ export default function DashboardScreen({
               ))}
            </div>
         </section>
-
-        {/* Maintenance / Secondary Grid */}
-        <section className="ui-card-premium p-5 border-white/10 bg-white/[0.02] shadow-inner">
-           <div className="grid grid-cols-4 gap-3 sm:gap-4">
-              {maintenanceActions.map((action) => (
-                <motion.button
-                  key={action.label}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => { impactLight(); action.onClick(); }}
-                  className="flex flex-col items-center gap-2 active:opacity-60 group"
-                >
-                  <div className={clsx("h-12 w-12 flex items-center justify-center rounded-2xl border border-white/10 bg-black/40 shadow-xl transition-all group-hover:border-primary/30 group-hover:bg-primary/5", action.color)}>
-                     <action.icon size={20} />
-                  </div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">{action.label}</span>
-                </motion.button>
-              ))}
-           </div>
-        </section>
       </main>
 
-      {/* FIXED BOTTOM ACTION BAR — single bar, "Começar Rodada" as a raised FAB */}
-      <footer className="fixed bottom-0 left-0 w-full z-50 pointer-events-none pb-safe">
-         <div className="absolute bottom-0 left-0 w-full h-36 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent pointer-events-none" />
+      {/* FIXED BOTTOM ACTION BAR — UNIFIED DOCK */}
+      <footer className="fixed bottom-0 left-0 w-full z-50 pointer-events-none pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+         <div className="absolute bottom-0 left-0 w-full h-44 bg-gradient-to-t from-[var(--color-bg,#020617)] via-[var(--color-bg,#020617)]/95 to-transparent pointer-events-none" />
 
-         <div className="relative px-4 sm:px-6 pt-6 pb-3 pointer-events-auto max-w-md md:max-w-lg lg:max-w-xl mx-auto">
-            <nav className="relative w-full bg-[#0f172a] border border-white/15 rounded-[2rem] flex items-center px-2 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.9)]">
+         <div className="relative px-3 sm:px-6 pt-4 pointer-events-auto max-w-md md:max-w-lg lg:max-w-xl mx-auto">
+            <nav className="relative w-full bg-[var(--color-surface,#0f172a)] border border-white/15 rounded-[2.2rem] flex items-center justify-between px-2 sm:px-4 py-2 shadow-[0_15px_40px_rgba(0,0,0,0.9)]">
               {[
                 { icon: LayoutDashboard, label: 'Home', action: () => {}, active: true },
                 { icon: Trophy, label: 'Liga', action: onOpenLeague },
@@ -357,18 +416,38 @@ export default function DashboardScreen({
                   key={i}
                   onClick={() => { hapticSelection(); item.action(); }}
                   className={clsx(
-                    "flex-1 flex flex-col items-center gap-1 transition-all active:scale-90 relative py-1 min-h-[44px] justify-center",
+                    "flex-1 flex flex-col items-center gap-0.5 transition-all active:scale-90 relative py-1 min-h-[44px] justify-center",
                     item.active ? "text-primary" : "text-slate-400 hover:text-white"
                   )}
                 >
-                   <item.icon size={20} />
-                   <span className="text-[11px] font-extrabold uppercase tracking-wider">{item.label}</span>
+                   <item.icon size={19} />
+                   <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider">{item.label}</span>
                    {item.active && <motion.div layoutId="nav-glow" className="absolute -bottom-1 w-4 h-0.5 bg-primary rounded-full shadow-[0_0_8px_rgba(31,177,133,1)]" />}
                 </button>
               ))}
 
-              {/* Spacer reserving room for the raised FAB */}
-              <div className="w-14 shrink-0" />
+              {/* Central Unified Action: Raised FAB + COMEÇAR RODADA Label */}
+              <div className="flex-1 flex flex-col items-center justify-center relative shrink-0 px-1">
+                 <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.94 }}
+                    animate={{
+                      boxShadow: ["0 0 14px rgba(31,177,133,0.4)", "0 0 28px rgba(31,177,133,0.7)", "0 0 14px rgba(31,177,133,0.4)"]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    onClick={() => { impactMedium(); onSimulate(); }}
+                    aria-label="Começar Rodada"
+                    title="Começar Rodada"
+                    className="flex flex-col items-center justify-center -mt-7 group transition-all"
+                 >
+                    <div className="h-13 w-13 sm:h-14 sm:w-14 bg-primary rounded-2xl border-4 border-[var(--color-bg,#020617)] flex items-center justify-center shadow-2xl transition-transform group-hover:scale-105">
+                       <Play size={22} fill="currentColor" className="text-white ml-0.5" />
+                    </div>
+                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-primary mt-1 text-center whitespace-nowrap drop-shadow-md">
+                       Começar Rodada
+                    </span>
+                 </motion.button>
+              </div>
 
               {[
                 { icon: Newspaper, label: 'News', action: onOpenNews, badge: unreadNewsCount },
@@ -378,39 +457,20 @@ export default function DashboardScreen({
                 <button
                   key={i}
                   onClick={() => { hapticSelection(); item.action(); }}
-                  className="flex-1 flex flex-col items-center gap-1 transition-all active:scale-90 relative py-1 text-slate-400 hover:text-white min-h-[44px] justify-center"
+                  className="flex-1 flex flex-col items-center gap-0.5 transition-all active:scale-90 relative py-1 text-slate-400 hover:text-white min-h-[44px] justify-center"
                 >
-                   <item.icon size={20} />
-                   <span className="text-[11px] font-extrabold uppercase tracking-wider">{item.label}</span>
+                   <item.icon size={19} />
+                   <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider">{item.label}</span>
                    {item.badge ? (
-                      <div className="absolute top-0 right-[15%] h-4 w-4 bg-rose-500 rounded-full border-2 border-background flex items-center justify-center text-[9px] font-bold text-white shadow-md">
+                      <div className="absolute top-0 right-[10%] h-4 w-4 bg-rose-500 rounded-full border-2 border-[var(--color-surface,#0f172a)] flex items-center justify-center text-[9px] font-bold text-white shadow-md">
                         {item.badge}
                       </div>
                    ) : null}
                 </button>
               ))}
-
-              {/* Play Button — raised FAB, centered on top of the nav bar */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.94 }}
-                animate={{
-                  boxShadow: ["0 0 14px rgba(31,177,133,0.3)", "0 0 26px rgba(31,177,133,0.6)", "0 0 14px rgba(31,177,133,0.3)"]
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-                onClick={() => { impactMedium(); onSimulate(); }}
-                aria-label="Começar Rodada"
-                title="Começar Rodada"
-                className="absolute -top-[20px] left-1/2 -translate-x-1/2 h-14 w-14 bg-primary rounded-2xl border-4 border-[#020617] flex items-center justify-center shadow-2xl z-10"
-              >
-                 <Play size={22} fill="currentColor" className="text-white ml-0.5" />
-              </motion.button>
-            </nav>
-            <div className="text-center mt-1 text-[9px] font-extrabold uppercase tracking-[0.2em] text-slate-400">
-              Começar Rodada
-            </div>
-         </div>
-      </footer>
+             </nav>
+          </div>
+       </footer>
     </div>
   );
 }
