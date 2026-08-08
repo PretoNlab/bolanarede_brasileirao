@@ -344,10 +344,10 @@ export default function DashboardScreen({
 
       {/* FIXED BOTTOM ACTION BAR — single bar, "Começar Rodada" as a raised FAB */}
       <footer className="fixed bottom-0 left-0 w-full z-50 pointer-events-none pb-safe">
-         <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" />
+         <div className="absolute bottom-0 left-0 w-full h-36 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent pointer-events-none" />
 
-         <div className="relative px-4 sm:px-6 pt-6 pb-4 pointer-events-auto max-w-md md:max-w-lg lg:max-w-xl mx-auto">
-            <nav className="relative w-full bg-slate-900/90 backdrop-blur-3xl border border-white/15 rounded-[2rem] flex items-center px-2 py-2.5 shadow-2xl">
+         <div className="relative px-4 sm:px-6 pt-6 pb-3 pointer-events-auto max-w-md md:max-w-lg lg:max-w-xl mx-auto">
+            <nav className="relative w-full bg-[#0f172a] border border-white/15 rounded-[2rem] flex items-center px-2 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.9)]">
               {[
                 { icon: LayoutDashboard, label: 'Home', action: () => {}, active: true },
                 { icon: Trophy, label: 'Liga', action: onOpenLeague },
@@ -401,12 +401,12 @@ export default function DashboardScreen({
                 onClick={() => { impactMedium(); onSimulate(); }}
                 aria-label="Começar Rodada"
                 title="Começar Rodada"
-                className="absolute -top-[20px] left-1/2 -translate-x-1/2 h-14 w-14 bg-primary rounded-2xl border-4 border-background flex items-center justify-center shadow-2xl"
+                className="absolute -top-[20px] left-1/2 -translate-x-1/2 h-14 w-14 bg-primary rounded-2xl border-4 border-[#020617] flex items-center justify-center shadow-2xl z-10"
               >
                  <Play size={22} fill="currentColor" className="text-white ml-0.5" />
               </motion.button>
             </nav>
-            <div className="text-center mt-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-slate-300">
+            <div className="text-center mt-1 text-[9px] font-extrabold uppercase tracking-[0.2em] text-slate-400">
               Começar Rodada
             </div>
          </div>
