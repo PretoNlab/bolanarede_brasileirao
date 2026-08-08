@@ -1,8 +1,9 @@
-import React from 'react';
-import { ArrowLeft, Trash2, Save, Database, Download, Info, HardDrive, Upload } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Trash2, Save, Database, Download, Info, HardDrive, Upload, Sun, Moon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import { SaveSlotId, listSlots, readSlot } from '../save';
+import { getStoredTheme, applyTheme, AppTheme } from '../theme';
 
 interface Props {
    onBack: () => void;
@@ -18,6 +19,14 @@ interface Props {
 }
 
 export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, onClearSlot, onExport, onImportFile, onReset, onFixData, activeSlot, lastLocalSaveAt }: Props) {
+   const [currentTheme, setCurrentTheme] = useState<AppTheme>(() => getStoredTheme());
+
+   const handleThemeChange = (newTheme: AppTheme) => {
+      applyTheme(newTheme);
+      setCurrentTheme(newTheme);
+      toast.success(newTheme === 'light' ? 'Modo Claro ativado!' : 'Modo Escuro ativado!');
+   };
+
    const handleReset = () => {
       if (window.confirm("Tem certeza? Todo o seu progresso local será perdido permanentemente.")) {
          onReset();
@@ -44,6 +53,44 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
          </header>
 
          <main className="p-4 space-y-6 overflow-y-auto pb-safe no-scrollbar">
+
+            {/* SEÇÃO TEMA VISUAL */}
+            <section className="space-y-3">
+               <h2 className="text-xs font-bold uppercase tracking-wider text-secondary px-1">Tema Visual</h2>
+               <div className="bg-surface rounded-2xl border border-white/5 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                     <span className="text-xs font-bold text-white">Aparência do Jogo</span>
+                     <span className="text-[10px] font-bold text-secondary uppercase">{currentTheme === 'light' ? 'Off-White Light' : 'Cinematic Dark'}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                     <button
+                        onClick={() => handleThemeChange('dark')}
+                        className={clsx(
+                           "flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl border font-bold text-xs transition-all active:scale-95",
+                           currentTheme === 'dark' 
+                              ? "bg-primary/20 border-primary text-primary shadow-lg shadow-primary/10" 
+                              : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+                        )}
+                     >
+                        <Moon size={16} />
+                        <span>Escuro</span>
+                     </button>
+
+                     <button
+                        onClick={() => handleThemeChange('light')}
+                        className={clsx(
+                           "flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl border font-bold text-xs transition-all active:scale-95",
+                           currentTheme === 'light' 
+                              ? "bg-primary/20 border-primary text-primary shadow-lg shadow-primary/10" 
+                              : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+                        )}
+                     >
+                        <Sun size={16} />
+                        <span>Claro</span>
+                     </button>
+                  </div>
+               </div>
+            </section>
 
             <section className="space-y-3">
                <h2 className="text-xs font-bold uppercase tracking-wider text-secondary px-1">Lançamento Web</h2>

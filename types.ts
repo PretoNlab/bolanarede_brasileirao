@@ -184,6 +184,22 @@ export interface Fixture {
   awayScore?: number;
 }
 
+export interface LiveSimulatedMatch {
+  fixtureId: string;
+  homeTeam: Team;
+  awayTeam: Team;
+  homeScore: number;
+  awayScore: number;
+  stadiumName: string;
+  events: {
+    minute: number;
+    type: 'goal' | 'yellow' | 'red';
+    teamId: string;
+    playerName?: string;
+  }[];
+}
+
+
 export interface MatchEvent {
   minute: number;
   type: 'goal' | 'whistle' | 'card_yellow' | 'card_red' | 'injury' | 'commentary';

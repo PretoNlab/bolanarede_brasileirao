@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { TeamLogo } from '../components/TeamLogo';
-import { Team, MatchEvent, PlayingStyle, FormationType, TacticalInstructions } from '../types';
+import { Team, MatchEvent, PlayingStyle, FormationType, TacticalInstructions, Fixture, LiveSimulatedMatch } from '../types';
 import { 
   Play, Pause, ArrowRightLeft, Settings2, X, Activity, MessageSquare, 
   Zap, Target, Shield, Info, ChevronDown, Globe, Trophy, Timer, 
@@ -22,6 +22,8 @@ interface Props {
    onFinish: (homeScore: number, awayScore: number, matchEvents: MatchEvent[], pkHome?: number, pkAway?: number) => void;
    mode?: 'league' | 'worldcup';
    wcPhase?: string;
+   allTeams?: Team[];
+   allFixtures?: Fixture[];
 }
 
 interface Narration {
@@ -33,7 +35,8 @@ interface Narration {
 
 const MATCH_FORMATIONS: FormationType[] = ['4-4-2', '4-3-3', '4-2-3-1', '3-5-2', '4-5-1', '5-3-2', '5-4-1', '3-4-3', '4-1-4-1', '4-1-2-1-2', '4-2-4'];
 
-export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initialAwayTeam, round, ddaFactor, onFinish, mode = 'league', wcPhase }: Props) {
+export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initialAwayTeam, round, ddaFactor, onFinish, mode = 'league', wcPhase, allTeams, allFixtures }: Props) {
+
    const [minute, setMinute] = useState(0);
    const [homeScore, setHomeScore] = useState(0);
    const [awayScore, setAwayScore] = useState(0);
@@ -86,7 +89,128 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
    const [showSubModal, setShowSubModal] = useState(false);
    const [selectedSubOut, setSelectedSubOut] = useState<string | null>(null);
 
+   const [activeTab, setActiveTab] = useState<'feed' | 'stats' | 'round'>('feed');
+
+   const [liveRoundMatches, setLiveRoundMatches] = useState<LiveSimulatedMatch[]>(() => {
+      if (!allFixtures || !allTeams) return [];
+      const roundFixtures = allFixtures.filter(
+         f => f.round === round &&
+         f.homeTeamId !== initialHomeTeam.id &&
+         f.awayTeamId !== initialHomeTeam.id &&
+         f.homeTeamId !== initialAwayTeam.id &&
+         f.awayTeamId !== initialAwayTeam.id
+      );
+
+      return roundFixtures.map((fix, idx) => {
+         const hTeam = allTeams.find(t => t.id === fix.homeTeamId) || {
+            id: fix.homeTeamId,
+            name: 'Time Casa',
+            shortName: 'CAS',
+            stadiumName: 'Estádio Municipal',
+            attack: 70,
+            defense: 70,
+            roster: []
+         } as unknown as Team;
+
+         const aTeam = allTeams.find(t => t.id === fix.awayTeamId) || {
+            id: fix.awayTeamId,
+            name: 'Time Fora',
+            shortName: 'FOR',
+            attack: 70,
+            defense: 70,
+            roster: []
+         } as unknown as Team;
+
+         return {
+            fixtureId: `fix-${round}-${idx}`,
+            homeTeam: hTeam,
+            awayTeam: aTeam,
+            homeScore: fix.homeScore ?? 0,
+            awayScore: fix.awayScore ?? 0,
+            stadiumName: hTeam.stadiumName || 'Estádio Municipal',
+            events: []
+         };
+      });
+   });
+
+   const updateLiveRoundMatches = (currentMin: number) => {
+      setLiveRoundMatches(prevMatches => {
+         if (!prevMatches || prevMatches.length === 0) return prevMatches;
+
+         let goalToastText: string | null = null;
+         const updated = prevMatches.map(match => {
+            const rGoal = Math.random();
+            let newHomeScore = match.homeScore;
+            let newAwayScore = match.awayScore;
+            const newEvents = [...match.events];
+
+            if (rGoal < 0.025) {
+               const homeRatio = (match.homeTeam.attack || 70) / ((match.homeTeam.attack || 70) + (match.awayTeam.attack || 70));
+               const isHomeScored = Math.random() < homeRatio;
+
+               if (isHomeScored) {
+                  newHomeScore += 1;
+               } else {
+                  newAwayScore += 1;
+               }
+
+               const scoringTeam = isHomeScored ? match.homeTeam : match.awayTeam;
+               const roster = scoringTeam.roster && scoringTeam.roster.length > 0 ? scoringTeam.roster : [];
+               const attackers = roster.filter(p => p.position === 'ATA' || p.position === 'MEI');
+               const candidateList = attackers.length > 0 ? attackers : roster;
+               const scorerName = candidateList.length > 0 ? candidateList[Math.floor(Math.random() * candidateList.length)].name : 'Atacante';
+
+               newEvents.push({
+                  minute: currentMin,
+                  type: 'goal',
+                  teamId: scoringTeam.id,
+                  playerName: scorerName
+               });
+
+               if (!goalToastText) {
+                  goalToastText = `${match.homeTeam.shortName || match.homeTeam.name} ${newHomeScore} x ${newAwayScore} ${match.awayTeam.shortName || match.awayTeam.name} (${currentMin}')`;
+               }
+            } else if (rGoal < 0.04) {
+               const isHomeCard = Math.random() < 0.5;
+               const cardTeam = isHomeCard ? match.homeTeam : match.awayTeam;
+               newEvents.push({
+                  minute: currentMin,
+                  type: 'yellow',
+                  teamId: cardTeam.id,
+               });
+            }
+
+            return {
+               ...match,
+               homeScore: newHomeScore,
+               awayScore: newAwayScore,
+               events: newEvents
+            };
+         });
+
+         if (goalToastText) {
+            toast.custom((t) => (
+               <div
+                  className={clsx(
+                     "flex items-center gap-3 px-5 py-3.5 bg-slate-950/95 border border-emerald-500/40 rounded-2xl shadow-2xl text-white backdrop-blur-2xl transition-all duration-300",
+                     t.visible ? "animate-in fade-in slide-in-from-top-4" : "animate-out fade-out slide-out-to-top-4"
+                  )}
+               >
+                  <span className="text-xl">⚽</span>
+                  <div className="flex flex-col">
+                     <span className="ui-label-caps text-[9px] text-emerald-400 font-black tracking-widest">Gol em Outro Estádio</span>
+                     <span className="text-[12px] font-bold text-white tracking-tight">{goalToastText}</span>
+                  </div>
+               </div>
+            ), { duration: 3500 });
+         }
+
+         return updated;
+      });
+   };
+
    const feedRef = useRef<HTMLDivElement>(null);
+
 
    useEffect(() => {
       if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight;
@@ -303,6 +427,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                minuteRef.current = nextMinute;
                setMinute(nextMinute);
                getStochasticEvent(newMomentum, nextMinute);
+               updateLiveRoundMatches(nextMinute);
          }, intervalTime);
       }
       return () => clearInterval(interval);
@@ -468,56 +593,193 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
 
 
 
-            {/* LIVE COMMENTARY FEED (CINEMATIC FULL) */}
-            <div 
-               ref={feedRef}
-               className="flex-1 ui-card-premium p-6 overflow-y-auto no-scrollbar space-y-5 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)] flex flex-col items-center"
-            >
-               {feed.length === 0 && (
-                  <div className="h-full flex flex-col items-center justify-center opacity-10 gap-6">
-                     <Timer size={64} className="animate-pulse" />
-                     <span className="ui-label-caps text-xs tracking-[0.5em]">Escalando Times</span>
-                  </div>
-               )}
-               <AnimatePresence>
-                  {feed.map((msg, i) => (
-                     <motion.div 
-                        key={`${i}-${msg.minute}`}
-                        initial={{ opacity: 0, x: -10, y: 10 }}
-                        animate={{ opacity: 1, x: 0, y: 0 }}
-                        className={clsx(
-                           "relative overflow-hidden transition-all duration-500",
-                           msg.type === 'goal' ? "ui-card-premium bg-emerald-500/10 border-emerald-500/20 p-8 shadow-[0_0_50px_rgba(31,177,133,0.15)] text-center my-8" :
-                           msg.type === 'danger' ? "bg-rose-500/5 border border-rose-500/10 px-6 py-4 rounded-[2rem]" : "px-3"
-                        )}
-                     >
-                        <div className={clsx(
-                           "flex w-full max-w-lg mx-auto",
-                           msg.type === 'goal' ? "flex-col items-center gap-5 text-center" : "gap-6 items-start"
-                        )}>
-                           {msg.type === 'goal' && <div className="ui-label-caps bg-emerald-500/20 text-emerald-400 px-4 py-1.5 rounded-full border border-emerald-500/20">GOL</div>}
-                           
-                           <span className={clsx(
-                              "text-[10px] font-black text-white/30 tabular-nums uppercase tracking-widest",
-                              msg.type === 'goal' ? "order-2" : "mt-1.5"
-                           )}>
-                              {msg.minute}'
-                           </span>
-                           
-                           <p className={clsx(
-                              "leading-relaxed tracking-tight",
-                              msg.type === 'goal' ? "text-3xl font-black italic uppercase leading-none text-white drop-shadow-2xl" :
-                              msg.type === 'danger' ? "text-rose-200 font-bold text-sm" : "text-secondary font-medium text-[13.5px]"
-                           )}>
-                              {msg.text}
-                           </p>
-
-                           {msg.type === 'event' && <div className="h-1.5 w-1.5 rounded-full bg-white/20 mt-3" />}
-                        </div>
-                     </motion.div>
-                  ))}
-               </AnimatePresence>
+            {/* VIEW SELECTION TABS */}
+            <div className="flex items-center gap-2 p-1.5 bg-white/[0.03] border border-white/5 rounded-2xl shrink-0">
+               <button
+                  onClick={() => { hapticSelection(); setActiveTab('feed'); }}
+                  className={clsx(
+                     "flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5",
+                     activeTab === 'feed' ? "bg-white/10 text-white border border-white/10 shadow-lg" : "text-white/40 hover:text-white/70"
+                  )}
+               >
+                  <MessageSquare size={13} />
+                  <span>Narração</span>
+               </button>
+               <button
+                  onClick={() => { hapticSelection(); setActiveTab('stats'); }}
+                  className={clsx(
+                     "flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5",
+                     activeTab === 'stats' ? "bg-white/10 text-white border border-white/10 shadow-lg" : "text-white/40 hover:text-white/70"
+                  )}
+               >
+                  <BarChart3 size={13} />
+                  <span>Estatísticas</span>
+               </button>
+               <button
+                  onClick={() => { hapticSelection(); setActiveTab('round'); }}
+                  className={clsx(
+                     "flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 relative",
+                     activeTab === 'round' ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/10" : "text-white/40 hover:text-white/70"
+                  )}
+               >
+                  <Globe size={13} />
+                  <span>Jogos da Rodada</span>
+                  {liveRoundMatches.length > 0 && (
+                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  )}
+               </button>
             </div>
+
+            {/* TAB 1: LIVE COMMENTARY FEED */}
+            {activeTab === 'feed' && (
+               <div 
+                  ref={feedRef}
+                  className="flex-1 ui-card-premium p-6 overflow-y-auto no-scrollbar space-y-5 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)] flex flex-col items-center"
+               >
+                  {feed.length === 0 && (
+                     <div className="h-full flex flex-col items-center justify-center opacity-10 gap-6">
+                        <Timer size={64} className="animate-pulse" />
+                        <span className="ui-label-caps text-xs tracking-[0.5em]">Escalando Times</span>
+                     </div>
+                  )}
+                  <AnimatePresence>
+                     {feed.map((msg, i) => (
+                        <motion.div 
+                           key={`${i}-${msg.minute}`}
+                           initial={{ opacity: 0, x: -10, y: 10 }}
+                           animate={{ opacity: 1, x: 0, y: 0 }}
+                           className={clsx(
+                              "relative overflow-hidden transition-all duration-500 w-full max-w-lg",
+                              msg.type === 'goal' ? "ui-card-premium bg-emerald-500/10 border-emerald-500/20 p-8 shadow-[0_0_50px_rgba(31,177,133,0.15)] text-center my-8" :
+                              msg.type === 'danger' ? "bg-rose-500/5 border border-rose-500/10 px-6 py-4 rounded-[2rem]" : "px-3"
+                           )}
+                        >
+                           <div className={clsx(
+                              "flex w-full max-w-lg mx-auto",
+                              msg.type === 'goal' ? "flex-col items-center gap-5 text-center" : "gap-6 items-start"
+                           )}>
+                              {msg.type === 'goal' && <div className="ui-label-caps bg-emerald-500/20 text-emerald-400 px-4 py-1.5 rounded-full border border-emerald-500/20">GOL</div>}
+                              
+                              <span className={clsx(
+                                 "text-[10px] font-black text-white/30 tabular-nums uppercase tracking-widest",
+                                 msg.type === 'goal' ? "order-2" : "mt-1.5"
+                              )}>
+                                 {msg.minute}'
+                              </span>
+                              
+                              <p className={clsx(
+                                 "leading-relaxed tracking-tight",
+                                 msg.type === 'goal' ? "text-3xl font-black italic uppercase leading-none text-white drop-shadow-2xl" :
+                                 msg.type === 'danger' ? "text-rose-200 font-bold text-sm" : "text-secondary font-medium text-[13.5px]"
+                              )}>
+                                 {msg.text}
+                              </p>
+
+                              {msg.type === 'event' && <div className="h-1.5 w-1.5 rounded-full bg-white/20 mt-3" />}
+                           </div>
+                        </motion.div>
+                     ))}
+                  </AnimatePresence>
+               </div>
+            )}
+
+            {/* TAB 2: MATCH STATS */}
+            {activeTab === 'stats' && (
+               <div className="flex-1 ui-card-premium p-6 overflow-y-auto no-scrollbar space-y-6 border-white/5 bg-white/[0.01]">
+                  <h4 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-3">Estatísticas da Partida</h4>
+                  
+                  {/* Posse de Bola */}
+                  <div className="space-y-2">
+                     <div className="flex justify-between text-xs font-bold text-white">
+                        <span>{homeTeam.shortName || homeTeam.name} ({stats.possession}%)</span>
+                        <span>{initialAwayTeam.shortName || initialAwayTeam.name} ({100 - stats.possession}%)</span>
+                     </div>
+                     <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden flex p-0.5 border border-white/5">
+                        <div className="bg-primary h-full rounded-full transition-all duration-500" style={{ width: `${stats.possession}%` }} />
+                        <div className="bg-white/20 h-full rounded-full transition-all duration-500" style={{ width: `${100 - stats.possession}%` }} />
+                     </div>
+                  </div>
+
+                  {/* Finalizações */}
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                     <div className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col items-center">
+                        <span className="text-2xl font-black text-white">{stats.homeShots}</span>
+                        <span className="ui-label-caps text-[9px] text-secondary mt-1">Finalizações ({homeTeam.shortName || homeTeam.name})</span>
+                     </div>
+                     <div className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col items-center">
+                        <span className="text-2xl font-black text-white">{stats.awayShots}</span>
+                        <span className="ui-label-caps text-[9px] text-secondary mt-1">Finalizações ({initialAwayTeam.shortName || initialAwayTeam.name})</span>
+                     </div>
+                  </div>
+               </div>
+            )}
+
+            {/* TAB 3: JOGOS DA RODADA AO VIVO */}
+            {activeTab === 'round' && (
+               <div className="flex-1 ui-card-premium p-4 overflow-y-auto no-scrollbar space-y-3 border-white/5 bg-white/[0.01] shadow-[inset_0_20px_40px_rgba(0,0,0,0.4)]">
+                  <div className="flex items-center justify-between px-2 pb-2 border-b border-white/5">
+                     <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                        <span className="ui-label-caps text-[10px] text-white">Rodada {round} Simultânea</span>
+                     </div>
+                     <span className="text-[10px] font-bold text-secondary opacity-70">{liveRoundMatches.length} Partidas Ao Vivo</span>
+                  </div>
+
+                  {liveRoundMatches.length === 0 ? (
+                     <div className="h-full flex flex-col items-center justify-center opacity-30 gap-4 py-12">
+                        <Globe size={48} className="animate-pulse" />
+                        <span className="ui-label-caps text-xs tracking-[0.3em]">Nenhum outro jogo nesta rodada</span>
+                     </div>
+                  ) : (
+                     <div className="grid grid-cols-1 gap-3">
+                        {liveRoundMatches.map((m) => (
+                           <div key={m.fixtureId} className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col gap-3 hover:bg-white/[0.06] transition-all">
+                              <div className="flex items-center justify-between text-[9.5px] text-secondary border-b border-white/5 pb-2">
+                                 <span className="truncate font-semibold max-w-[180px]">📍 {m.stadiumName}</span>
+                                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20 text-[9px] flex items-center gap-1.5">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                    {minute}' AO VIVO
+                                 </span>
+                              </div>
+
+                              <div className="flex items-center justify-between gap-2 py-1">
+                                 {/* Home Team */}
+                                 <div className="flex items-center gap-2.5 flex-1 justify-end min-w-0">
+                                    <span className="text-[12px] font-black uppercase text-white truncate text-right">{m.homeTeam.shortName || m.homeTeam.name}</span>
+                                    <TeamLogo team={m.homeTeam} size="xs" />
+                                 </div>
+
+                                 {/* Score */}
+                                 <div className="px-4 py-1.5 bg-black/60 rounded-xl border border-white/10 text-[15px] font-black italic tracking-wider text-emerald-400 shrink-0 shadow-inner">
+                                    {m.homeScore} <span className="text-white/30 font-normal px-0.5">x</span> {m.awayScore}
+                                 </div>
+
+                                 {/* Away Team */}
+                                 <div className="flex items-center gap-2.5 flex-1 justify-start min-w-0">
+                                    <TeamLogo team={m.awayTeam} size="xs" />
+                                    <span className="text-[12px] font-black uppercase text-white truncate text-left">{m.awayTeam.shortName || m.awayTeam.name}</span>
+                                 </div>
+                              </div>
+
+                              {/* Events timeline */}
+                              {m.events.length > 0 && (
+                                 <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-white/5 text-[9.5px]">
+                                    {m.events.map((ev, idx) => (
+                                       <span key={idx} className="bg-white/5 px-2 py-0.5 rounded-lg border border-white/5 flex items-center gap-1 text-white/80">
+                                          <span>{ev.type === 'goal' ? '⚽' : '🟨'}</span>
+                                          <span className="font-bold text-emerald-400">{ev.minute}'</span>
+                                          <span className="opacity-75 truncate max-w-[80px]">{ev.playerName || (ev.teamId === m.homeTeam.id ? m.homeTeam.shortName : m.awayTeam.shortName)}</span>
+                                       </span>
+                                    ))}
+                                 </div>
+                              )}
+                           </div>
+                        ))}
+                     </div>
+                  )}
+               </div>
+            )}
+
          </main>
 
          {/* MATCH ACTION BAR (PHASE 3: MODERNA) */}

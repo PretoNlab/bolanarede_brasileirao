@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from
 import { AnimatePresence, motion } from 'framer-motion';
 import { hasAnyLocalSave } from './save';
 import { markPerformance } from './performanceMetrics';
+import { initTheme } from './theme';
 
 const LandingPage = lazy(() => import('./screens/SplashScreen'));
 const PlayApp = lazy(() => import('./PlayApp'));
@@ -108,6 +109,7 @@ export default function App() {
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
 
   useEffect(() => {
+    initTheme();
     markPerformance('app_opened');
   }, []);
 

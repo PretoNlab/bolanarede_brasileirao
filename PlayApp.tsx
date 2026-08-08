@@ -1424,6 +1424,8 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 round={currentRound}
                 ddaFactor={ddaFactor}
                 onFinish={handleMatchFinished}
+                allTeams={teams}
+                allFixtures={fixtures}
               />
             </PageWrapper>
           )}

@@ -16,6 +16,8 @@
     --color-primary:          #1fb185; /* Cinematic Emerald */
     --color-primary-light:    #4ecda4;
     --color-secondary:        #94a3b8; /* Slate 400 */
+    --color-text-main:        #ffffff;
+    --color-text-muted:       #94a3b8;
     --color-rose:             #f43f5e;
     --color-amber:            #fbbf24;
     --primary-rgb:            31, 177, 133;
@@ -33,18 +35,38 @@
     --safe-bottom: env(safe-area-inset-bottom);
   }
 
+  html.theme-light {
+    --color-bg:               #f8fafc; /* Slate 50 Off-White */
+    --color-surface:          #ffffff; /* Cards Brancos */
+    --color-surface-low:      #f1f5f9; /* Slate 100 */
+    --color-primary:          #059669; /* Emerald 600 */
+    --color-primary-light:    #10b981;
+    --color-secondary:        #64748b; /* Slate 500 */
+    --color-text-main:        #0f172a; /* Slate 900 */
+    --color-text-muted:       #475569;
+    --color-rose:             #e11d48;
+    --color-amber:            #d97706;
+    --primary-rgb:            5, 150, 105;
+    
+    --grad-premium: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    --grad-emerald: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    --shadow-premium: 0 10px 30px -5px rgba(15, 23, 42, 0.08);
+    --glow-emerald: 0 0 15px rgba(5, 150, 105, 0.2);
+  }
+
   html, body {
     height: 100%;
     margin: 0;
     padding: 0;
     background-color: var(--color-bg);
-    color: #ffffff;
+    color: var(--color-text-main);
     font-family: 'Inter', system-ui, sans-serif;
     overflow: hidden;
     user-select: none;
     -webkit-user-select: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   /* Standard Box Sizing */
