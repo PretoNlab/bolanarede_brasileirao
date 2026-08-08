@@ -89,7 +89,7 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
    const [showSubModal, setShowSubModal] = useState(false);
    const [selectedSubOut, setSelectedSubOut] = useState<string | null>(null);
 
-   const [activeTab, setActiveTab] = useState<'feed' | 'stats' | 'round'>('feed');
+   const [activeTab, setActiveTab] = useState<'feed' | 'stats' | 'round'>('round');
 
    const [liveRoundMatches, setLiveRoundMatches] = useState<LiveSimulatedMatch[]>(() => {
       if (!allFixtures || !allTeams) return [];
@@ -596,6 +596,19 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
             {/* VIEW SELECTION TABS */}
             <div className="flex items-center gap-2 p-1.5 bg-white/[0.03] border border-white/5 rounded-2xl shrink-0 overflow-x-auto no-scrollbar">
                <button
+                  onClick={() => { hapticSelection(); setActiveTab('round'); }}
+                  className={clsx(
+                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-2 shrink-0 relative",
+                     activeTab === 'round' ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/10" : "text-white/40 hover:text-white/70"
+                  )}
+               >
+                  <Globe size={14} className="shrink-0" />
+                  <span>Jogos da Rodada (Simultâneos)</span>
+                  {liveRoundMatches.length > 0 && (
+                     <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  )}
+               </button>
+               <button
                   onClick={() => { hapticSelection(); setActiveTab('feed'); }}
                   className={clsx(
                      "flex-1 py-2.5 px-3 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-2 shrink-0",
@@ -614,19 +627,6 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                >
                   <BarChart3 size={14} className="shrink-0" />
                   <span>Estatísticas</span>
-               </button>
-               <button
-                  onClick={() => { hapticSelection(); setActiveTab('round'); }}
-                  className={clsx(
-                     "flex-1 py-2.5 px-3 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-2 shrink-0 relative",
-                     activeTab === 'round' ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/10" : "text-white/40 hover:text-white/70"
-                  )}
-               >
-                  <Globe size={14} className="shrink-0" />
-                  <span>Jogos da Rodada (Simultâneos)</span>
-                  {liveRoundMatches.length > 0 && (
-                     <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                  )}
                </button>
             </div>
 
