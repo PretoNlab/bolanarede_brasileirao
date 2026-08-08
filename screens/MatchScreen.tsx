@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { TeamLogo } from '../components/TeamLogo';
-import { Team, MatchEvent, PlayingStyle, FormationType, TacticalInstructions, Fixture, LiveSimulatedMatch } from '../types';
+import { Team, Player, MatchEvent, PlayingStyle, FormationType, TacticalInstructions, Fixture, LiveSimulatedMatch } from '../types';
 import { 
   Play, Pause, ArrowRightLeft, Settings2, X, Activity, MessageSquare, 
   Zap, Target, Shield, Info, ChevronDown, Globe, Trophy, Timer, 
@@ -90,6 +90,11 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
    const [selectedSubOut, setSelectedSubOut] = useState<string | null>(null);
 
    const [activeTab, setActiveTab] = useState<'feed' | 'stats' | 'round'>('round');
+   const [statsSubTab, setStatsSubTab] = useState<'lineup' | 'numbers'>('lineup');
+
+   const startingLineupPlayers = useMemo(() => {
+      return homeTeam.lineup.map(id => homeTeam.roster.find(p => p.id === id)).filter(Boolean) as Player[];
+   }, [homeTeam.lineup, homeTeam.roster]);
 
    const [liveRoundMatches, setLiveRoundMatches] = useState<LiveSimulatedMatch[]>(() => {
       if (!allFixtures || !allTeams) return [];
@@ -667,34 +672,137 @@ export default function MatchScreen({ homeTeam: initialHomeTeam, awayTeam: initi
                </div>
             )}
 
-            {/* TAB 2: MATCH STATS */}
+            {/* TAB 2: MATCH STATS & INTERACTIVE LINEUP */}
             {activeTab === 'stats' && (
-               <div className="min-h-0 flex-1 touch-pan-y ui-card-premium p-6 overflow-y-auto overscroll-contain no-scrollbar space-y-6 border-white/5 bg-white/[0.01]">
-                  <h4 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-3">Estatísticas da Partida</h4>
-                  
-                  {/* Posse de Bola */}
-                  <div className="space-y-2">
-                     <div className="flex justify-between text-xs font-bold text-white">
-                        <span>{homeTeam.shortName || homeTeam.name} ({stats.possession}%)</span>
-                        <span>{initialAwayTeam.shortName || initialAwayTeam.name} ({100 - stats.possession}%)</span>
+               <div className="min-h-0 flex-1 touch-pan-y ui-card-premium p-4 sm:p-6 overflow-y-auto overscroll-contain no-scrollbar space-y-6 border-white/5 bg-white/[0.01]">
+                  {/* Sub-tabs Header */}
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3 gap-2">
+                     <div className="flex items-center gap-2">
+                        <button
+                           onClick={() => { hapticSelection(); setStatsSubTab('lineup'); }}
+                           className={clsx(
+                              "px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5",
+                              statsSubTab === 'lineup' ? "bg-emerald-500 text-slate-950 shadow-md" : "bg-white/5 text-slate-300 hover:text-white"
+                           )}
+                        >
+                           <Shield size={14} />
+                           <span>Elenco em Campo ({currentFormation})</span>
+                        </button>
+                        <button
+                           onClick={() => { hapticSelection(); setStatsSubTab('numbers'); }}
+                           className={clsx(
+                              "px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5",
+                              statsSubTab === 'numbers' ? "bg-emerald-500 text-slate-950 shadow-md" : "bg-white/5 text-slate-300 hover:text-white"
+                           )}
+                        >
+                           <BarChart3 size={14} />
+                           <span>Números</span>
+                        </button>
                      </div>
-                     <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden flex p-0.5 border border-white/5">
-                        <div className="bg-primary h-full rounded-full transition-all duration-500" style={{ width: `${stats.possession}%` }} />
-                        <div className="bg-white/20 h-full rounded-full transition-all duration-500" style={{ width: `${100 - stats.possession}%` }} />
-                     </div>
+
+                     <span className="text-[10px] font-bold text-slate-400 hidden sm:inline uppercase">
+                        Substituições: 1-Click
+                     </span>
                   </div>
 
-                  {/* Finalizações */}
-                  <div className="grid grid-cols-2 gap-4 pt-2">
-                     <div className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col items-center">
-                        <span className="text-2xl font-black text-white">{stats.homeShots}</span>
-                        <span className="ui-label-caps text-[9px] text-secondary mt-1">Finalizações ({homeTeam.shortName || homeTeam.name})</span>
+                  {statsSubTab === 'lineup' ? (
+                     <div className="space-y-3">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 px-1">
+                           <span>Atleta & Posição</span>
+                           <span>Desgaste / Troca</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2.5">
+                           {startingLineupPlayers.map((player) => {
+                              const playerEnergy = player.energy ?? 100;
+                              const playerGoals = matchEvents.filter(e => e.playerName === player.name && e.type === 'goal').length;
+                              const hasYellowCard = matchEvents.some(e => e.playerName === player.name && e.type === 'card_yellow');
+
+                              return (
+                                 <div 
+                                    key={player.id} 
+                                    className="flex items-center justify-between gap-3 p-3 bg-white/[0.03] border border-white/5 rounded-2xl hover:bg-white/[0.07] transition-all"
+                                 >
+                                    <div className="flex items-center gap-3 min-w-0">
+                                       <span className="text-[10px] font-black uppercase px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg shrink-0">
+                                          {player.position}
+                                       </span>
+                                       <div className="min-w-0 flex flex-col">
+                                          <span className="text-xs font-black text-white truncate">{player.name}</span>
+                                          <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                                             <span>OVR {player.overall}</span>
+                                             {hasYellowCard && <span title="Cartão Amarelo">🟨</span>}
+                                             {playerGoals > 0 && <span className="text-emerald-400 font-extrabold">⚽ x{playerGoals}</span>}
+                                          </div>
+                                       </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                       {/* Energy indicator */}
+                                       <div className="flex flex-col items-end gap-1">
+                                          <span className={clsx(
+                                             "text-[10px] font-extrabold",
+                                             playerEnergy > 70 ? "text-emerald-400" : playerEnergy > 45 ? "text-amber-400" : "text-rose-400"
+                                          )}>
+                                             ⚡ {playerEnergy}%
+                                          </span>
+                                          <div className="h-1.5 w-14 bg-white/10 rounded-full overflow-hidden">
+                                             <div
+                                                className={clsx(
+                                                   "h-full rounded-full transition-all",
+                                                   playerEnergy > 70 ? "bg-emerald-400" : playerEnergy > 45 ? "bg-amber-400" : "bg-rose-500"
+                                                )}
+                                                style={{ width: `${playerEnergy}%` }}
+                                             />
+                                          </div>
+                                       </div>
+
+                                       <button
+                                          onClick={() => {
+                                             hapticSelection();
+                                             setIsPaused(true);
+                                             setSelectedSubOut(player.id);
+                                             setShowSubModal(true);
+                                          }}
+                                          className="flex h-8 items-center gap-1 px-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 text-[10px] font-black uppercase transition-all shadow-sm"
+                                          title="Substituir este jogador"
+                                       >
+                                          <ArrowRightLeft size={12} />
+                                          <span>Trocar</span>
+                                       </button>
+                                    </div>
+                                 </div>
+                              );
+                           })}
+                        </div>
                      </div>
-                     <div className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col items-center">
-                        <span className="text-2xl font-black text-white">{stats.awayShots}</span>
-                        <span className="ui-label-caps text-[9px] text-secondary mt-1">Finalizações ({initialAwayTeam.shortName || initialAwayTeam.name})</span>
+                  ) : (
+                     <div className="space-y-6">
+                        {/* Posse de Bola */}
+                        <div className="space-y-2">
+                           <div className="flex justify-between text-xs font-bold text-white">
+                              <span>{homeTeam.shortName || homeTeam.name} ({stats.possession}%)</span>
+                              <span>{initialAwayTeam.shortName || initialAwayTeam.name} ({100 - stats.possession}%)</span>
+                           </div>
+                           <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden flex p-0.5 border border-white/5">
+                              <div className="bg-primary h-full rounded-full transition-all duration-500" style={{ width: `${stats.possession}%` }} />
+                              <div className="bg-white/20 h-full rounded-full transition-all duration-500" style={{ width: `${100 - stats.possession}%` }} />
+                           </div>
+                        </div>
+
+                        {/* Finalizações */}
+                        <div className="grid grid-cols-2 gap-4 pt-2">
+                           <div className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col items-center">
+                              <span className="text-2xl font-black text-white">{stats.homeShots}</span>
+                              <span className="ui-label-caps text-[9px] text-secondary mt-1">Finalizações ({homeTeam.shortName || homeTeam.name})</span>
+                           </div>
+                           <div className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col items-center">
+                              <span className="text-2xl font-black text-white">{stats.awayShots}</span>
+                              <span className="ui-label-caps text-[9px] text-secondary mt-1">Finalizações ({initialAwayTeam.shortName || initialAwayTeam.name})</span>
+                           </div>
+                        </div>
                      </div>
-                  </div>
+                  )}
                </div>
             )}
 
