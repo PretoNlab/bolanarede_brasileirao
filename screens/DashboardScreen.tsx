@@ -123,6 +123,8 @@ export default function DashboardScreen({
     { label: 'Controle', description: 'Fluxo de Caixa', icon: Wallet, onClick: onOpenFinance, color: 'text-amber-400 bg-amber-400/10' },
   ];
 
+  const quickActions = primaryActions;
+
   const maintenanceActions = [
     { label: 'Treino', icon: Zap, onClick: onOpenTraining, color: 'text-orange-400 bg-orange-400/10' },
     { label: 'Staff', icon: ShieldAlert, onClick: onOpenStaff, color: 'text-fuchsia-400 bg-fuchsia-400/10' },
