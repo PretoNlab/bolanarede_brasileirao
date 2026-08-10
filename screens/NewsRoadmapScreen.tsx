@@ -18,7 +18,7 @@ export default function NewsRoadmapScreen({ onBackHome, onStart }: Props) {
               <img src="/logo.svg" alt="BNR" className="h-9 w-9 relative z-10" />
             </div>
             <span className="text-base font-black italic tracking-tight">
-              BOLA NA REDE <span className="font-light text-emerald-400">MANAGER</span>
+              BNR <span className="font-light text-emerald-400">MANAGER</span>
             </span>
           </button>
 

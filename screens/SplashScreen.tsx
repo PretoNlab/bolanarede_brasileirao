@@ -127,7 +127,7 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
               <img src="/logo.svg" alt="BNR" className="h-9 w-9 relative z-10" />
             </div>
             <span className="text-base font-black italic tracking-tight">
-              BOLA NA REDE <span className="font-light text-emerald-400">MANAGER</span>
+              BNR <span className="font-light text-emerald-400">MANAGER</span>
             </span>
           </button>
 
@@ -155,7 +155,7 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
             )}
             <button
               onClick={onStart}
-              className="flex h-10 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 text-xs font-black uppercase tracking-wider text-black shadow-lg shadow-emerald-500/20 transition-all hover:brightness-110 active:scale-95"
+              className="hidden h-10 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 px-5 text-xs font-black uppercase tracking-wider text-black shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 sm:flex"
             >
               <Play className="h-3.5 w-3.5 fill-current" />
               <span>{hasSave ? 'Novo Jogo' : 'Jogar Agora'}</span>
@@ -181,7 +181,7 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
 
               {/* Title */}
               <h1 className="mt-6 text-4xl font-black italic tracking-tight leading-[0.95] text-white sm:text-6xl lg:text-7xl">
-                Bola Na <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-400 bg-clip-text text-transparent">Rede Manager</span>.
+                BNR <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-400 bg-clip-text text-transparent">Manager</span>.
               </h1>
 
               {/* Subtitle */}

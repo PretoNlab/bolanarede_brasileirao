@@ -20,7 +20,7 @@ export default function OnboardingModal({
     {
       badge: 'Contrato Assinado',
       title: `Você é o novo técnico do ${teamName}!`,
-      subtitle: 'Bola na Rede Manager — O Futebol sob a sua estratégia.',
+      subtitle: 'BNR Manager — O Futebol sob a sua estratégia.',
       icon: Shield,
       content: (
         <div className="space-y-3">
@@ -93,7 +93,7 @@ export default function OnboardingModal({
             <img src="/logo.svg" alt="Logo" className="h-10 w-10 shrink-0" />
             <div>
               <span className="block text-xs font-black italic tracking-wider text-white">
-                BOLA NA REDE <span className="text-emerald-400">MANAGER</span>
+                BNR <span className="text-emerald-400">MANAGER</span>
               </span>
               <span className="text-[10px] font-medium text-slate-400">Edição 2026</span>
             </div>

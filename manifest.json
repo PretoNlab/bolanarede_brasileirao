@@ -1,7 +1,7 @@
 
 {
-  "short_name": "Bola na Rede",
-  "name": "Bola na Rede Manager",
+  "short_name": "BNR Manager",
+  "name": "BNR Manager",
   "description": "Manager de futebol brasileiro com carreira, mercado, finanças, Libertadores e Sul-Americana.",
   "id": "/",
   "start_url": "/",

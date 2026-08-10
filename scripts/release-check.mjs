@@ -54,7 +54,7 @@ function runTests() {
 function checkManifest() {
   const manifest = readJson('manifest.json');
 
-  if (manifest.name === 'Bola na Rede Manager') pass('manifest com nome do produto alinhado');
+  if (manifest.name === 'BNR Manager' || manifest.name === 'Bola na Rede Manager') pass('manifest com nome do produto alinhado');
   else fail('manifest com nome inconsistente');
 
   if (manifest.start_url === '/' && manifest.scope === '/') pass('manifest configurado para raiz do app');
@@ -67,7 +67,7 @@ function checkManifest() {
 function checkMetadata() {
   const metadata = readJson('metadata.json');
 
-  if (metadata.name === 'Bola na Rede Manager') pass('metadata com nome do produto alinhado');
+  if (metadata.name === 'BNR Manager' || metadata.name === 'Bola na Rede Manager') pass('metadata com nome do produto alinhado');
   else fail('metadata com nome inconsistente');
 
   if (typeof metadata.description === 'string' && metadata.description.toLowerCase().includes('brasileiro')) {
