@@ -14,11 +14,12 @@ interface Props {
    onImportFile: (file: File) => Promise<void>;
    onReset: () => void;
    onFixData: () => void;
+   onReopenTutorial?: () => void;
    activeSlot: SaveSlotId;
    lastLocalSaveAt: string | null;
 }
 
-export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, onClearSlot, onExport, onImportFile, onReset, onFixData, activeSlot, lastLocalSaveAt }: Props) {
+export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, onClearSlot, onExport, onImportFile, onReset, onFixData, onReopenTutorial, activeSlot, lastLocalSaveAt }: Props) {
    const [currentTheme, setCurrentTheme] = useState<AppTheme>(() => getStoredTheme());
 
    const handleThemeChange = (newTheme: AppTheme) => {
@@ -218,6 +219,21 @@ export default function SettingsScreen({ onBack, onSaveToSlot, onLoadFromSlot, o
                   </label>
                </div>
             </section>
+
+             {onReopenTutorial && (
+                <section className="space-y-3">
+                   <h2 className="text-xs font-bold uppercase tracking-wider text-secondary px-1">Ajuda &amp; Onboarding</h2>
+                   <button
+                      onClick={onReopenTutorial}
+                      className="w-full flex items-center justify-between p-4 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl border border-emerald-500/20 active:scale-[0.98] transition-all shadow-lg text-emerald-400"
+                   >
+                      <div className="flex items-center gap-3">
+                         <Info size={20} className="text-emerald-400" />
+                         <span className="text-sm font-bold uppercase">Reativar Guia &amp; Tutorial do Treinador</span>
+                      </div>
+                   </button>
+                </section>
+             )}
 
             <section className="space-y-3">
                <h2 className="text-xs font-bold uppercase tracking-wider text-secondary px-1">Zona de Perigo</h2>

@@ -1567,6 +1567,12 @@ export default function PlayApp({ onBackHome, initialIntent = null }: PlayAppPro
                 activeSlot={activeSlot}
                 lastLocalSaveAt={lastLocalSaveAt}
                 onFixData={handleFixData}
+                onReopenTutorial={() => {
+                  setHasSeenOnboarding(false);
+                  try { localStorage.removeItem('bnr_onboarding_steps'); } catch {}
+                  toast.success('Guia de Onboarding e Tutorial reativados!');
+                  setCurrentScreen('DASHBOARD');
+                }}
               />
             </PageWrapper>
           )}
