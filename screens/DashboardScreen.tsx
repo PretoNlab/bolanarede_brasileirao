@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { TeamLogo } from '../components/TeamLogo';
 import { Header } from '../components/Header';
 import OnboardingModal from '../components/OnboardingModal';
+import FirstStepsChecklist from '../components/FirstStepsChecklist';
 import { Team, NewsItem, TransferOffer } from '../types';
 import {
   Play, Users, ArrowLeftRight, Wallet, LayoutDashboard, Trophy, Settings,
@@ -71,6 +72,27 @@ export default function DashboardScreen({
   offers = []
 }: Props) {
   const unreadNewsCount = useMemo(() => news.filter(n => !n.isRead || n.choices).length, [news]);
+
+  const [completedSteps, setCompletedSteps] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('bnr_onboarding_steps');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleChecklistNavigate = (screen: 'tactics' | 'squad' | 'finances' | 'match') => {
+    if (!completedSteps.includes(screen)) {
+      const updated = [...completedSteps, screen];
+      setCompletedSteps(updated);
+      try { localStorage.setItem('bnr_onboarding_steps', JSON.stringify(updated)); } catch {}
+    }
+    if (screen === 'tactics') onOpenTactics();
+    if (screen === 'squad') onOpenSquad();
+    if (screen === 'finances') onOpenFinance();
+    if (screen === 'match') onSimulate();
+  };
 
   const fanReactions = useMemo(() => {
     const reactions = [];
@@ -246,6 +268,13 @@ export default function DashboardScreen({
         <main className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain p-4 pb-36 sm:p-6 sm:pb-40 lg:pb-0 lg:pr-0">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
             <div className="space-y-6">
+              {!onboardingComplete && (
+                <FirstStepsChecklist
+                  completedSteps={completedSteps}
+                  onNavigateScreen={handleChecklistNavigate}
+                  onDismiss={onCompleteOnboarding}
+                />
+              )}
               <section className="ui-card-premium group relative overflow-hidden p-6 shadow-2xl sm:p-8">
                 <div className="pointer-events-none absolute -right-10 -top-10 opacity-[0.05] transition-all group-hover:opacity-[0.1]">
                   <priorityAction.icon size={220} className="rotate-[-10deg] transition-transform duration-1000 group-hover:rotate-0" />

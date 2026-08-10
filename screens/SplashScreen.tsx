@@ -186,6 +186,7 @@ export default function SplashScreen({ onStart, onContinue, hasSave }: Props) {
 
               {/* Subtitle */}
               <p className="mx-auto mt-6 max-w-[680px] text-sm font-medium leading-relaxed text-slate-300 sm:text-base">
+                <span className="block text-emerald-400 font-bold uppercase tracking-wider text-xs mb-1">O Futebol sob a sua estratégia</span>
                 Assuma o comando do seu clube de coração, escale astros reais, enfrente a pressão do campeonato nacional e conquiste a glória da América do Sul.
               </p>
 

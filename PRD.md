@@ -2,18 +2,21 @@
 
 ## Produto
 
-**Nome:** Bola na Rede Manager  
-**Plataforma atual:** Web app em React/Vite, com preparação para Android via Capacitor  
+**Nome:** Bola na Rede Manager
+**Plataforma atual:** Web app em React 19/Vite, publicado via Vercel, com preparação para Android via Capacitor
 **Gênero:** Football manager casual, mobile-first, focado em progressão rápida e gestão acessível
+**Domínio:** `bolanarede.ia.br`
 
 ## 1. Resumo Executivo
 
 Bola na Rede Manager é um jogo de gerenciamento de futebol inspirado em managers clássicos, com foco em clubes brasileiros, progressão por temporadas e interface rápida para partidas, mercado, finanças, elenco e evolução estrutural do clube. O produto busca combinar profundidade suficiente para retenção com baixa fricção de entrada.
 
-O jogo hoje já opera em duas áreas principais:
+O jogo hoje opera em duas áreas principais dentro de uma única carreira:
 
 - `Carreira de clube`, com Série A e Série B, calendário por rodadas, promoção/rebaixamento, mercado, finanças, staff, treino, infraestrutura, base e notícias.
-- `Competições continentais`, integradas à carreira, com Libertadores, Sul-Americana, fase de grupos, mata-mata e premiação.
+- `Competições continentais`, integradas à carreira, com Copa Libertadores e Copa Sul-Americana usando a composição oficial de grupos de 2026 e elencos estrangeiros reais.
+
+Além do loop de jogo, o produto já opera como um site público com instrumentação de aquisição e produto: analytics (GA4 + Microsoft Clarity), captura de leads por formulário embutido, e uma tela de novidades/roadmap voltada a quem ainda não é jogador ativo.
 
 ## 2. Problema
 
@@ -28,7 +31,7 @@ Bola na Rede Manager resolve isso com:
 
 - interface mobile-first;
 - ciclo curto entre decisão e recompensa;
-- clubes e contexto brasileiros;
+- clubes e contexto brasileiros, com elencos reais;
 - partidas rápidas com intervenção tática durante a simulação;
 - gestão simplificada, mas com camadas de progressão.
 
@@ -41,7 +44,7 @@ Entregar um manager de futebol viciante, acessível e rejogável, no qual o joga
 - disputa temporadas completas;
 - busca título, promoção e longevidade;
 - alterna entre decisões estratégicas e momentos de jogo;
-- pode buscar vagas continentais e disputar torneios de maior peso dentro da carreira.
+- busca vagas continentais e disputa Libertadores/Sul-Americana dentro da mesma carreira.
 
 ## 4. Público-Alvo
 
@@ -60,10 +63,11 @@ Entregar um manager de futebol viciante, acessível e rejogável, no qual o joga
 ## 5. Proposta de Valor
 
 - manager brasileiro com identidade local forte;
+- elencos reais (base CBF/Transfermarkt para clubes nacionais, base ESPN para clubes sul-americanos) em vez de nomes genéricos;
 - progressão rápida sem sacrificar estratégia;
-- partidas simuladas com sensação de controle;
+- partidas simuladas com sensação de controle, incluindo acompanhamento ao vivo de outros jogos da rodada;
 - combinação de gestão esportiva, financeira e estrutural;
-- competições continentais para ampliar objetivos de temporada e rejogabilidade.
+- competições continentais com sorteio oficial 2026 para ampliar objetivos de temporada e rejogabilidade.
 
 ## 6. Visão do Produto
 
@@ -76,50 +80,59 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 - `Responsivo`: o usuário deve sentir efeito claro após treino, tática, contratação ou jogo.
 - `Rejogável`: times, temporadas e competições continentais precisam sustentar múltiplas campanhas.
 - `Local`: linguagem, clubes e fantasia de gestão precisam conversar com o público brasileiro.
+- `Confiável em mobile`: nenhuma tela deve depender de altura de viewport fixa (`100vh`) nem travar navegação por erro de plugin/telemetria.
 
-## 8. Escopo Atual do MVP
+## 8. Escopo Atual
 
 ### 8.1 Fluxo principal
 
-1. Tela inicial com `Novo Jogo` e `Continuar`.
-2. Criação de treinador.
-3. Escolha de clube por divisão.
-4. Entrada no dashboard.
-5. Preparação de partida.
-6. Simulação da partida com ajustes táticos.
-7. Atualização de rodada, finanças, moral, classificação e notícias.
-8. Progressão até fim da temporada.
-9. Tela de campeão ou demissão.
-10. Nova temporada com promoção e rebaixamento.
+1. Landing pública com apresentação do produto, prova social e captura de lead.
+2. Tela inicial do jogo com `Novo Jogo` e `Continuar`.
+3. Criação de treinador.
+4. Escolha de clube por divisão.
+5. Entrada no dashboard.
+6. Preparação de partida, com auto-ajuste de escalação em 1 clique quando há pendência.
+7. Simulação da partida com ajustes táticos e acompanhamento de outros jogos da rodada.
+8. Atualização de rodada, finanças, moral, classificação e notícias.
+9. Ao final da temporada: modal de captura de e-mail para novidades.
+10. Progressão até fim da temporada, com tela de campeão ou demissão.
+11. Nova temporada com promoção, rebaixamento e recálculo de vagas continentais.
 
 ### 8.2 Modo carreira de clube
 
-- seleção de clubes das divisões A e B;
+- seleção entre 40 clubes das divisões Série A e Série B, com elencos reais (CBF/Transfermarkt, julho 2026);
 - calendário por rodadas;
 - classificação por divisão;
 - promoção e rebaixamento entre temporadas;
-- gestão de elenco;
-- renovação de contrato;
-- mercado com compra de jogadores;
+- gestão de elenco, com renovação de contrato;
+- mercado com compra de jogadores, agentes livres e janelas de transferência;
 - finanças com preço de ingresso, empréstimo e expansão de estádio;
-- staff técnico;
-- infraestrutura do clube;
-- categorias de base;
-- notícias com efeitos no jogo;
-- estatísticas individuais e de times;
-- saves locais em 3 slots;
-- exportação e importação de save;
-- onboarding inicial.
+- staff técnico (coach, physio, scout em níveis bronze/silver/gold);
+- infraestrutura do clube (centro de treinamento, departamento médico, scouting);
+- categorias de base com promoção de jovens;
+- notícias com efeitos no jogo e decisões narrativas;
+- estatísticas individuais e de times, com filtro por competição (Série A / Série B);
+- saves locais em 3 slots, com autosave, exportação e importação em JSON;
+- onboarding inicial;
+- alternância de tema claro/escuro.
 
 ### 8.3 Competições continentais
 
-- classificação via desempenho na Série A;
-- Libertadores para os melhores colocados;
-- Sul-Americana para a faixa seguinte;
-- tabela da fase de grupos;
-- chaveamento do mata-mata;
-- premiação por participação e avanço;
-- visualização de grupos, chaveamento e evolução continental por temporada.
+- classificação automática via desempenho na Série A: melhores colocados para Libertadores, faixa seguinte para Sul-Americana;
+- composição oficial dos grupos de 2026 (sem sorteio aleatório) na primeira disputa, com sorteio dinâmico baseado em classificação em temporadas seguintes;
+- elencos estrangeiros reais (fonte ESPN), sem clubes clonados/numerados para preencher vaga;
+- fase de grupos com tabela e classificação por saldo de gols;
+- mata-mata de ida e volta;
+- premiação por participação e avanço de fase;
+- tela dedicada (`CONMEBOL`) para acompanhar grupos, chaveamento e evolução por temporada.
+
+### 8.4 Site público, aquisição e growth
+
+- landing page com hero, prova social, clubes em destaque, FAQ e CTA de início de carreira;
+- tela `/novidades` com roadmap de features futuras, para visitantes que ainda não têm save;
+- modal de captura de lead (iframe de formulário externo) ao final de temporada;
+- analytics de produto: Google Analytics 4 e Microsoft Clarity instalados via CSP restrita (script liberado por hash SHA-256 sempre que possível, evitando `unsafe-inline` sem necessidade);
+- funil de performance instrumentado localmente (ver seção 15).
 
 ## 9. Loops de Produto
 
@@ -166,22 +179,23 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 - visão geral do clube;
 - próximo adversário;
 - status de caixa;
-- atalhos para áreas principais;
-- navegação principal do jogo.
+- atalhos para áreas principais, incluindo `CONMEBOL`;
+- navegação principal do jogo em barra inferior única, com o CTA de partida como botão elevado central e respeito à área segura do dispositivo (`safe-area-inset-bottom`).
 
 ### 10.4 Partida e pré-jogo
 
-- tela de preparação antes da partida;
-- comparação entre times;
+- tela de preparação antes da partida, com comparação entre times;
+- correção automática de pendências de escalação em 1 clique;
 - acesso rápido a tática e elenco;
-- simulação da partida com eventos;
-- pausa, aceleração, mudanças de estilo e substituições;
+- simulação da partida com eventos, narração e substituições;
+- pausa, aceleração, mudanças de estilo e substituições em campo;
+- acompanhamento de outros jogos da rodada em tempo real;
 - efeito de momentum durante o jogo.
 
 ### 10.5 Elenco
 
 - lista completa do plantel;
-- visualização por jogador;
+- visualização por jogador, com barra de desgaste;
 - atributos detalhados;
 - histórico do atleta;
 - renovação contratual.
@@ -190,7 +204,7 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 
 - formações;
 - estilo de jogo;
-- definição da escalação titular.
+- definição da escalação titular com ajuste de encaixe por posição.
 
 ### 10.7 Mercado
 
@@ -234,16 +248,32 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 
 ### 10.13 Estatísticas
 
-- artilharia;
-- assistências;
+- artilharia e assistências, com filtro por competição (Série A / Série B);
 - ranking geral de clubes;
 - acompanhamento por temporada.
 
-### 10.14 Saves
+### 10.14 Competições continentais
+
+- ver seção 8.3.
+
+### 10.15 Ajustes
+
+- alternância entre tema `Cinematic Dark` (padrão) e `Off-White Light`;
+- gestão de saves locais;
+- (cloud save/login ainda não conectados — ver seção 15).
+
+### 10.16 Saves
 
 - autosave local;
 - 3 slots manuais;
 - exportação e importação em JSON.
+
+### 10.17 Aquisição e retenção externa
+
+- landing pública com prova social e CTA de carreira;
+- tela `/novidades` com roadmap público;
+- modal de captura de e-mail ao fim de temporada;
+- GA4 + Microsoft Clarity para análise de comportamento.
 
 ## 11. Regras de Negócio Atuais
 
@@ -257,7 +287,8 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 - os `4 primeiros` da Série B sobem;
 - jogadores envelhecem e podem evoluir ou regredir entre temporadas;
 - moral e estatísticas são reiniciadas na nova temporada;
-- competições continentais avançam por grupos e mata-mata até a final.
+- competições continentais avançam por grupos e mata-mata até a final;
+- nenhum clube disputa Libertadores e Sul-Americana na mesma temporada.
 
 ## 12. Experiência do Usuário
 
@@ -267,75 +298,56 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 - decisões rápidas;
 - forte hierarquia visual;
 - foco em telas densas, mas legíveis em mobile;
-- feedback imediato via animações, cards e toasts.
+- feedback imediato via animações, cards, haptics (com fallback silencioso quando o navegador não suporta) e toasts.
 
 ### 12.2 Sensações desejadas
 
-- “estou no controle”;
-- “cada rodada importa”;
-- “meu clube está evoluindo”;
-- “minhas decisões geraram consequência”.
+- "estou no controle";
+- "cada rodada importa";
+- "meu clube está evoluindo";
+- "minhas decisões geraram consequência".
 
-## 13. Métricas de Sucesso
+### 12.3 Padrões de mobile obrigatórios
 
-### Produto
+- altura de tela via `dvh` (dynamic viewport height), nunca `vh` fixo, para que rodapés fixos não fiquem inacessíveis atrás da barra de endereço do navegador;
+- `padding-bottom` de área segura (`pb-safe`) em qualquer rodapé fixo, para não invadir a zona de gesto do iOS;
+- nomes de jogador/clube sempre com `truncate`/`line-clamp` em containers estreitos — elencos reais têm nomes mais longos que os antigos nomes gerados;
+- chamadas de haptics nunca devem lançar exceção não tratada (navegadores sem Vibration API, como o Safari iOS, devem falhar silenciosamente).
 
-- taxa de conclusão do fluxo `Splash > Coach Setup > Team Selection > Dashboard`;
-- percentual de jogadores que completam ao menos 1 temporada;
-- média de rodadas jogadas por sessão;
-- taxa de retorno para nova temporada;
-- uso por tela: mercado, finanças, treino, staff, base.
-- tempo entre abrir o app e iniciar a primeira partida;
-- tempo entre clicar em `Começar carreira` e iniciar a primeira partida;
-- abandono entre início de carreira, escolha de clube, dashboard, pré-jogo e partida;
-- abandono durante carregamentos e transições de tela críticas.
+## 13. Stack Técnico
 
-### Retenção
+- **Frontend:** React 19 + TypeScript + Vite 5, Tailwind CSS v4, Framer Motion, `react-hot-toast`, `lucide-react`.
+- **Empacotamento mobile:** Capacitor 6 (Android configurado via `capacitor.config.ts`; iOS não configurado).
+- **Persistência:** `localStorage` (3 slots + export/import JSON); Supabase (`@supabase/supabase-js`) presente no projeto mas não conectado à UI.
+- **Testes:** Vitest, cobrindo o motor de temporada e competições continentais.
+- **Deploy:** Vercel, com rewrite SPA e headers de segurança (CSP, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`).
+- **Analytics:** Google Analytics 4 (`gtag.js`), Microsoft Clarity, funil de performance próprio em `localStorage` (`performanceMetrics.ts`).
 
-- D1, D7 e D30;
-- número médio de saves carregados por usuário;
-- frequência de uso da tela e dos jogos continentais.
+## 14. Analytics & Growth
 
-### Engajamento
-
-- partidas por sessão;
-- contratações por temporada;
-- upgrades de infraestrutura por temporada;
-- promoções de jovens por temporada.
-
-## 14. Requisitos Não Funcionais
-
-- performance fluida em mobile intermediário;
-- build web leve e jogável offline parcial no futuro;
-- layout adaptado para celular;
-- persistência local resiliente;
-- arquitetura simples para iteração rápida;
-- possibilidade de empacotamento Android via Capacitor.
+- **GA4**: instalado via `gtag.js` no `index.html`.
+- **Microsoft Clarity**: heatmaps e gravação de sessão, script liberado na CSP por hash SHA-256 dedicado.
+- **Funil de performance interno** (`performanceMetrics.ts`, armazenado em `localStorage`, sem servidor): `app_opened → landing_viewed → start_clicked/continue_clicked → play_loaded → career_started → coach_created → team_selected → dashboard_reached → prematch_opened → first_match_started`, com tempo decorrido entre marcos.
+- **Captura de lead**: modal com iframe de formulário externo (`formularios.ia.br`), disparado ao fim de temporada; requer `frame-src` liberado na CSP.
+- **Nota de segurança**: o script inline do GA4 exigiu `'unsafe-inline'` em `script-src` na CSP. Isso reduz a proteção que o hash SHA-256 do Clarity oferece isoladamente — qualquer script inline passa a poder executar. Se a postura de segurança da CSP for prioridade, o snippet do GA4 pode ser hasheado da mesma forma, permitindo remover `'unsafe-inline'`.
 
 ## 15. Restrições e Lacunas do Estado Atual
 
 Este documento separa claramente o que o produto quer ser e o que já está implementado. Hoje, as principais lacunas observadas são:
 
-- integração de `cloud save` e autenticação está desenhada na interface, mas não está conectada no fluxo principal;
-- `Supabase` existe no projeto, porém a tela de ajustes recebe `session={null}` e `onLoadCloud` vazio;
-- estados de `staff`, `infraestrutura`, `treino`, `base` e `modo Copa` não estão persistidos no `buildSave` atual;
-- mercado ainda está incompleto em partes importantes:
-  - ofertas recebidas;
-  - venda ativa;
-  - empréstimos;
-  - logs reais de transferências do usuário;
-- onboarding é exibido, mas o dashboard recebe `onboardingComplete={true}`, o que indica inconsistência de integração;
-- o PRD fala em “conta na nuvem”, mas isso deve ser tratado como fase seguinte, não como feature já entregue.
+- **cloud save não conectado**: `supabaseClient.ts` tem `saveToCloud`/`loadFromCloud`/`testSupabaseConnection` funcionais, mas a `SettingsScreen` não referencia sessão nem Supabase — o fluxo de jogo é 100% local. Isso é uma decisão consciente registrada no `WEB_LAUNCH_SMOKE_CHECKLIST.md` ("confirmar que Ajustes não promete sincronização por conta"), não um bug pendente de correção silenciosa;
+- mercado ainda está incompleto em partes importantes: ofertas recebidas, venda ativa, empréstimos, logs reais de transferências do usuário;
+- não há testes automatizados para o simulador de partida em si (`matchProcessor.ts` tem cobertura indireta via `adaptationEngine.test.ts`, mas não cobertura de ponta a ponta de uma partida simulada);
+- não há iOS configurado no Capacitor, apenas Android;
+- o mesmo hash de CSP usado para o Clarity precisa ser recalculado manualmente sempre que o conteúdo do script inline mudar — não há automação para isso no pipeline de build.
 
 ## 16. Roadmap Recomendado
 
 ### Fase 1: Consolidar o core atual
 
-- persistir todos os sistemas no save local;
-- concluir integração real de cloud save;
-- fechar lacunas do mercado;
-- melhorar consistência do onboarding;
-- estabilizar balanceamento de finanças e progressão.
+- fechar lacunas do mercado (ofertas recebidas, venda ativa, empréstimos, logs reais);
+- expandir cobertura de testes automatizados para o simulador de partida;
+- avaliar se cloud save entra nesta fase ou permanece adiado por decisão de produto.
 
 ### Fase 2: Aumentar retenção
 
@@ -354,11 +366,12 @@ Este documento separa claramente o que o produto quer ser e o que já está impl
 
 ### Fase 4: Conteúdo expandido
 
-- copas nacionais/continentais;
+- ligas europeias (já anunciado como "em breve" na captura de lead);
 - staff com efeitos sistêmicos mais profundos;
 - scouting internacional;
 - lesões e recuperação mais sofisticadas;
-- rivalidades, expectativas de torcida e objetivos da diretoria.
+- rivalidades, expectativas de torcida e objetivos da diretoria;
+- empacotamento iOS via Capacitor.
 
 ## 17. Não Objetivos no Curto Prazo
 
@@ -378,4 +391,4 @@ Bola na Rede Manager deve ocupar o espaço entre:
 
 Em uma frase:
 
-> Um manager de futebol brasileiro, rápido e viciante, onde cada rodada entrega decisão, consequência e progressão.
+> Um manager de futebol brasileiro, rápido e viciante, onde cada rodada entrega decisão, consequência e progressão — da Série B à Libertadores.
