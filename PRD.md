@@ -2,14 +2,15 @@
 
 ## Produto
 
-**Nome:** Bola na Rede Manager
+**Nome:** BNR Manager (rebrand de "Bola na Rede Manager"; domínio, save local e dados de jogo não mudaram, só a marca pública)
+**Identidade visual:** Neo-Emerald & Gold — paleta escura com verde-esmeralda como cor primária e dourado como acento
 **Plataforma atual:** Web app em React 19/Vite, publicado via Vercel, com preparação para Android via Capacitor
 **Gênero:** Football manager casual, mobile-first, focado em progressão rápida e gestão acessível
 **Domínio:** `bolanarede.ia.br`
 
 ## 1. Resumo Executivo
 
-Bola na Rede Manager é um jogo de gerenciamento de futebol inspirado em managers clássicos, com foco em clubes brasileiros, progressão por temporadas e interface rápida para partidas, mercado, finanças, elenco e evolução estrutural do clube. O produto busca combinar profundidade suficiente para retenção com baixa fricção de entrada.
+BNR Manager é um jogo de gerenciamento de futebol inspirado em managers clássicos, com foco em clubes brasileiros, progressão por temporadas e interface rápida para partidas, mercado, finanças, elenco e evolução estrutural do clube. O produto busca combinar profundidade suficiente para retenção com baixa fricção de entrada.
 
 O jogo hoje opera em duas áreas principais dentro de uma única carreira:
 
@@ -27,7 +28,7 @@ Managers de futebol costumam falhar em pelo menos um destes pontos:
 - excesso de telas burocráticas antes da recompensa;
 - pouca identidade local para o público brasileiro.
 
-Bola na Rede Manager resolve isso com:
+BNR Manager resolve isso com:
 
 - interface mobile-first;
 - ciclo curto entre decisão e recompensa;
@@ -113,7 +114,7 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 - notícias com efeitos no jogo e decisões narrativas;
 - estatísticas individuais e de times, com filtro por competição (Série A / Série B);
 - saves locais em 3 slots, com autosave, exportação e importação em JSON;
-- onboarding inicial;
+- onboarding inicial com checklist de primeiros passos (tática, elenco, finanças, primeira partida), reaberto a qualquer momento pelos Ajustes;
 - alternância de tema claro/escuro.
 
 ### 8.3 Competições continentais
@@ -260,6 +261,7 @@ Ser o principal football manager casual brasileiro para web e mobile, com forte 
 
 - alternância entre tema `Cinematic Dark` (padrão) e `Off-White Light`;
 - gestão de saves locais;
+- botão para reativar o guia/tutorial de onboarding a qualquer momento;
 - (cloud save/login ainda não conectados — ver seção 15).
 
 ### 10.16 Saves
@@ -339,7 +341,8 @@ Este documento separa claramente o que o produto quer ser e o que já está impl
 - mercado ainda está incompleto em partes importantes: ofertas recebidas, venda ativa, empréstimos, logs reais de transferências do usuário;
 - não há testes automatizados para o simulador de partida em si (`matchProcessor.ts` tem cobertura indireta via `adaptationEngine.test.ts`, mas não cobertura de ponta a ponta de uma partida simulada);
 - não há iOS configurado no Capacitor, apenas Android;
-- o mesmo hash de CSP usado para o Clarity precisa ser recalculado manualmente sempre que o conteúdo do script inline mudar — não há automação para isso no pipeline de build.
+- o mesmo hash de CSP usado para o Clarity precisa ser recalculado manualmente sempre que o conteúdo do script inline mudar — não há automação para isso no pipeline de build;
+- o rebrand para `BNR Manager` ainda não se propagou para todos os documentos internos: `README.md`, `LANDING_COPY.md` e o item de marca em `RELEASE_CHECKLIST.md` continuam citando "Bola na Rede Manager".
 
 ## 16. Roadmap Recomendado
 
@@ -383,7 +386,7 @@ Este documento separa claramente o que o produto quer ser e o que já está impl
 
 ## 18. Posicionamento
 
-Bola na Rede Manager deve ocupar o espaço entre:
+BNR Manager deve ocupar o espaço entre:
 
 - a nostalgia e rapidez de managers clássicos;
 - a identidade brasileira do futebol local;
