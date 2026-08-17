@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, ChevronLeft, ChevronRight, Play, Shield, Sparkles, Target, Users, Zap } from 'lucide-react';
+import { ArrowRight, Check, ChevronLeft, ChevronRight, ExternalLink, Gift, Mail, Play, Shield, Sparkles, Target, Users, Zap } from 'lucide-react';
 
 interface OnboardingModalProps {
   teamName: string;
@@ -15,6 +15,43 @@ export default function OnboardingModal({
   onPlay,
 }: OnboardingModalProps) {
   const [slide, setSlide] = useState(0);
+  const [email, setEmail] = useState(() => {
+    try {
+      return localStorage.getItem('bolanarede_user_email') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [isEmailSaved, setIsEmailSaved] = useState(() => {
+    try {
+      return !!localStorage.getItem('bolanarede_user_email');
+    } catch {
+      return false;
+    }
+  });
+
+  const handleSaveEmail = () => {
+    if (!email || !email.includes('@')) return;
+    try {
+      localStorage.setItem('bolanarede_user_email', email.trim());
+      setIsEmailSaved(true);
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'generate_lead', {
+          event_category: 'onboarding',
+          event_label: 'onboarding_email_modal',
+        });
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  };
+
+  const handleNext = () => {
+    if (slide === 2 && email.includes('@') && !isEmailSaved) {
+      handleSaveEmail();
+    }
+    setSlide((s) => s + 1);
+  };
 
   const slides = [
     {
@@ -59,6 +96,45 @@ export default function OnboardingModal({
               <p className="text-xs font-bold text-white">Energia &amp; Rotação</p>
               <p className="text-[11px] text-slate-300">Evite escalações com jogadores exaustos para prevenir lesões e manter alto rendimento.</p>
             </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      badge: 'Progresso do Técnico',
+      title: 'Salve sua Carreira & Notificações',
+      subtitle: 'Preencha o formulário abaixo (opcional) para salvar seu progresso e receber novidades VIP.',
+      icon: Mail,
+      content: (
+        <div className="space-y-3 text-left">
+          <div className="w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-inner">
+            <iframe
+              src="https://formularios.ia.br/f/formulario-de-contato-ijfec7"
+              width="100%"
+              height="380"
+              frameBorder="0"
+              style={{ border: 0, borderRadius: '12px' }}
+              title="Formulário BNR Manager"
+            />
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-slate-400">
+            <a
+              href="https://formularios.ia.br/f/formulario-de-contato-ijfec7"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-medium text-slate-300 hover:text-white hover:underline"
+            >
+              <span>Abrir em nova aba</span>
+              <ExternalLink size={12} className="text-emerald-400" />
+            </a>
+            <button
+              type="button"
+              onClick={() => setSlide((s) => s + 1)}
+              className="font-bold text-emerald-400 hover:underline"
+            >
+              Pular esta etapa &rarr;
+            </button>
           </div>
         </div>
       ),
@@ -149,10 +225,12 @@ export default function OnboardingModal({
                 </button>
               )}
               <button
-                onClick={() => setSlide((s) => s + 1)}
+                onClick={handleNext}
                 className="flex h-13 flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 font-extrabold uppercase tracking-wider text-slate-950 shadow-xl shadow-emerald-500/20 active:scale-[0.98]"
               >
-                <span className="text-xs">Próximo Passo</span>
+                <span className="text-xs">
+                  {slide === 2 ? (email ? 'Salvar E-mail e Continuar' : 'Continuar sem E-mail') : 'Próximo Passo'}
+                </span>
                 <ChevronRight size={16} />
               </button>
             </div>
@@ -179,3 +257,5 @@ export default function OnboardingModal({
     </div>
   );
 }
+
+
